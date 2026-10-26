@@ -4,6 +4,8 @@
 
 The adversarial review is being executed in isolated changes. B1 changes authorization only: publication must satisfy the existing schema-1 readiness file as well as manual/main/source-SHA approval, before any Docker load/push. False, missing or malformed readiness is not overridden by dispatch inputs. Runtime tools, scan severity policy and consumer state are unchanged. Readiness remains false while redistribution/provenance/native-contract evidence is missing. B1: 19 local tests and Clippy passed. The first parallel run caught a timestamp-only test-fixture collision; an atomic sequence now prevents collisions without relaxing production create-only behavior.
 
+B2: private per-build IID files now replace mutable check tags; the same immutable ID is inspected, smoked, returned and saved. Twenty tests, Clippy and a native Syft build/smoke passed. The producer no longer performs a second tag-based image lookup.
+
 ## Initialization and publication pipeline — 2026-10-26
 
 Created `PRJXAI/devsecops`, initially private, then made it public at the owner's explicit request. GHCR publication is authorized through the manual main-branch workflow, not ad hoc pushes or automatic consumer adoption. No consumer pin, production setting or real cluster was changed. The consumer's existing uncommitted simplification work remains separate.

@@ -372,11 +372,13 @@ impl Driver {
         Ok(fields[0].to_owned())
     }
 
-    fn check(&mut self, tool: &str) -> Result<()> {
+    fn check(&mut self, tool: &str) -> Result<String> {
         let args = version_args(tool)?;
         let arch = self.native()?;
         let platform = format!("linux/{arch}");
-        let tag = format!("devsecops-{tool}:check");
+        let iidfile = self
+            .logs
+            .join(format!("build-{tool}-{}.iid", self.sequence));
         let dockerfile = format!("images/{tool}/Dockerfile");
         let revision = std::env::var("GITHUB_SHA").unwrap_or_else(|_| "local".into());
         if revision != "local"
@@ -396,15 +398,18 @@ impl Driver {
                 &platform,
                 "--file",
                 &dockerfile,
-                "--tag",
-                &tag,
+                "--iidfile",
+                iidfile.to_str().ok_or("invalid build identity path")?,
                 ".",
             ],
             1200,
             false,
         )?;
-        let image = self.inspect(&tag, arch)?;
-        // Use the inspected immutable ID, not a tag that could change between runs.
+        let image = built_image_id(&iidfile)?;
+        if self.inspect(&image, arch)? != image {
+            return Err("built image identity mismatch");
+        }
+        // Carry this immutable build identity through smoke, export and scanning.
         self.smoke(&image, tool, args, None)?;
         if tool == "gitleaks" {
             self.smoke(&image, tool, &["--version"], Some("/usr/bin/git"))?;
@@ -413,8 +418,24 @@ impl Driver {
             self.smoke(&image, tool, &["compose", "version"], None)?;
             self.smoke(&image, tool, &["buildx", "version"], None)?;
         }
-        Ok(())
+        Ok(image)
     }
+}
+
+fn built_image_id(path: &Path) -> Result<String> {
+    let bytes = release::bytes(path, 128)?;
+    let text = std::str::from_utf8(&bytes)
+        .map_err(|_| "invalid build identity")?
+        .trim();
+    if !text.strip_prefix("sha256:").is_some_and(|hash| {
+        hash.len() == 64
+            && hash
+                .bytes()
+                .all(|b| b.is_ascii_hexdigit() && !b.is_ascii_uppercase())
+    }) {
+        return Err("invalid build identity");
+    }
+    Ok(text.to_owned())
 }
 
 fn main() {
@@ -482,6 +503,32 @@ mod tests {
             version_args("kubectl").unwrap(),
             ["version", "--client=true"]
         );
+    }
+
+    #[test]
+    fn build_identity_is_private_bounded_and_independent_of_tags() {
+        let driver = super::Driver::new().unwrap();
+        let first = driver.logs.join("first.iid");
+        let second = driver.logs.join("second.iid");
+        let a = format!("sha256:{}", "a".repeat(64));
+        let b = format!("sha256:{}", "b".repeat(64));
+        std::fs::write(&first, &a).unwrap();
+        std::fs::write(&second, &b).unwrap();
+        assert_eq!(super::built_image_id(&first).unwrap(), a);
+        assert_eq!(super::built_image_id(&second).unwrap(), b);
+        for bad in [
+            "".to_owned(),
+            "sha256:short".into(),
+            format!("{a}\n{b}"),
+            "x".repeat(129),
+        ] {
+            std::fs::write(&first, bad).unwrap();
+            assert!(super::built_image_id(&first).is_err());
+        }
+        assert!(super::built_image_id(&driver.logs.join("missing")).is_err());
+        let link = driver.logs.join("linked.iid");
+        std::os::unix::fs::symlink(&second, &link).unwrap();
+        assert!(super::built_image_id(&link).is_err());
     }
 
     #[test]

@@ -92,7 +92,7 @@ fn regular(path: &Path, limit: u64) -> Result<File> {
     Ok(file)
 }
 
-fn bytes(path: &Path, limit: u64) -> Result<Vec<u8>> {
+pub(super) fn bytes(path: &Path, limit: u64) -> Result<Vec<u8>> {
     let mut data = Vec::new();
     regular(path, limit)?
         .take(limit + 1)
@@ -407,8 +407,7 @@ fn prepare_tool(
     revision: &str,
     db: Option<&Value>,
 ) -> Result<Value> {
-    driver.check(tool)?;
-    let image = driver.inspect(&format!("devsecops-{tool}:check"), arch)?;
+    let image = driver.check(tool)?;
     let scans = driver.root.join(".work/scans");
     let asset = scans.join(tool);
     mkdir(&asset, false)?;

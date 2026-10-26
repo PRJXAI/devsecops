@@ -16,10 +16,11 @@
   - Negative checks: missing file/field, null/string booleans, false approval, malformed/unknown schema, nonempty/malformed blockers; every case must prevent publication even with both dispatch inputs enabled. This removes the contradictory “declared blocked but publishable” state; no LOC saving claimed.
   - Executed: readiness is checked in Rust before artifact/Docker publication work. All listed negative cases pass; 19 local tests and Clippy pass. Initial parallel tests exposed a timestamp-only fixture collision, fixed with a test-only atomic sequence. Readiness flags remain false.
 
-- [ ] **B2 — Carry the built and smoked immutable image ID through scanning.**
+- [x] **B2 — Carry the built and smoked immutable image ID through scanning.**
   - Evidence: `src/main.rs::Driver::check` builds a shared `devsecops-{tool}:check` tag, inspects/smokes its ID, then discards it. `src/release.rs::prepare_tool:410–411` resolves that mutable tag again. Concurrent checks can substitute another image between build, smoke and archive creation.
   - Smallest change: build with a unique private `--iidfile`, inspect/smoke that ID, return it from `check`, and save precisely that returned ID. Remove the mutable check-tag handoff rather than adding locks or an image-state abstraction. Retain user/architecture/source/version inspection.
   - Check interleaved builds/tag changes and malformed/missing build IDs; the saved ID must equal the smoked ID. Removes **one redundant image inspection per tool, nine per prepare run**, and the mutable-tag intermediate state; net LOC may increase for the build-output check.
+  - Executed: builds now use unique private `--iidfile` paths and return the inspected/smoked ID directly to archive creation. No mutable check tag is used. Independent IDs, missing/malformed/oversized/symlinked IDs, 20 unit tests, Clippy and a native Syft build/smoke passed.
 
 - [ ] **B3 — Bind archive loading to the expected image before any push.**
   - Evidence: `src/release.rs::preflight` validates hashes/receipts/SBOMs, not archive contents; its test intentionally accepts non-archive bytes. `publish` ignores `docker image load` output and then inspects an ID that could already exist in the daemon. A forged/self-consistent handoff containing another archive can therefore satisfy that inspection if the expected image is preloaded. Later assets are not load-validated before earlier assets are pushed. This is a validation gap under substituted input, not evidence of an actual artifact compromise.
@@ -112,4 +113,4 @@
 - Explicit per-tool Dockerfiles, literal supplier/download pins, native architecture jobs, serial local checks, `check-all` versus release preparation, and review-only Dependabot updates. Separate scanner pins and independently reviewed expected-version contracts are not justification for an image/config generator.
 - No first-party SQLite authority exists in this repository or its dependency graph. Do not invent one, migrate another project's authority, or weaken existing bounded/streaming guarantees to reduce LOC.
 
-**Next change: B2 — carry the build's private immutable image ID through smoke and scan, without a mutable-tag handoff.**
+**Next change: B3 — validate all archive load results against their expected IDs before any registry push.**
