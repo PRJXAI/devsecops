@@ -1,0 +1,23 @@
+[package]
+name = "devsecops-image-checks"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.99"
+publish = false
+
+[lib]
+path = "checks.rs"
+
+[[bin]]
+name = "devsecops"
+path = "src/main.rs"
+
+[dependencies]
+signal-hook = "=0.4.5"
+chrono = { version = "0.4", default-features = false, features = ["clock", "std"] }
+rustix = { version = "1.1.5", features = ["fs"] }
+serde_json = "1"
+sha2 = "0.11.1"
+
+[lints.rust]
+unsafe_code = "forbid"

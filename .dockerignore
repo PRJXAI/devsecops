@@ -1,0 +1,12 @@
+**
+!images/
+!images/*/
+!images/*/Dockerfile
+!licenses/
+!licenses/**
+.git
+.work
+target
+**/.env
+**/.env.*
+**/credentials*

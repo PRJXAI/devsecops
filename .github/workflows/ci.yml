@@ -1,0 +1,104 @@
+name: distroless-images
+on:
+  push:
+    branches: [main]
+  pull_request:
+  schedule:
+    - cron: '17 7 * * 1'
+  workflow_dispatch:
+    inputs:
+      publish:
+        description: Publish clean images to GHCR from main
+        type: boolean
+        default: false
+      redistribution_reviewed:
+        description: Confirm tool/dependency notices, Git corresponding source and supplier provenance have been reviewed
+        type: boolean
+        default: false
+permissions:
+  contents: read
+concurrency:
+  group: images-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  structure:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with: {persist-credentials: false}
+      - run: cargo fmt --all -- --check
+      - run: cargo clippy --all-targets --locked -- -D warnings
+      - run: cargo test --locked
+      - run: cargo install cargo-audit --version 0.22.1 --locked
+      - run: cargo audit
+  images:
+    needs: structure
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: ubuntu-24.04
+            arch: amd64
+          - runner: ubuntu-24.04-arm
+            arch: arm64
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with: {persist-credentials: false}
+      - name: Rust builds, smokes, inventories and scans the exact native images
+        run: cargo run --locked --bin devsecops -- prepare-release
+      - name: Public count/status summary only
+        if: always()
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
+        with:
+          name: security-status-${{ matrix.arch }}
+          path: .work/public-release/summary.json
+          retention-days: 14
+          if-no-files-found: error
+      - name: Preserve only clean archives, inventories and bound receipts
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
+        with:
+          name: release-${{ matrix.arch }}
+          path: .work/release/
+          retention-days: 1
+          compression-level: 0
+          include-hidden-files: true
+          if-no-files-found: error
+  publish:
+    needs: [structure, images]
+    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && inputs.publish && inputs.redistribution_reviewed
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+      attestations: write
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with: {persist-credentials: false}
+      - uses: actions/download-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53
+        with:
+          pattern: release-*
+          path: .work/downloaded
+      - uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Verify both architectures and publish exact scanned bytes, never rebuild
+        env:
+          DEVSECOPS_PUBLISH_APPROVED: 'true'
+          DEVSECOPS_LICENSE_SOURCE_PROVENANCE_APPROVED_SHA: ${{ github.sha }}
+        run: cargo run --locked --bin devsecops -- publish-all
+      - name: Attest all published manifest digests through GitHub
+        uses: actions/attest-build-provenance@977bb373ede98d70efdf65b84cb5f73e068dcc2a
+        with:
+          subject-checksums: .work/published/subjects.checksums
+      - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
+        with:
+          name: published-digests
+          path: .work/published/
+          if-no-files-found: error

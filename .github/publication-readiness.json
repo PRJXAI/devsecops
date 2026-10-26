@@ -1,0 +1,12 @@
+{
+  "schema": 1,
+  "redistribution_complete": false,
+  "supplier_provenance_reviewed": false,
+  "native_functional_contracts_complete": false,
+  "blockers": [
+    "Complete dependency notices and exact Git corresponding-source arrangements are not yet supplied.",
+    "Cargo Quickinstall arm64 cargo-audit is a distinct supplier with unverified provenance equivalence.",
+    "All native functional contracts, including full cargo-deny graph/cache completeness and consumer integration, are not yet verified.",
+    "Embedded supplier vulnerabilities must pass the unchanged all-findings scan gate."
+  ]
+}

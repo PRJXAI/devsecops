@@ -1,0 +1,115 @@
+# Adversarial simplification review
+
+## Scope and baseline
+
+- Reviewed the current initialization, not a committed release: `main` has **no commits**, `git ls-files` is empty, and the repository files are untracked. No pre-existing `TASKS.md` was present. An empty tracked diff is not evidence of an unchanged implementation.
+- Read `AGENTS.md`, `README.md`, both `docs/*.md`, all three `.agents/skills/*/SKILL.md`, all first-party Rust (`src/main.rs`, `src/release.rs`, `checks.rs`: **1,888 physical lines including tests/blanks**), all nine Dockerfiles (211 lines), workflow/readiness/Dependabot configuration, Cargo manifest/lock, toolchain, ignore files and redistribution notes.
+- Executed on Darwin/arm64: `cargo test --locked --offline` (**18 passed**), `cargo fmt --all -- --check`, `cargo clippy --all-targets --locked --offline -- -D warnings`, and `cargo tree --locked --offline -e features`. These establish neither Linux runtime closure nor release acceptance. The Linux-only FIFO test branch was not exercised.
+- No Docker, network validation, publication, ignored `.work`/operator/credential inspection, or access to `obsidian-sync`. Historical measurements in `docs/results.md` were read, not independently reproduced. Supplier artifact contents, remote approvals and registry state remain unverified.
+- **Review identified 18 initially unchecked tasks:** 10 safety/release tasks, 4 safe simplifications, 4 deferred investigations/prerequisites. Checkboxes below record subsequent verified execution. Work in order, one reviewed behavior change at a time; tool-specific cases below need separate patches, not a new framework. Savings are stated only where directly countable. Nothing below marks implementation or release acceptance complete.
+
+## Confirmed safety and release blockers
+
+- [x] **B1 — Enforce the existing publication-readiness file before publication.**
+  - Evidence: `.github/publication-readiness.json` has three false approvals and four blockers; neither `src/release.rs::publish`/`publish_gate` nor `.github/workflows/ci.yml` reads it. With otherwise acceptable artifacts, the two dispatch inputs suffice despite these explicit blockers. `gates_reject_every_unapproved_context` does not test readiness.
+  - Smallest change: validate the existing file in the Rust publication path before Docker/load/push, using bounded JSON reading. Require its supported schema, all three approvals explicitly true, and an empty, correctly typed blocker list. Keep manual main/repository/SHA approval as an additional requirement, not an override. No new readiness schema, generator or approval mode.
+  - Negative checks: missing file/field, null/string booleans, false approval, malformed/unknown schema, nonempty/malformed blockers; every case must prevent publication even with both dispatch inputs enabled. This removes the contradictory “declared blocked but publishable” state; no LOC saving claimed.
+  - Executed: readiness is checked in Rust before artifact/Docker publication work. All listed negative cases pass; 19 local tests and Clippy pass. Initial parallel tests exposed a timestamp-only fixture collision, fixed with a test-only atomic sequence. Readiness flags remain false.
+
+- [ ] **B2 — Carry the built and smoked immutable image ID through scanning.**
+  - Evidence: `src/main.rs::Driver::check` builds a shared `devsecops-{tool}:check` tag, inspects/smokes its ID, then discards it. `src/release.rs::prepare_tool:410–411` resolves that mutable tag again. Concurrent checks can substitute another image between build, smoke and archive creation.
+  - Smallest change: build with a unique private `--iidfile`, inspect/smoke that ID, return it from `check`, and save precisely that returned ID. Remove the mutable check-tag handoff rather than adding locks or an image-state abstraction. Retain user/architecture/source/version inspection.
+  - Check interleaved builds/tag changes and malformed/missing build IDs; the saved ID must equal the smoked ID. Removes **one redundant image inspection per tool, nine per prepare run**, and the mutable-tag intermediate state; net LOC may increase for the build-output check.
+
+- [ ] **B3 — Bind archive loading to the expected image before any push.**
+  - Evidence: `src/release.rs::preflight` validates hashes/receipts/SBOMs, not archive contents; its test intentionally accepts non-archive bytes. `publish` ignores `docker image load` output and then inspects an ID that could already exist in the daemon. A forged/self-consistent handoff containing another archive can therefore satisfy that inspection if the expected image is preloaded. Later assets are not load-validated before earlier assets are pushed. This is a validation gap under substituted input, not evidence of an actual artifact compromise.
+  - Smallest change: load and validate all 18 assets in a separate pre-push phase; require the bounded load result to identify exactly the expected ID from this repository's ID-only save format, then retain image inspection and immediate pre-load hash checks. Do not add a general archive framework or pretend unsigned receipts authenticate themselves.
+  - Negative checks: wrong archive with expected ID already present, multiple/unexpected loaded images, malformed load output, and a bad eighteenth asset must produce **zero pushes**. Keep README's “before any push” claim only when this boundary is actually met.
+
+- [ ] **B4 — Make native functional/runtime contracts prerequisites, not version-smoke implications.**
+  - Evidence: `Driver::check`/`smoke` exercise versions only; `prepare_tool` calls those same checks. The Gitleaks history, Syft format/dev/workspace coverage, Cargo fixtures, filesystem inspections and kustomize rendering described in `docs/results.md` have no reproducible Rust implementations here. `images/kind/Dockerfile` supplies only kind, not the external Docker/provider CLI needed for cluster operations; a socket alone cannot supply that executable.
+  - Smallest sequence: first add a bounded synthetic Gitleaks deleted-secret/bare/all-ref/redaction contract, then separate tool-specific contracts for Syft formats/inputs, Grype detection controls, Cargo audit, cargo-deny graph/cache completeness, kustomize rendering, kubectl offline client and Compose config. Inspect actual final entrypoints, CA roots, forbidden files and runtime closure on both native architectures. Confirm pinned kind's provider requirements and add only its necessary pinned CLI closure if cluster support is retained.
+  - Negative checks must distinguish findings, missing inputs and incomplete coverage from clean results; specifically, cargo-deny exit 0 with missing Cargo/index coverage is not acceptance. Keep readiness false until these prerequisites are evidenced. Kind control-plane testing needs separate authorization and disposable infrastructure, never the current kubecontext. No LOC reduction claimed; do not replace these checks with a generic tool-test platform.
+
+- [ ] **B5 — Reject nonempty but irrelevant/incomplete image catalogs.**
+  - Evidence: `src/release.rs::sbom_packages` accepts any nonempty package array with IDs/name/version/type. The `sbom()` fixture and eighteen-asset test successfully use one unrelated synthetic package for every tool. `report_counts` correctly counts supplied findings, but zero findings does not establish that the payload, Git libraries or Docker plugins were cataloged.
+  - Smallest change: add explicit per-image payload/runtime inventory expectations, grounded in real pinned Syft output, before declaring a scan clean. Keep the supplier scanner separate from functional testing of the repackaged scanner. Do not invent a universal SBOM schema or substitute package-count thresholds for coverage.
+  - Negative checks: absent/replaced main payload, missing Git/native dependency or Compose/Buildx payload, wrong version and omitted embedded dependency fixture. Preserve all-severity, ignored-match, DB freshness and source/package identity checks. Native fixtures are a prerequisite; no stronger coverage claim is justified yet.
+
+- [ ] **B6 — Repair workflow policy tests that currently accept bypasses.**
+  - Evidence: `checks.rs::publication_permissions_and_external_actions_are_scoped` splits at `"  publish:\n"`; its first match is inside the six-space **dispatch input** at `ci.yml:10`, not the job at line 69. Thus the supposedly unprivileged prefix excludes the build jobs. Required strings can also occur in comments/unrelated blocks. `cargo_launcher` accepts `cargo test & other-command` because it rejects `&&`, not a single background operator.
+  - Smallest change: check actual anchored job/input boundaries and the narrow Cargo command forms used here, failing closed on unsupported YAML/run syntax. Keep independent permission, dispatch, SHA-approval, pinned-action and attestation assertions; do not add a workflow generator.
+  - Mutation/negative checks: package/OIDC write on structure/images, approval text only in comments, changed job condition, background execution, extra command lines and an uninspected additional workflow. Current workflow permissions are scoped correctly; the confirmed defect is ineffective regression enforcement.
+
+- [ ] **B7 — Make Docker/build-context policy assertions enforce their claims.**
+  - Evidence: `checks.rs::direct_extraction` checks only an argument prefix and option spelling; `--network=host ["tar", ...]` passes. Case-insensitive Docker instructions written as lowercase evade uppercase-only checks. The final-stage test accepts an earlier `USER 65532:65532` followed by `USER 0`, and does not reject whole-rootfs copies. `build_context_is_deny_by_default` accepts later reinclusion of `.work` despite required exclusion lines. Glue-file checks only walk four named directories.
+  - Smallest change: reject unsupported instruction/command forms and validate the effective final directives and ordered context rules for the small syntax actually used. Require network-disabled direct extraction and literal pins for every accepted remote source. Extend first-party glue coverage without walking ignored operator/build data. No general Dockerfile engine is needed.
+  - Negative checks: lowercase bypasses, overridden user/entrypoint, rootfs copy, unchecksummed HTTP/other remote ADD, executable tar options, context reinclusion, and root/new-directory non-Rust glue. Retain positive tests for every current Dockerfile.
+
+- [ ] **B8 — Remove unbounded scanner report output mounts.**
+  - Evidence: `src/release.rs::prepare_tool` creates writable `syft`/`grype` host directories and mounts `/output`; JSON size validation occurs only after the scanner exits. Container RAM/time limits do not bound those host writes. The already bounded `scanner → Driver::docker → Log` stdout path is unused for these reports.
+  - Smallest change: request Syft/Grype JSON on stdout and consume the returned private capped log, removing the two writable output directories/mounts. Preserve separate read-only inputs/cache and the DB-refresh-only network exception. Do not silently truncate evidence or loosen scan gates.
+  - Check representative report sizes first; oversized/malformed output must fail closed with cleanup, not become a clean report. Removes **two output-directory creations and two writable bind mounts per tool**. DB-cache and archive production bounds remain separate unresolved work under D4.
+
+- [ ] **B9 — Test process/log lifetime guarantees before consolidating runners.**
+  - Evidence: `src/main.rs::Log`, `Driver::docker`, `terminate`, `reap_until`, `smoke`, and `release::scanner` have no lifecycle tests. `reap_until` ends with a kill but no subsequent bounded reap, so cleanup completion is not established on that path.
+  - Smallest change: add small Rust subprocess fixtures and a final bounded reap where needed; preserve cancellation-ignoring cleanup and distinct primary/cleanup failure reporting. Avoid a generic process supervisor.
+  - Exercise stdout/stderr overflow, a silent hung child, a descendant holding output open, SIGINT/SIGTERM, spawn failure, failed/timed-out container removal and child reaping. Assert deadlines and private capped output. No Docker or shell fixture is needed for the process primitives; Docker cleanup integration requires later authorization. These are essential safety tests, not deletion candidates.
+
+- [ ] **B10 — Keep the first-party dependency audit gate without public raw diagnostics.**
+  - Evidence: `.github/workflows/ci.yml:33–34` installs and invokes host `cargo-audit` directly; its advisory retrieval/audit diagnostics bypass Rust private capture and counts/status reporting. Unlike image scans, this path does not enforce the repository's raw-provider-error logging boundary. No actual secret disclosure was observed.
+  - Smallest change: route this audit through narrow Rust-controlled bounded capture and separated advisory retrieval/offline analysis, preferably reusing the pinned cargo-audit image once B4 proves its contract. Remove the host installer only if that replacement genuinely preserves the gate; do not merely suppress output or remove auditing.
+  - Negative checks: vulnerable lock, missing/stale DB, fetch failure and synthetic sensitive diagnostic text must fail without exposing raw text. Keep CI launchers as single Cargo invocations; do not introduce shell glue or a general task-runner layer.
+
+## Safe simplifications, separate from acceptance gates
+
+- [ ] **S1 — Inline the three license-only scratch stages.**
+  - `images/{kind,kubectl,kustomize}/Dockerfile` each has `FROM scratch AS notices`, one checksummed `ADD`, then a final `COPY`. Move that same literal ADD directly to its existing final license destination, as Syft/Grype already do.
+  - Removes **three stages and six instruction lines total**, with no new abstraction. Preserve URL, checksum, mode and destination exactly; test those literals and later compare packaged license bytes. This does not resolve missing transitive notices/source obligations.
+
+- [ ] **S2 — Remove Chrono's unused local-timezone feature.**
+  - `Cargo.toml` enables `chrono/clock`; `src/release.rs` uses UTC now/RFC3339 arithmetic, never local time. The offline feature tree shows `clock` pulling in `iana-time-zone` and macOS `core-foundation-sys`; `now` is a separate enabled feature.
+  - Replace `clock` with `now`, retain `std`, and update only resulting lock resolution in a later authorized change, without version bumps. This removes an unused platform-timezone concept and those two active macOS dependencies; do not promise a total lockfile reduction before resolution.
+  - Run existing stale/future/boundary timestamp tests and native supported-target checks. Retain Chrono itself rather than implementing a homemade RFC3339 parser. No broader dependency pruning without evidence.
+
+- [ ] **S3 — Reuse the already validated SBOM package map.**
+  - `src/release.rs::prepare_tool` discards the result of `sbom_packages` at line 444; `report_counts` reconstructs the same map at line 325 from the same in-memory SBOM. Retain the first result and pass it directly into counting, keeping report/source/DB validation there.
+  - Removes **one full package-validation/map-building pass per scan**, without a new validated-object hierarchy. Preserve early rejection before Grype runs and the independent publisher-side SBOM check. Keep malformed/duplicate package, wrong-image/arch and finding-package mismatch tests; adjust their call sites rather than deleting them. Do not claim net LOC savings until measured.
+
+- [ ] **S4 — Reconcile documentation with this executable baseline.**
+  - `AGENTS.md` names `tests/`, while actual tests are in `checks.rs` and the binary modules. `docs/tool-inventory.md` broadly claims a digest-pinned frontend, but Syft/Grype/Gitleaks have no explicit frontend directive. README's native-evidence/publication language needs B1–B5 qualifications; `docs/results.md` measurements do not make missing fixtures part of CI.
+  - Correct paths and distinguish declared targets, historical local measurements, current automated checks and blocked acceptance. Either narrow the frontend claim or separately review consistent frontend pinning. Preserve valuable historical results, but identify their revision/architecture/evidence limitations rather than presenting unreviewed logs as reproduced facts.
+  - Re-run Markdown-link tests and compare every documented command/claim to its actual call path. Prefer links to inventory/results over another generated status matrix. This removes misleading parallel descriptions, not security requirements; no numeric saving claimed.
+
+## Hypotheses and deferred/blocked prerequisites
+
+- [ ] **D1 — Investigate builder/credential-context selection before hoisting endpoint checks.**
+  - `Driver::native` checks Unix Docker host/context and native daemon architecture; `Driver::docker` inherits environment/configuration, and `check` invokes `docker build` without explicitly binding a Buildx builder. A `BUILDX_BUILDER`/configuration-selected remote builder may escape the intended local-build boundary; this was **not exercised or confirmed**.
+  - Use synthetic environment/context fixtures, never operator Docker configuration or credentials, to establish the pinned CLI's precedence and constrain unsupported selection. Environment strings in `publish_gate` are workflow-context assertions, not independent authentication. Keep publication dependent on the authorized workflow and its credential scope.
+  - Only after binding endpoint/builder identity consider consolidating repeated native discovery (`prepare → native`, then each `check → native`). Do not remove a safety check merely to save subprocesses, or add an extensible backend abstraction.
+
+- [ ] **D2 — Define the filesystem attacker model before claiming race-free evidence.**
+  - `regular` uses leaf `NOFOLLOW|NONBLOCK` and bounded reads; `directory` checks parents separately. `publish` hashes a path, then Docker reopens it. Parent replacement, same-UID writers and hardlinks are not excluded by these checks. Private 0700 parents constrain other-user access; no cross-user exploit was established.
+  - Test with synthetic directories and explicitly state whether concurrent same-UID mutation is in scope. If it is, use the smallest descriptor-relative/immutable-handoff fix supported by that threat model, retaining bounded streaming hashing. Do not casually replace it with whole-archive reads or add a generic storage authority.
+  - Receipts currently rely on same-workflow artifact provenance; hashes detect mismatch, not a malicious producer that rewrites both data and receipt. Document that trust boundary rather than inventing a signing service.
+
+- [ ] **D3 — Keep legal/provenance/approval prerequisites genuinely blocked.**
+  - `licenses/README.md`, readiness and results acknowledge missing transitive notices, exact Git corresponding source and Cargo Quickinstall arm64 provenance review. `images/docker/Dockerfile` copies no explicit supplier notices; Gitleaks's Git license URL names upstream 2.56.0 while the tested supplier build is `2.56.0.1.g02cd7dbd28`, whose exact source/patch obligations need review.
+  - Obtain reviewed artifact-specific notices/source/provenance evidence before changing readiness. Manual redistribution input and a matching SHA are assertions, not automated legal review. The recorded owner publication authorization is not evidence of configured independent approval or branch protection; do not change repository protections or grant new authorization as part of simplification.
+  - No network/source retrieval or legal acceptance was performed in this review. Keep the consumer's host cargo-deny gate and all existing consumer tests/pins untouched.
+
+- [ ] **D4 — Obtain missing native/resource/publication evidence only after blockers are fixed.**
+  - Native amd64 and arm64 runtime/functional tests, fresh real inventories/all-finding scans, authentic supplier/schema output, artifact handoff and full publication/attestation remain unverified here. Validate pinned artifact identities and licenses rather than inferring contents from Dockerfile text.
+  - Also resolve host-disk bounds: `prepare_tool` checks `TAR_LIMIT` only after `docker save`; writable DB refresh cache has no capacity bound. Timeout/RAM limits and B8 do not establish a host-disk quota. Use separately reviewed bounded storage or narrow the claim; never waive errors to get a green release.
+  - Publication testing requires the reviewed main-branch manual workflow, successful native evidence and D3 approval—not ad hoc pushes. Verify attestation subjects and public package visibility/anonymous pulls only under that later authorization. Partial registry writes are not a completed release; consumer adoption remains a separate reviewed task.
+
+## Explicitly retain
+
+- `Driver::docker`, `Log::drain`, process-group termination, deadlines/cancellation, bounded cleanup, private logs and sanitized static errors: these wrappers enforce policy, not mere forwarding. Keep separate smoke/scanner resource/network policies; merging their argument vectors into a configurable runner is not simplification.
+- `regular → bytes/read_json` and `regular → hash`, JSON structural/byte budgets, streaming archive hashing, create-new writes and directory/mount validation. `text`, `hex`, `sha`, `digest`, `fresh`, `db_status`, `write_json`, and test `root` are small useful invariant/convenience helpers, not a reason to inline checks everywhere.
+- `report_counts`/`total` including Unknown, Negligible and ignored matches; suppression-coverage assertion, alert/error rejection, DB freshness/schema checks and pinned-source normalization. Preserve independent checks at producer and publisher boundaries; S3 targets only the same-object duplicate within one producer call.
+- Complete eighteen-asset preflight, post-preflight hash checking, image/source/architecture checks, registry raw-body digest verification, two-platform index checks, manual main/SHA authorization and attestation binding. Do not trade these for shorter code or a severity waiver.
+- Explicit per-tool Dockerfiles, literal supplier/download pins, native architecture jobs, serial local checks, `check-all` versus release preparation, and review-only Dependabot updates. Separate scanner pins and independently reviewed expected-version contracts are not justification for an image/config generator.
+- No first-party SQLite authority exists in this repository or its dependency graph. Do not invent one, migrate another project's authority, or weaken existing bounded/streaming guarantees to reduce LOC.
+
+**Next change: B2 — carry the build's private immutable image ID through smoke and scan, without a mutable-tag handoff.**
