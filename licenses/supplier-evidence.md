@@ -4,6 +4,10 @@ Collected **2026-10-27**, Darwin/arm64 host, native Linux/arm64 Docker daemon. *
 
 [Artifact evidence](artifact-evidence.json) records exact public URLs, response SHA-256s, registry descriptor/config identities, source claims, archive notice inventories and verification criteria. Its `approval`, `source_reproducibility_established` and `complete_transitive_notices_established` fields are false. A measured hash identifies retrieved bytes; it does not authenticate a source-to-binary relationship.
 
+## Snapshot and supersession
+
+The recorded Docker/cargo-audit recipe hashes match source **`9500de1196b51e2a27143b8188fe08908d4b1f13`**. This collection predates the new Docker/plugin/provider top-level notice layers and the [official GNU cargo-audit replacement](../docs/cargo-audit-supplier.md). Statements about missing packaged notices, musl/Quickinstall pins and runtime contents below describe that snapshot, not current recipes. Historical hashes/measurements are preserved; they do not authenticate the new GNU artifacts. [Current sequence](../docs/release-readiness.md) records what remains blocked.
+
 ## Collection boundary
 
 - Read AGENTS, README, TASKS, results, threat model, release readiness, inventory, redistribution guidance, all three skills and all nine Dockerfiles. Only these two new license evidence files and ignored `.work/approval-suppliers/` were authored. Existing/concurrent source, image and configuration changes are not this collection's work.
@@ -62,7 +66,7 @@ Native supplier `/usr/local/bin/docker` SHA-256 is `e330afc12592c0683664b00066d5
 
 ### Still missing
 
-- The repository Docker image recipe copies no explicit CLI/plugin notices. Complete Go dependency/compiler/native-component notices and applicable NOTICE propagation have not been assembled or reviewed.
+- At the collection snapshot, the repository Docker recipe copied no explicit CLI/plugin notices; current recipes now add only the retrieved top-level files. Complete Go dependency/compiler/native-component notices and applicable NOTICE propagation have not been assembled or reviewed.
 - Retrieved arm64 supplier SPDX documents contain **110 Compose / 212 Buildx package records**, all with concluded licenses `NOASSERTION`, and **zero extracted license-text records**. These inventories are not notice bundles. The historical CLI inventory itself is incomplete/UNKNOWN; plugin coverage cannot repair it.
 - Actual amd64 supplier payload bytes were not exported; their equality with signed plugin releases remains to be checked. No bit-for-bit source rebuild was attempted on either architecture.
 
@@ -123,7 +127,7 @@ Native arm64 payload hashes for Git, libc, loader and resolved PCRE2/zlib target
 | [RustSec x86_64 musl](https://github.com/rustsec/rustsec/releases/download/cargo-audit/v0.22.1/cargo-audit-x86_64-unknown-linux-musl-v0.22.1.tgz) | `c32506f338bdcdaef5a17fb9f33abb6ecf9561324cfd34237fd335f9283a1eab` | binary, LICENSE-APACHE, LICENSE-MIT, README, CHANGELOG |
 | [Quickinstall aarch64 musl](https://github.com/cargo-bins/cargo-quickinstall/releases/download/cargo-audit-0.22.1/cargo-audit-0.22.1-aarch64-unknown-linux-musl.tar.gz) | `b33ed5d95ac0ccda2e281a885a117a03fa92084c3e83f468fb82c2272fb26b60` | **only `cargo-audit`**, no license/NOTICE/source files |
 
-Both hashes match the literal Dockerfile pins and corresponding GitHub release asset digests. Extracted binary hashes: official amd64 `d7a4f8034d548b36bc12ed6f1f341e2917436748a56faaa3d6a0e2cb0549696e`; Quickinstall arm64 `c6df2b6b85f2596026ccf3fbec9b28855aee617c3dfc638b44b03f2a62a74193`. Neither binary was executed by this collection.
+At the collection snapshot, both hashes matched the literal Dockerfile pins and corresponding GitHub release asset digests; those pins are now superseded by official GNU archives. Extracted binary hashes: official amd64 `d7a4f8034d548b36bc12ed6f1f341e2917436748a56faaa3d6a0e2cb0549696e`; Quickinstall arm64 `c6df2b6b85f2596026ccf3fbec9b28855aee617c3dfc638b44b03f2a62a74193`. Neither binary was executed by this collection.
 
 The official release API offers aarch64 **GNU**, SHA-256 `4c8df835ee484441bd2c8c6bcac28c4ce4b4058ba9e7477cb9e0012fe7769f66`, and no aarch64-musl asset in the captured release. That GNU archive was not downloaded or proposed as an automatic replacement.
 

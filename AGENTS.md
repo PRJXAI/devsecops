@@ -1,6 +1,6 @@
 # DevSecOps repository instructions
 
-Read README.md, TASKS.md, docs/tool-inventory.md, docs/results.md and docs/threat-model.md before changing images or tests.
+Read README.md, TASKS.md, docs/tool-inventory.md, docs/results.md, docs/threat-model.md and docs/release-readiness.md before changing images or tests.
 
 ## Scope and simplicity
 

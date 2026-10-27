@@ -6,7 +6,7 @@ description: Add or refresh a pinned distroless CI tool image while preserving r
 # Maintain tool images
 
 1. Read AGENTS.md, README.md, docs/tool-inventory.md and docs/results.md. Inspect the actual consumer workflow/callers; never infer required behavior from a tool name alone.
-2. Prefer a released, checksum/digest-pinned binary over a maintained fork. Verify linux/amd64 and linux/arm64 artifacts, version, executable path, loader/dependency closure and license/source obligations.
+2. Prefer a released, checksum/digest-pinned binary over a maintained fork. Verify linux/amd64 and linux/arm64 artifacts, version, executable path, loader/dependency closure and license/source obligations. Official GNU cargo-audit copies only the individually verified architecture-specific runtime files; do not replace that with a whole dynamic base or assume top-level notices complete transitive obligations.
 3. Update the smallest explicit Dockerfile. Final image must be pinned distroless/nonroot with no shell/package manager/compiler/config/secrets/DB. Do not add a template engine, generic rebuild framework or arbitrary scanner override.
 4. Keep retrieval separate from offline use. Preserve CA roots, HOME/cache paths, writable tmpfs needs, exit codes, output formats, history coverage/redaction and resource bounds. Git-dependent tools must include and test a working Git closure.
 5. Run Rust policy/unit tests, endpoint-bound native builds and `contract TOOL`; use the actual code paths in AGENTS. A cross-build/version string is insufficient. Review native unchanged catalog evidence before updating captured tuple/compiler expectations; do not infer UNKNOWN versions, use package counts or rewrite reports. Record architecture, identities, exact failures and blocked checks.

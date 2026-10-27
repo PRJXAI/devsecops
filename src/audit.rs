@@ -247,8 +247,8 @@ fn read_allow_empty(path: &Path, limit: u64) -> Result<Vec<u8>> {
     Ok(data)
 }
 
-struct Database {
-    path: PathBuf,
+pub(super) struct Database {
+    pub(super) path: PathBuf,
     commit: String,
 }
 
@@ -271,7 +271,7 @@ fn receipt(value: &Value, identity: &str, now: DateTime<Utc>) -> Result<()> {
     Ok(())
 }
 
-fn database(driver: &mut Driver) -> Result<Database> {
+pub(super) fn database(driver: &mut Driver) -> Result<Database> {
     // logs is unique to this Driver; no cross-driver/cross-job cache or fallback.
     let parent = driver.logs.join("audit-db");
     let db = parent.join("database");

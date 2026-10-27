@@ -1,5 +1,7 @@
 {
   "approval": false,
+  "recipe_hashes_match_source": "9500de1196b51e2a27143b8188fe08908d4b1f13",
+  "recipe_snapshot_scope": "Before new notice layers and the official GNU cargo-audit replacement; historical pin-match observations are not current-recipe approval.",
   "archive_inventory": [
     {
       "literal_pin_matches": true,

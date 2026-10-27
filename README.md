@@ -55,10 +55,10 @@ GHCR packages are created on the first successful push. Package visibility is se
 ## Important limits
 
 - [Runner/filesystem trust boundary](docs/threat-model.md): same-UID processes, OS and local Docker are trusted. Leaf nofollow/hash checks are not race-free protection against those actors; archive/DB host storage has no hard quota.
-- Distroless does not remove embedded Go/Rust/native vulnerabilities. Existing supplier findings are expected to block the first publication; no waiver is configured.
+- Distroless does not remove embedded Go/Rust/native vulnerabilities. Existing supplier findings block publication; [current upstream releases do not contain all required fixes](docs/supplier-remediation.md). No waiver is configured.
 - cargo-audit now uses official RustSec GNU releases on both architectures, not Quickinstall, with individually verified runtime ELF files. [Supplier/runtime evidence](docs/cargo-audit-supplier.md) does not establish complete build provenance, dependency inventory or redistribution approval.
-- Compiler-free cargo-deny requires external metadata and matching source/index/cache mounts. Missing-Cargo/index errors can be nonfatal: **exit 0 does not prove complete coverage**. It is not approved as a replacement for the consumer's full host cargo-deny gate.
-- Gitleaks includes only the Git builtin/runtime closure tested for offline history, not remote helpers, LFS or shell hooks.
+- Compiler-free cargo-deny requires external metadata and matching source/index/cache mounts. Missing-Cargo/index errors can be nonfatal: **exit 0 does not prove complete coverage**. It is not approved as a replacement for the consumer's full host cargo-deny gate; see the [native supplied-graph investigation](docs/cargo-deny-coverage.md).
+- Gitleaks includes only the Git builtin/runtime closure tested for offline history, not remote helpers, LFS or shell hooks. Its [unresolved runtime-completion timeout](docs/runtime-completion.md) remains blocking; no speculative init/retry fix was retained.
 - Complete dependency notices, Git corresponding source and supplier provenance must be reviewed before checking the redistribution approval input. First-party code does not relicense the packaged binaries.
 - Kind now includes its pinned Docker/provider CLI, but disposable control-plane testing and the added payload inventory remain unapproved; no cluster functionality is claimed. Complete payload inventories/native acceptance also remain blocked; see the [inventory](docs/tool-inventory.md).
 - Rust/Node builders, Docker daemon/BuildKit, kind nodes, RustFS and shell-dependent helpers remain separate requirements. No real cluster or current kubecontext is used for these tool checks.

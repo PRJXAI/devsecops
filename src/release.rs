@@ -301,6 +301,7 @@ fn sbom_packages<'a>(
     image: &str,
     arch: &str,
 ) -> Result<BTreeMap<&'a str, &'a Value>> {
+    no_scan_diagnostics(value)?;
     if text(value, "/descriptor/name")? != "syft"
         || text(value, "/descriptor/version")? != "1.55.0"
         || text(value, "/schema/version")? != "16.1.11"
@@ -1519,6 +1520,36 @@ mod tests {
             statuses.push(json!({"tool": tool, "status": "blocked-diagnostics-and-findings", "count": total(&counts), "counts": counts, "report_bytes": size}));
         }
         write_json(&driver.root.join(".work/tasks-native-verified-counts.json"), &json!({"scope":"blocked offline candidate capture inspection, not scan/release acceptance", "arch": arch, "tools": statuses})).unwrap();
+    }
+
+    #[test]
+    fn syft_subject_validation_rejects_json_diagnostics_before_every_handoff() {
+        let clean = sbom();
+        assert!(sbom_packages(&clean, &image(), "amd64").is_ok());
+        for key in ["error", "errors", "alerts", "warnings"] {
+            for empty in [json!([]), json!({}), json!("")] {
+                let mut value = clean.clone();
+                value[key] = empty;
+                assert!(sbom_packages(&value, &image(), "amd64").is_ok());
+            }
+            for diagnostic in [
+                json!(["SYNTHETIC_PRIVATE_DIAGNOSTIC"]),
+                json!({"failed":true}),
+                json!("analysis failed"),
+                Value::Null,
+                json!(false),
+                json!(1),
+            ] {
+                let mut value = clean.clone();
+                value[key] = diagnostic;
+                assert!(sbom_packages(&value, &image(), "amd64").is_err());
+            }
+        }
+        for alerts in [json!([{"failed":true}]), json!({}), Value::Null] {
+            let mut value = clean.clone();
+            value["alertsByPackage"] = alerts;
+            assert!(sbom_packages(&value, &image(), "amd64").is_err());
+        }
     }
 
     #[test]

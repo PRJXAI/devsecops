@@ -24,11 +24,11 @@ pub(super) fn check(driver: &mut Driver, tool: &str, image: &str) -> Result<()> 
         "docker" => compose(driver, image),
         "grype" => super::grype_contract::check(driver, image),
         "cargo-audit" => super::audit::contract(driver, image),
-        "cargo-deny" => {
-            Err("cargo-deny functional contract blocked: graph/cache completeness not implemented")
-        }
+        "cargo-deny" => Err(
+            "cargo-deny functional contract blocked: pinned compiler-free runtime cannot prove Cargo/index/advisory coverage",
+        ),
         "kind" => Err(
-            "kind functional contract blocked: provider closure and separately authorized infrastructure required",
+            "kind functional contract blocked: provider inventory and separately authorized control-plane validation required",
         ),
         _ => Err("unsupported functional contract"),
     }
