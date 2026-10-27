@@ -54,6 +54,16 @@ jobs:
     steps:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
         with: {persist-credentials: false}
+      - name: Capture public native inventories for review, not release acceptance
+        run: cargo run --locked --bin devsecops -- catalog-candidates
+      - name: Preserve native inventory evidence, including blocked profiles
+        if: always()
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
+        with:
+          name: catalog-evidence-${{ matrix.arch }}
+          path: .work/catalog-evidence/
+          retention-days: 14
+          if-no-files-found: error
       - name: Rust builds, smokes, inventories and scans the exact native images
         run: cargo run --locked --bin devsecops -- prepare-release
       - name: Public count/status summary only

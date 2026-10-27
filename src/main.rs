@@ -580,16 +580,21 @@ fn main() {
         }
         return;
     }
-    if args.as_slice() == ["prepare-release"] || args.as_slice() == ["publish-all"] {
+    if args.as_slice() == ["prepare-release"]
+        || args.as_slice() == ["publish-all"]
+        || args.as_slice() == ["catalog-candidates"]
+    {
         let result = Driver::new().and_then(|mut driver| {
-            if args[0] == "prepare-release" {
+            if args[0] == "catalog-candidates" {
+                release::catalog(&mut driver)
+            } else if args[0] == "prepare-release" {
                 release::prepare(&mut driver)
             } else {
                 release::publish(&mut driver)
             }
         });
         if let Err(error) = result {
-            eprintln!("release task failed: {error}");
+            eprintln!("image task failed: {error}");
             std::process::exit(1);
         }
         return;
@@ -607,7 +612,7 @@ fn main() {
         }
         _ => {
             eprintln!(
-                "usage: devsecops check TOOL | contract TOOL | check-all | audit-dependencies | prepare-release | publish-all"
+                "usage: devsecops check TOOL | contract TOOL | check-all | audit-dependencies | catalog-candidates | prepare-release | publish-all"
             );
             std::process::exit(2);
         }

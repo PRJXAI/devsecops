@@ -332,6 +332,7 @@ mod tests {
                 | "cargo clippy --all-targets --locked -- -D warnings"
                 | "cargo test --locked"
                 | "cargo run --locked --bin devsecops -- audit-dependencies"
+                | "cargo run --locked --bin devsecops -- catalog-candidates"
                 | "cargo run --locked --bin devsecops -- prepare-release"
                 | "cargo run --locked --bin devsecops -- publish-all"
         ) || TOOLS
@@ -856,6 +857,16 @@ jobs:";
     steps:
       - uses: actions/checkout@PIN
         with: {persist-credentials: false}
+      - name: Capture public native inventories for review, not release acceptance
+        run: cargo run --locked --bin devsecops -- catalog-candidates
+      - name: Preserve native inventory evidence, including blocked profiles
+        if: always()
+        uses: actions/upload-artifact@PIN
+        with:
+          name: catalog-evidence-${{ matrix.arch }}
+          path: .work/catalog-evidence/
+          retention-days: 14
+          if-no-files-found: error
       - name: Rust builds, smokes, inventories and scans the exact native images
         run: cargo run --locked --bin devsecops -- prepare-release
       - name: Public count/status summary only

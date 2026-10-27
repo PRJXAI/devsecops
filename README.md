@@ -34,6 +34,8 @@ cargo run --locked --bin devsecops -- audit-dependencies
 
 The driver requires a local Unix-socket Docker daemon with the native Linux architecture. Builds bind the checked effective endpoint to Buildx's default Docker driver, not an inherited builder selection. `check`/`check-all` build and smoke immutable IDs; `contract TOOL` adds final-filesystem and synthetic functional checks. cargo-deny/kind contracts deliberately fail until their missing requirements are resolved. `audit-dependencies` separately retrieves public RustSec data, validates the packaged tool and audits this repository offline; only counts/status are public.
 
+`catalog-candidates` requires `GITHUB_SHA` and captures unchanged native Syft JSON plus image/config/archive identities for review—even when coverage is blocked. CI retains these separately as `catalog-evidence-amd64` / `catalog-evidence-arm64` for 14 days. These are **not clean scans, release receipts or publication approval**; the existing preparation/publication gates still run independently.
+
 Containers are offline/read-only apart from explicit advisory retrieval and synthetic setup. Captures are private, capped at 8 MiB per stream, with finite process/container cleanup. These are not complete consumer compatibility or host-disk-quota guarantees. See [measured results](docs/results.md) and [remaining tasks](TASKS.md). The [approval evidence sequence](docs/release-readiness.md) separates technical work from accountable sign-off.
 
 ## Updates and publishing

@@ -512,6 +512,94 @@ fn prepare_tool(
     )
 }
 
+/// Capture public native inventories for review, never release handoffs. This
+/// deliberately does not turn incomplete coverage into a clean receipt.
+pub(super) fn catalog(driver: &mut Driver) -> Result<()> {
+    let revision = sha(&std::env::var("GITHUB_SHA").map_err(|_| "missing GITHUB_SHA")?)?;
+    let (arch, _) = driver.native()?;
+    let output = driver.root.join(".work/catalog-evidence");
+    mkdir(&output, false)?;
+    write_json(
+        &output.join("summary.json"),
+        &json!({"schema":1,"scope":"public native inventory review only; not scan or release acceptance","source_sha":revision,"arch":arch,"status":"error","tools":[]}),
+    )?;
+    driver.docker(
+        &["pull", "--platform", &format!("linux/{arch}"), SYFT],
+        600,
+        false,
+    )?;
+    let mut statuses = Vec::new();
+    let mut failed = false;
+    for tool in TOOLS {
+        let result = (|| -> Result<Value> {
+            let image = driver.check(tool)?;
+            let archive = driver.logs.join(format!("catalog-{tool}-{arch}.tar"));
+            driver.docker(
+                &[
+                    "image",
+                    "save",
+                    "--output",
+                    archive.to_str().ok_or("invalid catalog archive path")?,
+                    &image,
+                ],
+                600,
+                false,
+            )?;
+            let config = super::archive::config_digest(&archive, arch, &revision)?;
+            fs::set_permissions(&archive, fs::Permissions::from_mode(0o644))
+                .map_err(|_| "cannot share public catalog archive")?;
+            let capture = scanner(
+                driver,
+                SYFT,
+                &[
+                    "scan",
+                    "docker-archive:/input/image.tar",
+                    "--scope",
+                    "all-layers",
+                    "--output",
+                    "syft-json",
+                ],
+                &[mount(&archive, "/input/image.tar", true)?],
+                false,
+                0,
+            )?;
+            let document = read_json(&capture)?;
+            sbom_packages(&document, &config, arch)?;
+            let covered = super::coverage::check(&document, tool).is_ok();
+            let name = format!("{tool}.syft.json");
+            let target = output.join(&name);
+            write_new(&target, &bytes(&capture, JSON_LIMIT)?, 0o600)?;
+            Ok(
+                json!({"tool":tool,"status":"captured-not-release","coverage":if covered {"captured-profile"} else {"blocked"},"engine_id":image,"config_id":config,"archive_sha256":hash(&archive,TAR_LIMIT)?,"sbom":name,"sbom_sha256":hash(&target,JSON_LIMIT)?}),
+            )
+        })();
+        match result {
+            Ok(status) => statuses.push(status),
+            Err(reason) => {
+                failed = true;
+                write_new(
+                    &driver.logs.join(format!("catalog-{tool}-blocked.json")),
+                    json!({"reason":reason}).to_string().as_bytes(),
+                    0o600,
+                )?;
+                statuses.push(json!({"tool":tool,"status":"error"}));
+            }
+        }
+    }
+    let complete = output.join("summary.complete.json");
+    write_json(
+        &complete,
+        &json!({"schema":1,"scope":"public native inventory review only; not scan or release acceptance","source_sha":revision,"arch":arch,"syft":SYFT,"created":Utc::now().to_rfc3339(),"status":if failed {"error"} else {"captured-not-release"},"tools":statuses}),
+    )?;
+    fs::rename(&complete, output.join("summary.json"))
+        .map_err(|_| "cannot publish native catalog status")?;
+    if failed {
+        Err("native catalog capture incomplete; private diagnostics retained")
+    } else {
+        Ok(())
+    }
+}
+
 pub(super) fn prepare(driver: &mut Driver) -> Result<()> {
     let revision = sha(&std::env::var("GITHUB_SHA").map_err(|_| "missing GITHUB_SHA")?)?;
     let (arch, _) = driver.native()?;
@@ -959,6 +1047,19 @@ mod tests {
             "syft": SYFT, "grype": GRYPE, "count": 0, "contracts": "passed", "created": now().to_rfc3339(), "db": db(),
             "tar_sha256": "b".repeat(64), "sbom_sha256": "c".repeat(64),
             "counts": SEVERITIES.into_iter().map(|s| (s, 0u64)).collect::<BTreeMap<_, _>>()})
+    }
+
+    #[test]
+    fn catalog_evidence_does_not_satisfy_release_receipts_or_handoff_paths() {
+        let value = json!({"schema":1,"scope":"public native inventory review only; not scan or release acceptance","tool":"syft","status":"captured-not-release","coverage":"captured-profile","source_sha":REV,"arch":"amd64"});
+        assert!(receipt(&value, "syft", "amd64", REV, now()).is_err());
+        let fixture = Fixture::new();
+        let work = fixture.0.join(".work");
+        mkdir(&work, false).unwrap();
+        let catalogs = work.join("catalog-evidence");
+        mkdir(&catalogs, false).unwrap();
+        write_json(&catalogs.join("summary.json"), &value).unwrap();
+        assert!(preflight(&fixture.0, REV, now()).is_err());
     }
 
     #[test]
