@@ -1407,7 +1407,9 @@ mod tests {
         // Structurally valid handoffs still cannot bypass missing reviewed
         // payload/architecture coverage. Check later structural faults take
         // precedence, proving all eighteen handoffs are validated before return.
-        let coverage = "payload coverage lacks reviewed native architecture evidence";
+        // amd64 is now reviewed for real Syft profiles; this unrelated synthetic
+        // package still lacks required payload fields and must never pass.
+        let coverage = "missing or invalid payload coverage field";
         assert_eq!(preflight(&fixture.0, REV, now()).err(), Some(coverage));
         let last = downloaded.join("release-arm64/docker-arm64.receipt.json");
         let original = bytes(&last, JSON_LIMIT).unwrap();

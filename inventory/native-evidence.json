@@ -1,0 +1,59 @@
+{
+  "run": 40571222293,
+  "source_sha": "9500de1196b51e2a27143b8188fe08908d4b1f13",
+  "status": "captured-not-release",
+  "syft": "anchore/syft:v1.55.0-nonroot@sha256:ec5bdbc745485920c6f444239f0c09ed87b3c4c165ff9433f95bc66b3500fbf9",
+  "syft_schema": "16.1.11",
+  "scope": "all-layers; unchanged native documents compared with existing inventory/payloads.json tuples and compilers",
+  "trust": "Owner-supplied authenticated same-workflow public artifacts under D2; unsigned hashes are not independent malicious-producer proof.",
+  "functional_acceptance": false,
+  "clean_scan_acceptance": false,
+  "release_acceptance": false,
+  "profiles": {
+    "syft": {"result":"captured-profile","required_tuples":299,"compilers":{"/usr/local/bin/syft":"go1.26.8"},"unknown":[]},
+    "grype": {"result":"captured-profile","required_tuples":323,"compilers":{"/usr/local/bin/grype":"go1.26.8"},"unknown":[]},
+    "gitleaks": {"result":"captured-profile","required_tuples":74,"compilers":{"/usr/local/bin/gitleaks":"go1.24.13"},"unknown":[]},
+    "cargo-audit": {"result":"blocked","required_tuples":3,"compilers":{},"unknown":[],"gap":"Only base APKs; Rust payload/crate/compiler/stdlib/static-native inventory absent."},
+    "cargo-deny": {"result":"blocked","required_tuples":3,"compilers":{},"unknown":[],"gap":"Only base APKs; Rust payload/crate/compiler/stdlib/static-native inventory absent."},
+    "kind": {"result":"blocked","required_tuples":16,"compilers":{"/usr/local/bin/kind":"go1.26.7"},"unknown":["github.com/docker/cli/cmd/docker"],"gap":"Historical kind tuples match. Added /usr/local/bin/docker has UNKNOWN main plus stdlib go1.26.10; provider path/compiler unreviewed, third-party CLI dependencies absent."},
+    "docker": {"result":"blocked","required_tuples":325,"compilers":{"/usr/local/bin/docker":"go1.26.10","/usr/local/libexec/docker/cli-plugins/docker-buildx":"go1.26.10","/usr/local/libexec/docker/cli-plugins/docker-compose":"go1.26.10"},"unknown":["github.com/docker/cli/cmd/docker"],"gap":"CLI main UNKNOWN and third-party dependencies absent at CLI path; plugins cannot repair it."},
+    "kustomize": {"result":"blocked","required_tuples":32,"compilers":{"/usr/local/bin/kustomize":"go1.24.0"},"unknown":["command-line-arguments","sigs.k8s.io/kustomize/api","sigs.k8s.io/kustomize/cmd/config","sigs.k8s.io/kustomize/kustomize/v5","sigs.k8s.io/kustomize/kyaml"]},
+    "kubectl": {"result":"blocked","required_tuples":93,"compilers":{"/usr/local/bin/kubectl":"go1.26.6"},"unknown":["k8s.io/api","k8s.io/apimachinery","k8s.io/cli-runtime","k8s.io/client-go","k8s.io/component-base","k8s.io/component-helpers","k8s.io/kubectl","k8s.io/metrics","k8s.io/streaming"]}
+  },
+  "architectures": {
+    "amd64": {
+      "runner": "ubuntu-24.04",
+      "artifact": "catalog-evidence-amd64",
+      "summary_sha256": "b758d549a11e23b32ba57f6f646586dc37f7240912acb3c566b07526c93ddc85",
+      "created": "2026-10-27T19:42:20.852550534+00:00",
+      "tools": {
+        "syft": {"sbom_sha256":"0015aed9bbdd3b7fef67a69435944f23dd0fc9ca3749b9664304dace7c862eed","config_id":"sha256:7fabde900f592ed51a5a66150094c3ea6a04a73fb84aff837613ddd2c9283c0e"},
+        "grype": {"sbom_sha256":"458ea3fd5003ea5be9fa5e82a8712e64287164530b85f7d667a61968d005c96b","config_id":"sha256:4dd4ed3eb3a3b6db7754bd02b9f7324a9378ec9c453b10e406a7ef593727431e"},
+        "gitleaks": {"sbom_sha256":"887506e08fb61f5c9275cc433c4ea52159107575d497039cb5e6f18b388674d2","config_id":"sha256:3890d2f5bcfcbe79c5336a985f07f0085d77ed256c781202de076bcedac6adac"},
+        "cargo-audit": {"sbom_sha256":"10d42a5f574da45ee3e9566eb49cf11fb43696dffc5dc72e477c764276920d1a","config_id":"sha256:6e85533cadfffcedf3a91414246105c13e7bfa739dfb205a077cd7372d6e27b9"},
+        "cargo-deny": {"sbom_sha256":"5f0ed1f79509723e83f632a4b10359ada0df352edf0d947732fc6fa610e377ba","config_id":"sha256:029f0ebd999e217c21054b5cc57d15f80b072944907c50d9af7138cfccfe1bab"},
+        "kind": {"sbom_sha256":"f357a5dd17b6f275bd448c435d31d7e0795ac5ee7ae12ca61840046217137286","config_id":"sha256:b4ce2e4f40415b8395be92bbccbd32f674cb95fe93cce1440614f1161d5f54d6"},
+        "kustomize": {"sbom_sha256":"0fd2013939a736f20a31d6aafff4c9e8e537414185334b6e382bc0d69c89b1e9","config_id":"sha256:459991c3856ed826e7f601787b0ffac911175289ec566402f479bc9d66033ee7"},
+        "kubectl": {"sbom_sha256":"fd22d5ac150b293c4ad72d858e78b5062268e5f713ec63dd35a544532747855e","config_id":"sha256:154be8ef3842d77afaedf686430802ac4b472081a647308e1e6858f933dbace6"},
+        "docker": {"sbom_sha256":"06a0c9d139b7ac40cdd72cd85aa6e01d19842380aeecd38bcbe25b43b10d31d8","config_id":"sha256:71e31f877ae3e669536ed465fbcfb980346a38dc2aac1032efe64402c4a36d24"}
+      }
+    },
+    "arm64": {
+      "runner": "ubuntu-24.04-arm",
+      "artifact": "catalog-evidence-arm64",
+      "summary_sha256": "fc01c6869b1c51019362447b07c9250c96a199c6c33720645af79274e6633438",
+      "created": "2026-10-27T19:42:23.368492772+00:00",
+      "tools": {
+        "syft": {"sbom_sha256":"23665156058bb51355116d431aa2dd4d2d1f088a6d13be589fe18cfceb7383cd","config_id":"sha256:4b26684178b8207c6251987eb47464daf3d54c92f5b8ffb7817eff9a3a5c74de"},
+        "grype": {"sbom_sha256":"1a948977887cb1f936b8030a4b517ceb29770ef786ffb78eef5a9ffaf847238e","config_id":"sha256:52a42082ebf4a25201da2e06171cc4f3fb6d7d703c36569e0ed455edc4c0f71c"},
+        "gitleaks": {"sbom_sha256":"cfcb5ad14d8e417019c46f60ca66e69b98a4005e51a18af4e309ecc788445ba3","config_id":"sha256:849a607552d2355fda222589c331a932125a687ea702a9c3568824c1e8a4513b"},
+        "cargo-audit": {"sbom_sha256":"052f826966a3a909d6c6913ece0bf6331c25d30bd5f8224ac22dd5ee9b0488f4","config_id":"sha256:b314d6d0c559236883915c03c120c982000b647e0f74b98c670487109e75f88b"},
+        "cargo-deny": {"sbom_sha256":"563c6d6dbfe7c50c24388cdd6007aae85ab28aa07d474e017be558eb434053e7","config_id":"sha256:cd3b224cacf1367a4f759b6980506af08ab20b34d7c8116409b86976b55c5718"},
+        "kind": {"sbom_sha256":"75a9df69a5a3a98c8bb0a6860b4070432d8be2ce24959b2e7b6896eedd838650","config_id":"sha256:c8fe92c6b8d98b864fad9e424a9cec0c5c62cf13e90d9c9a7b71c8a4897f9d1b"},
+        "kustomize": {"sbom_sha256":"208aeff8a5734543be5896b47ea7f2561864d3bfe04fa31bcd4779edca003a73","config_id":"sha256:9794d1728a00e33ee378e9586dd57f615d054fd20079ae810b2aaa0dd9cfd33a"},
+        "kubectl": {"sbom_sha256":"50868a1b6b915eb436ce6ae2900ee70732d14e6d7730f80bd03e1fc8993015e2","config_id":"sha256:11c24e9c0da7dbf58cdb122659e385fb6fc15405c06026ef931b9868511127ac"},
+        "docker": {"sbom_sha256":"3a36397519f23827f437b5e3951375f1b44f8a93fbfe32168652d361e56a1bea","config_id":"sha256:5129056c10365d1c183ac1b1fcd0aaecb8ce8e02c683a9023b56e55a4243a779"}
+      }
+    }
+  }
+}

@@ -8,6 +8,6 @@
     "Official RustSec GNU cargo-audit archives and their copied native runtime still require complete build provenance and redistribution review.",
     "All native functional contracts, including full cargo-deny graph/cache completeness and consumer integration, are not yet verified.",
     "Embedded supplier vulnerabilities must pass the unchanged all-findings scan gate.",
-    "Rust payload inventories and Docker/Kustomize/Kubectl component versions remain incomplete; native amd64 catalog coverage has no reviewed profile."
+    "Rust payload inventories, kind's provider and Docker/Kustomize/Kubectl components remain incomplete; three scanner profiles reviewed on native amd64/arm64 do not complete release acceptance."
   ]
 }
