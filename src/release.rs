@@ -679,6 +679,41 @@ fn preflight(root: &Path, revision: &str, now: DateTime<Utc>) -> Result<Vec<Asse
     Ok(assets)
 }
 
+fn loaded_identity(output: &[u8], expected: &str) -> Result<()> {
+    if !digest(expected)
+        || std::str::from_utf8(output)
+            .map_err(|_| "invalid image load output")?
+            .trim()
+            != format!("Loaded image ID: {expected}")
+    {
+        return Err("archive load did not identify exactly the expected image");
+    }
+    Ok(())
+}
+
+fn load_assets(driver: &mut Driver, assets: &[Asset]) -> Result<()> {
+    for asset in assets {
+        if hash(&asset.tar, TAR_LIMIT)? != asset.tar_hash {
+            return Err("release archive changed after preflight");
+        }
+        let loaded = driver.docker(
+            &[
+                "image",
+                "load",
+                "--input",
+                asset.tar.to_str().ok_or("invalid archive path")?,
+            ],
+            600,
+            false,
+        )?;
+        loaded_identity(&bytes(&loaded, 4096)?, &asset.image)?;
+        if driver.inspect(&asset.image, asset.arch)? != asset.image {
+            return Err("loaded image ID differs from receipt");
+        }
+    }
+    Ok(())
+}
+
 fn registry_manifest(driver: &mut Driver, reference: &str) -> Result<(String, Value)> {
     let path = driver.docker(
         &[
@@ -757,6 +792,7 @@ pub(super) fn publish(driver: &mut Driver) -> Result<()> {
     // No token is read: docker/login-action supplies Docker credentials externally.
     let assets = preflight(&driver.root, &revision, Utc::now())?;
     driver.native()?;
+    load_assets(driver, &assets)?;
     let published = driver.root.join(".work/published");
     mkdir(&published, false)?;
     let mut subjects = String::new();
@@ -765,23 +801,7 @@ pub(super) fn publish(driver: &mut Driver) -> Result<()> {
         let repository = format!("ghcr.io/prjxai/devsecops/{tool}");
         let mut members = Vec::new();
         for asset in assets.iter().filter(|a| a.tool == *tool) {
-            // Recheck immediately before load; never rebuild or load a mutable tag.
-            if hash(&asset.tar, TAR_LIMIT)? != asset.tar_hash {
-                return Err("release archive changed after preflight");
-            }
-            driver.docker(
-                &[
-                    "image",
-                    "load",
-                    "--input",
-                    asset.tar.to_str().ok_or("invalid archive path")?,
-                ],
-                600,
-                false,
-            )?;
-            if driver.inspect(&asset.image, asset.arch)? != asset.image {
-                return Err("loaded image ID differs from receipt");
-            }
+            // Every archive was hash-checked, loaded and identity-checked before this phase.
             let tag = format!("{repository}:sha-{revision}-{}", asset.arch);
             driver.docker(&["image", "tag", &asset.image, &tag], 30, false)?;
             driver.docker(&["image", "push", &tag], 900, false)?;
@@ -1138,6 +1158,24 @@ mod tests {
     }
 
     #[test]
+    fn leaf_checks_do_not_claim_immutable_parent_authority() {
+        let fixture = Fixture::new();
+        let parent = fixture.0.join("owned-parent");
+        fs::create_dir(&parent).unwrap();
+        let path = parent.join("archive");
+        fs::write(&path, "original public fixture").unwrap();
+        directory(&parent).unwrap();
+        let before = hash(&path, 128).unwrap();
+        // A same-UID actor can replace the parent after validation. This is outside
+        // the documented runner authority boundary, not a capability-safe handoff.
+        fs::rename(&parent, fixture.0.join("previous-parent")).unwrap();
+        fs::create_dir(&parent).unwrap();
+        fs::write(&path, "replacement public fixture").unwrap();
+        assert_ne!(hash(&path, 128).unwrap(), before);
+        assert_eq!(bytes(&path, 128).unwrap(), b"replacement public fixture");
+    }
+
+    #[test]
     fn json_structural_budget_is_independent_of_transfer_size() {
         let fixture = Fixture::new();
         let path = fixture.0.join("dense.json");
@@ -1214,6 +1252,152 @@ mod tests {
         value = report();
         value["alertsByPackage"] = json!([{"synthetic": true}]);
         assert!(report_counts(&sbom(), &value, &image(), "amd64", &db(), now()).is_err());
+    }
+
+    #[test]
+    #[ignore = "Rust-only subprocess fixture for the all-assets-before-push test"]
+    fn publication_load_fixture() {
+        let root = PathBuf::from(std::env::var_os("DEVSECOPS_FAKE_ROOT").unwrap());
+        let mut driver = Driver::new().unwrap();
+        driver.root = root.clone();
+        assert!(publish(&mut driver).is_err());
+        let commands = fs::read_to_string(root.join("commands")).unwrap();
+        assert_eq!(
+            commands
+                .lines()
+                .filter(|line| line.starts_with("image load "))
+                .count(),
+            18
+        );
+        assert!(
+            !commands
+                .lines()
+                .any(|line| line.starts_with("image push ") || line.starts_with("image tag "))
+        );
+    }
+
+    #[test]
+    fn bad_eighteenth_archive_causes_zero_pushes_even_with_preloaded_expected_ids() {
+        let fixture = Fixture::new();
+        let github = fixture.0.join(".github");
+        fs::create_dir(&github).unwrap();
+        write_json(&github.join("publication-readiness.json"), &json!({"schema":1,"redistribution_complete":true,"supplier_provenance_reviewed":true,"native_functional_contracts_complete":true,"blockers":[]})).unwrap();
+        let work = fixture.0.join(".work");
+        mkdir(&work, false).unwrap();
+        let downloaded = work.join("downloaded");
+        mkdir(&downloaded, false).unwrap();
+        for arch in ["amd64", "arm64"] {
+            let dir = downloaded.join(format!("release-{arch}"));
+            mkdir(&dir, false).unwrap();
+            let id = format!(
+                "sha256:{}",
+                if arch == "amd64" { "a" } else { "b" }.repeat(64)
+            );
+            for tool in TOOLS {
+                let tar = dir.join(format!("{tool}-{arch}.tar"));
+                let sbom_path = dir.join(format!("{tool}-{arch}.syft.json"));
+                write_new(&tar, b"synthetic image archive", 0o600).unwrap();
+                write_new(&tar.with_extension("id"), id.as_bytes(), 0o600).unwrap();
+                let mut bom = sbom();
+                bom["source"]["metadata"]["imageID"] = json!(id);
+                bom["source"]["metadata"]["architecture"] = json!(arch);
+                write_json(&sbom_path, &bom).unwrap();
+                let mut value = clean_receipt();
+                value["tool"] = json!(tool);
+                value["arch"] = json!(arch);
+                value["image_id"] = json!(id);
+                value["created"] = json!(Utc::now().to_rfc3339());
+                value["db"]["built"] = json!(Utc::now().to_rfc3339());
+                value["tar_sha256"] = json!(hash(&tar, TAR_LIMIT).unwrap());
+                value["sbom_sha256"] = json!(hash(&sbom_path, JSON_LIMIT).unwrap());
+                write_json(&dir.join(format!("{tool}-{arch}.receipt.json")), &value).unwrap();
+            }
+        }
+        let bin = fixture.0.join("bin");
+        fs::create_dir(&bin).unwrap();
+        let mut driver = Driver::new().unwrap();
+        let mut compile = std::process::Command::new("rustc");
+        compile
+            .args(["--edition=2024", "--crate-name", "fake_docker"])
+            .arg(Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/docker.rs"))
+            .arg("-o")
+            .arg(bin.join("docker"));
+        driver.execute(compile, 60, false, 0).unwrap();
+        let path = std::env::join_paths(std::iter::once(bin).chain(std::env::split_paths(
+            &std::env::var_os("PATH").unwrap_or_default(),
+        )))
+        .unwrap();
+        for mode in ["wrong", "multiple", "malformed"] {
+            let _ = fs::remove_file(fixture.0.join("commands"));
+            let mut child = std::process::Command::new(std::env::current_exe().unwrap());
+            child
+                .args([
+                    "--exact",
+                    "release::tests::publication_load_fixture",
+                    "--ignored",
+                    "--nocapture",
+                ])
+                .env("PATH", &path)
+                .env("DEVSECOPS_FAKE_ROOT", &fixture.0)
+                .env("DEVSECOPS_FAKE_LOAD", mode)
+                .env("GITHUB_REPOSITORY", "PRJXAI/devsecops")
+                .env("GITHUB_REF", "refs/heads/main")
+                .env("GITHUB_EVENT_NAME", "workflow_dispatch")
+                .env("DEVSECOPS_PUBLISH_APPROVED", "true")
+                .env("GITHUB_SHA", REV)
+                .env("DEVSECOPS_LICENSE_SOURCE_PROVENANCE_APPROVED_SHA", REV)
+                .env_remove("DOCKER_HOST")
+                .env_remove("DOCKER_CONTEXT");
+            driver.execute(child, 30, false, 0).unwrap();
+        }
+    }
+
+    #[test]
+    #[ignore = "requires the approved local native Docker daemon; no registry writes"]
+    fn native_id_only_archive_roundtrip() {
+        let mut driver = Driver::new().unwrap();
+        let image = driver.check("syft").unwrap();
+        let archive = driver.logs.join("roundtrip.tar");
+        driver
+            .docker(
+                &[
+                    "image",
+                    "save",
+                    "--output",
+                    archive.to_str().unwrap(),
+                    &image,
+                ],
+                120,
+                false,
+            )
+            .unwrap();
+        // Expected image is already present: successful load must still identify the archive.
+        let output = driver
+            .docker(
+                &["image", "load", "--input", archive.to_str().unwrap()],
+                120,
+                false,
+            )
+            .unwrap();
+        loaded_identity(&bytes(&output, 4096).unwrap(), &image).unwrap();
+        let arch = driver.native().unwrap();
+        assert_eq!(driver.inspect(&image, arch).unwrap(), image);
+    }
+
+    #[test]
+    fn load_output_must_identify_the_archive_not_a_preexisting_image() {
+        let id = image();
+        assert!(loaded_identity(format!("Loaded image ID: {id}\n").as_bytes(), &id).is_ok());
+        for output in [
+            "".into(),
+            format!("Loaded image ID: sha256:{}", "b".repeat(64)),
+            format!("Loaded image ID: {id}\nLoaded image ID: {id}"),
+            format!("Loaded image: mutable:tag\nLoaded image ID: {id}"),
+            format!("cached existing {id}"),
+        ] {
+            assert!(loaded_identity(output.as_bytes(), &id).is_err());
+        }
+        assert!(loaded_identity(&[255], &id).is_err());
     }
 
     #[test]

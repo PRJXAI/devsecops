@@ -22,10 +22,11 @@
   - Check interleaved builds/tag changes and malformed/missing build IDs; the saved ID must equal the smoked ID. Removes **one redundant image inspection per tool, nine per prepare run**, and the mutable-tag intermediate state; net LOC may increase for the build-output check.
   - Executed: builds now use unique private `--iidfile` paths and return the inspected/smoked ID directly to archive creation. No mutable check tag is used. Independent IDs, missing/malformed/oversized/symlinked IDs, 20 unit tests, Clippy and a native Syft build/smoke passed.
 
-- [ ] **B3 — Bind archive loading to the expected image before any push.**
+- [x] **B3 — Bind archive loading to the expected image before any push.**
   - Evidence: `src/release.rs::preflight` validates hashes/receipts/SBOMs, not archive contents; its test intentionally accepts non-archive bytes. `publish` ignores `docker image load` output and then inspects an ID that could already exist in the daemon. A forged/self-consistent handoff containing another archive can therefore satisfy that inspection if the expected image is preloaded. Later assets are not load-validated before earlier assets are pushed. This is a validation gap under substituted input, not evidence of an actual artifact compromise.
   - Smallest change: load and validate all 18 assets in a separate pre-push phase; require the bounded load result to identify exactly the expected ID from this repository's ID-only save format, then retain image inspection and immediate pre-load hash checks. Do not add a general archive framework or pretend unsigned receipts authenticate themselves.
   - Negative checks: wrong archive with expected ID already present, multiple/unexpected loaded images, malformed load output, and a bad eighteenth asset must produce **zero pushes**. Keep README's “before any push” claim only when this boundary is actually met.
+  - Executed: all 18 archives load/identify/inspect in a separate pre-push phase. Rust-only fake-Docker subprocesses prove a wrong/multiple/malformed eighteenth load causes zero tags/pushes even when expected IDs are preloaded. A real native Syft ID-only save/load roundtrip passed with the image already present.
 
 - [ ] **B4 — Make native functional/runtime contracts prerequisites, not version-smoke implications.**
   - Evidence: `Driver::check`/`smoke` exercise versions only; `prepare_tool` calls those same checks. The Gitleaks history, Syft format/dev/workspace coverage, Cargo fixtures, filesystem inspections and kustomize rendering described in `docs/results.md` have no reproducible Rust implementations here. `images/kind/Dockerfile` supplies only kind, not the external Docker/provider CLI needed for cluster operations; a socket alone cannot supply that executable.
@@ -52,10 +53,11 @@
   - Smallest change: request Syft/Grype JSON on stdout and consume the returned private capped log, removing the two writable output directories/mounts. Preserve separate read-only inputs/cache and the DB-refresh-only network exception. Do not silently truncate evidence or loosen scan gates.
   - Check representative report sizes first; oversized/malformed output must fail closed with cleanup, not become a clean report. Removes **two output-directory creations and two writable bind mounts per tool**. DB-cache and archive production bounds remain separate unresolved work under D4.
 
-- [ ] **B9 — Test process/log lifetime guarantees before consolidating runners.**
+- [x] **B9 — Test process/log lifetime guarantees before consolidating runners.**
   - Evidence: `src/main.rs::Log`, `Driver::docker`, `terminate`, `reap_until`, `smoke`, and `release::scanner` have no lifecycle tests. `reap_until` ends with a kill but no subsequent bounded reap, so cleanup completion is not established on that path.
   - Smallest change: add small Rust subprocess fixtures and a final bounded reap where needed; preserve cancellation-ignoring cleanup and distinct primary/cleanup failure reporting. Avoid a generic process supervisor.
   - Exercise stdout/stderr overflow, a silent hung child, a descendant holding output open, SIGINT/SIGTERM, spawn failure, failed/timed-out container removal and child reaping. Assert deadlines and private capped output. No Docker or shell fixture is needed for the process primitives; Docker cleanup integration requires later authorization. These are essential safety tests, not deletion candidates.
+  - Executed: bounded final reap, exact expected exits and Rust subprocess fixtures cover all listed process cases plus cleanup after cancellation. Shared result handling distinguishes primary and removal failure. Current integrated tests pass; native Linux-specific behavior remains part of D4.
 
 - [ ] **B10 — Keep the first-party dependency audit gate without public raw diagnostics.**
   - Evidence: `.github/workflows/ci.yml:33–34` installs and invokes host `cargo-audit` directly; its advisory retrieval/audit diagnostics bypass Rust private capture and counts/status reporting. Unlike image scans, this path does not enforce the repository's raw-provider-error logging boundary. No actual secret disclosure was observed.
@@ -113,4 +115,4 @@
 - Explicit per-tool Dockerfiles, literal supplier/download pins, native architecture jobs, serial local checks, `check-all` versus release preparation, and review-only Dependabot updates. Separate scanner pins and independently reviewed expected-version contracts are not justification for an image/config generator.
 - No first-party SQLite authority exists in this repository or its dependency graph. Do not invent one, migrate another project's authority, or weaken existing bounded/streaming guarantees to reduce LOC.
 
-**Next change: B3 — validate all archive load results against their expected IDs before any registry push.**
+**Next change: B4/B5 — wire reproducible functional contracts and fail closed on actual catalog coverage gaps.**
