@@ -11,7 +11,7 @@ ADD --checksum=sha256:0953ea3e476f66d6ddfcd911d750f5167b9365aa9491b2326398e289fe
 FROM archive-${TARGETARCH} AS archive
 
 # Extraction only, on the builder architecture; no compiler or source rebuild.
-FROM --platform=$BUILDPLATFORM alpine:3.23.7@sha256:ff7f0c727dd796aa36787bfcd9a64bf35a6ce72a73451b3359fde849b6703d63 AS extract
+FROM --platform=$BUILDPLATFORM alpine:3.24.3@sha256:be2656061b536c1883c4034790e21d0a09c5aaaf51968b89368a3c0371ea2c9a AS extract
 COPY --from=archive /kustomize.tar.gz /tmp/kustomize.tar.gz
 RUN --network=none ["mkdir", "/out"]
 RUN --network=none ["tar", "-xzf", "/tmp/kustomize.tar.gz", "-C", "/out", "kustomize"]
