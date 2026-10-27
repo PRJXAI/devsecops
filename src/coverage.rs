@@ -8,15 +8,15 @@
 //! Never insert these tuples into a scanner report: this module only reads evidence.
 //!
 //! Only linux/arm64 was executed. amd64 is deliberately rejected until native
-//! evidence is reviewed. Positive catalog profiles: Syft, Grype, Gitleaks and kind.
+//! evidence is reviewed. Positive current profiles: Syft, Grype and Gitleaks.
 //! Each Go executable retains its own compiler/stdlib and every captured dependency;
 //! Git/PCRE2/zlib and APK-attributed glibc/loader remain independent requirements.
 //! These are scanner-recoverable inventories, not proof of all static components.
 //! Rust binaries have no captured payload/crate/compiler/stdlib inventory; Docker
 //! CLI lacks a known main version AND its dependencies; Kustomize and Kubectl have
 //! UNKNOWN components. None may be repaired from CLI versions, labels or plugins.
-//! kind's catalog profile says nothing about functional readiness: its required
-//! external provider Docker CLI is absent. B4/readiness must continue blocking it.
+//! kind's recorded catalog predates its added Docker provider CLI. That new payload
+//! has no reviewed profile yet, so kind remains blocked even if its old tuples match.
 //! Functional tests, vulnerabilities, licensing/provenance and parent integration
 //! remain separate gates. This module alone does not complete B5/release acceptance.
 
@@ -153,7 +153,8 @@ pub(super) fn check(sbom: &Value, tool: &str) -> Result<()> {
         return Err("UNKNOWN payload/dependency versions block catalog coverage");
     }
     match tool {
-        "syft" | "grype" | "gitleaks" | "kind" => Ok(()),
+        "syft" | "grype" | "gitleaks" => Ok(()),
+        "kind" => Err("kind Docker provider payload inventory has not been reviewed"),
         "cargo-audit" | "cargo-deny" => Err("Rust payload/dependency/compiler inventory is absent"),
         "docker" => Err("Docker CLI payload version and embedded dependencies remain unresolved"),
         "kustomize" | "kubectl" => Err("payload/component versions remain unresolved"),
@@ -166,8 +167,9 @@ mod tests {
     use super::*;
     use serde_json::json;
 
-    const POSITIVE: [&str; 4] = ["syft", "grype", "gitleaks", "kind"];
-    const INCOMPLETE: [&str; 5] = [
+    const POSITIVE: [&str; 3] = ["syft", "grype", "gitleaks"];
+    const INCOMPLETE: [&str; 6] = [
+        "kind",
         "cargo-audit",
         "cargo-deny",
         "docker",
@@ -389,7 +391,20 @@ mod tests {
             sbom["source"]["metadata"]["labels"] =
                 json!({"org.opencontainers.image.version": "1.37.0"});
             assert!(check(&sbom, tool).is_err(), "{tool}");
-            assert_eq!(baseline().unwrap()["tools"][tool]["catalog"], "blocked");
+            // Kind's old binary-only capture stays historical evidence, not
+            // approval for its newly added Docker provider executable.
+            let historical = if tool == "kind" {
+                "captured"
+            } else {
+                "blocked"
+            };
+            assert_eq!(baseline().unwrap()["tools"][tool]["catalog"], historical);
+            if tool == "kind" {
+                assert_eq!(
+                    check(&sbom, tool),
+                    Err("kind Docker provider payload inventory has not been reviewed")
+                );
+            }
             // Do not let a caller replace UNKNOWN from CLI/labels or simply drop it.
             for i in 0..sbom["artifacts"].as_array().unwrap().len() {
                 if sbom["artifacts"][i]["version"] == "UNKNOWN" {

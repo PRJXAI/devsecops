@@ -1,6 +1,12 @@
 # Measured results and limitations
 
-## TASKS.md execution — current source status
+## Approval evidence implementation — current work
+
+The owner requested the [approval sequence](release-readiness.md). Readiness fields remain false; technical execution is not redistribution/provenance sign-off. The first hosted run [40568206091](https://github.com/PRJXAI/devsecops/actions/runs/40568206091) passed its native Linux amd64 structure/test/audit job; both native image-preparation jobs completed blocked with error statuses, and publication did not run. This is not complete image/native acceptance.
+
+Kind now contains only the required pinned Docker CLI provider executable in addition to kind/its base, without plugins, socket, daemon or configuration. Native arm64 version and stopped-container filesystem checks pass, including the required provider file. Its historical inventory cannot approve this new payload: kind is explicitly blocked pending a reviewed native provider catalog and separately authorized disposable control-plane validation. The initial unit rerun caught the historical-profile assertion after this deliberate invalidation; the assertion now preserves that old capture while checking the new explicit block. No inventory was fabricated or rewritten.
+
+## TASKS.md execution — historical execution baseline
 
 **14/18 tasks checked; B4/B5 partial, D3/D4 blocked.** All three publication approvals remain false. Current ordinary local validation: **86 tests pass**, fmt and all-target Clippy pass on Darwin/arm64. Four ignored subprocess-fixture entrypoints are invoked by active tests; ten separate native/public-evidence entrypoints are opt-in, not implicit CI acceptance. The follow-up `gpt-6-astra`/xhigh review resolves its four concrete findings (exit-0 diagnostics, publication-order regression, duplicate builder path and unapproved diagnostic exception), with no publication approval.
 

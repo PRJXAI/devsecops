@@ -34,7 +34,7 @@ cargo run --locked --bin devsecops -- audit-dependencies
 
 The driver requires a local Unix-socket Docker daemon with the native Linux architecture. Builds bind the checked effective endpoint to Buildx's default Docker driver, not an inherited builder selection. `check`/`check-all` build and smoke immutable IDs; `contract TOOL` adds final-filesystem and synthetic functional checks. cargo-deny/kind contracts deliberately fail until their missing requirements are resolved. `audit-dependencies` separately retrieves public RustSec data, validates the packaged tool and audits this repository offline; only counts/status are public.
 
-Containers are offline/read-only apart from explicit advisory retrieval and synthetic setup. Captures are private, capped at 8 MiB per stream, with finite process/container cleanup. These are not complete consumer compatibility or host-disk-quota guarantees. See [measured results](docs/results.md) and [remaining tasks](TASKS.md).
+Containers are offline/read-only apart from explicit advisory retrieval and synthetic setup. Captures are private, capped at 8 MiB per stream, with finite process/container cleanup. These are not complete consumer compatibility or host-disk-quota guarantees. See [measured results](docs/results.md) and [remaining tasks](TASKS.md). The [approval evidence sequence](docs/release-readiness.md) separates technical work from accountable sign-off.
 
 ## Updates and publishing
 
@@ -58,7 +58,7 @@ GHCR packages are created on the first successful push. Package visibility is se
 - Compiler-free cargo-deny requires external metadata and matching source/index/cache mounts. Missing-Cargo/index errors can be nonfatal: **exit 0 does not prove complete coverage**. It is not approved as a replacement for the consumer's full host cargo-deny gate.
 - Gitleaks includes only the Git builtin/runtime closure tested for offline history, not remote helpers, LFS or shell hooks.
 - Complete dependency notices, Git corresponding source and supplier provenance must be reviewed before checking the redistribution approval input. First-party code does not relicense the packaged binaries.
-- Kind's image still lacks its required external Docker/provider CLI; no cluster functionality is claimed. Complete payload inventories/native acceptance also remain blocked; see the [inventory](docs/tool-inventory.md).
+- Kind now includes its pinned Docker/provider CLI, but disposable control-plane testing and the added payload inventory remain unapproved; no cluster functionality is claimed. Complete payload inventories/native acceptance also remain blocked; see the [inventory](docs/tool-inventory.md).
 - Rust/Node builders, Docker daemon/BuildKit, kind nodes, RustFS and shell-dependent helpers remain separate requirements. No real cluster or current kubecontext is used for these tool checks.
 
 Maintenance: [AGENTS.md](AGENTS.md), [skills](.agents/skills/), [inventory](docs/tool-inventory.md), [results](docs/results.md), [third-party redistribution](licenses/README.md).

@@ -119,6 +119,7 @@ fn required(tool: &str) -> Result<Vec<String>> {
         "docker" => {
             "usr/local/libexec/docker/cli-plugins/docker-compose usr/local/libexec/docker/cli-plugins/docker-buildx"
         }
+        "kind" => "usr/local/bin/docker",
         "gitleaks" => "usr/bin/git usr/lib/libc.so.6 usr/lib/libpcre2-8.so.0 usr/lib/libz.so.1",
         _ => "",
     };

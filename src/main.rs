@@ -480,6 +480,14 @@ impl Driver {
         if tool == "gitleaks" {
             self.smoke(&image, tool, &["--version"], Some("/usr/bin/git"))?;
         }
+        if tool == "kind" {
+            self.smoke(
+                &image,
+                "docker",
+                &["--version"],
+                Some("/usr/local/bin/docker"),
+            )?;
+        }
         if tool == "docker" {
             self.smoke(&image, tool, &["compose", "version"], None)?;
             self.smoke(&image, tool, &["buildx", "version"], None)?;

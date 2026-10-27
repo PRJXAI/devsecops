@@ -10,6 +10,9 @@ ADD --checksum=sha256:20022bee6cfcd5086cb7234d218e3454e6090022f2a8f55d1fa7fcf42c
 
 FROM binary-${TARGETARCH} AS binary
 
+# kind's Docker provider invokes the CLI; a socket cannot supply this binary.
+FROM docker:29.9.2-cli@sha256:5e6baf67325a79f64ed3bed6863954d5e05d0f3d4e57cbdb14809346814bbfdb AS provider
+
 # Supplier license; complete embedded-dependency notice review is required before publication.
 
 FROM cgr.dev/chainguard/static:latest@sha256:17367e4d3ae2b46c3290858e483fac09be085c92b372360fe3bf6a6150848fde
@@ -19,8 +22,9 @@ LABEL org.opencontainers.image.title="kind" \
       org.opencontainers.image.revision="407a9675e6d9af1200b5f57f9ca52ec6cdacce74" \
       org.opencontainers.image.licenses="Apache-2.0"
 COPY --from=binary /kind /usr/local/bin/kind
+COPY --from=provider --chown=65532:65532 /usr/local/bin/docker /usr/local/bin/docker
 ADD --checksum=sha256:b40930bbcf80744c86c46a12bc9da056641d722716c378f5659b9e555ef833e1 --chmod=0444 https://raw.githubusercontent.com/kubernetes-sigs/kind/407a9675e6d9af1200b5f57f9ca52ec6cdacce74/LICENSE /usr/share/licenses/kind/LICENSE
-ENV HOME=/tmp
+ENV HOME=/tmp DOCKER_CONFIG=/tmp/docker
 USER 65532:65532
 # Cluster operations require separately authorized control-plane access; no socket is included.
 ENTRYPOINT ["/usr/local/bin/kind"]
