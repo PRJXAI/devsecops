@@ -6,7 +6,7 @@ ADD --checksum=sha256:c32506f338bdcdaef5a17fb9f33abb6ecf9561324cfd34237fd335f928
 FROM scratch AS archive-arm64
 ADD --checksum=sha256:b33ed5d95ac0ccda2e281a885a117a03fa92084c3e83f468fb82c2272fb26b60 https://github.com/cargo-bins/cargo-quickinstall/releases/download/cargo-audit-0.22.1/cargo-audit-0.22.1-aarch64-unknown-linux-musl.tar.gz /cargo-audit.tgz
 
-FROM --platform=$BUILDPLATFORM alpine:3.23.7@sha256:ff7f0c727dd796aa36787bfcd9a64bf35a6ce72a73451b3359fde849b6703d63 AS extract
+FROM --platform=$BUILDPLATFORM alpine:3.24.3@sha256:be2656061b536c1883c4034790e21d0a09c5aaaf51968b89368a3c0371ea2c9a AS extract
 RUN --network=none ["mkdir", "/out"]
 FROM extract AS binary-amd64
 COPY --from=archive-amd64 /cargo-audit.tgz /tmp/cargo-audit.tgz
