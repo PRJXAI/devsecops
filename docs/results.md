@@ -1,6 +1,10 @@
 # Measured results and limitations
 
-## TASKS.md execution — in progress
+## TASKS.md execution — current source status
+
+**14/18 tasks checked; B4/B5 partial, D3/D4 blocked.** All three publication approvals remain false. Current ordinary local validation: **86 tests pass**, fmt and all-target Clippy pass on Darwin/arm64. Four ignored subprocess-fixture entrypoints are invoked by active tests; ten separate native/public-evidence entrypoints are opt-in, not implicit CI acceptance. The follow-up `gpt-6-astra`/xhigh review resolves its four concrete findings (exit-0 diagnostics, publication-order regression, duplicate builder path and unapproved diagnostic exception), with no publication approval.
+
+This is security/remediation work, not an aggregate code-reduction result: first-party Rust is now 8,414 physical lines including tests/fixtures, versus 1,888 at the initialization review; captured inventory JSON is separate data. Only the specifically measured stage/dependency/duplicate-pass reductions below are claimed. Native local evidence comes from candidate working trees unless explicitly stated otherwise; it is not clean-source supplier provenance. Hosted native CI/publication results are not yet established here.
 
 The adversarial review is being executed in isolated changes. B1 changes authorization only: publication must satisfy the existing schema-1 readiness file as well as manual/main/source-SHA approval, before any Docker load/push. False, missing or malformed readiness is not overridden by dispatch inputs. Runtime tools, scan severity policy and consumer state are unchanged. Readiness remains false while redistribution/provenance/native-contract evidence is missing. B1: 19 local tests and Clippy passed. The first parallel run caught a timestamp-only test-fixture collision; an atomic sequence now prevents collisions without relaxing production create-only behavior.
 

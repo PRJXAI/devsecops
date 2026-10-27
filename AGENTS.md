@@ -1,6 +1,6 @@
 # DevSecOps repository instructions
 
-Read README.md, docs/tool-inventory.md, docs/results.md and docs/threat-model.md before changing images or tests.
+Read README.md, TASKS.md, docs/tool-inventory.md, docs/results.md and docs/threat-model.md before changing images or tests.
 
 ## Scope and simplicity
 
@@ -31,9 +31,13 @@ Redistribution requires complete third-party license/notices and corresponding s
 ## Workflow and ownership
 
 - images/<tool>/Dockerfile: explicit pinned tool packaging; never copy an entire supplier rootfs.
-- tests/: bounded Rust structural and local image contracts. Run cargo fmt --all -- --check, cargo clippy --all-targets --locked -- -D warnings, cargo test --locked; run the Rust image-check entrypoint once per tool, serially.
+- checks.rs: structural/workflow/Docker/context/docs policy and mutation tests.
+- src/main.rs, src/builder.rs: checked build/process policy and opt-in pinned-CLI selection tests; build-only and build/smoke share endpoint binding.
+- src/release.rs, src/archive.rs, src/coverage.rs: handoff, distinct engine/config identity and fail-closed captured inventory coverage.
+- src/contracts.rs, src/filesystem.rs, src/grype_contract.rs, src/audit.rs: native synthetic/final-filesystem/audit contracts and unit tests. tests/fixtures/docker.rs is a Rust fake Docker executable, not a native-image fixture.
+- Run cargo fmt --all -- --check, cargo clippy --all-targets --locked -- -D warnings, cargo test --locked. `check TOOL`/`check-all` are version smokes; `contract TOOL` adds mandatory checks and deliberately blocks incomplete tools. Run native cases serially; ignored evidence entrypoints require their explicitly approved public inputs.
 - docs/tool-inventory.md: consumer workflow/source revision, versions, tool/runtime requirements and deliberate exceptions.
 - docs/results.md: exact executed checks, architecture, findings and blocked work, not intended outcomes.
 - .agents/skills/: maintain-tool-images, verify-tool-images and maintain-docs procedures.
 
-Use native architecture tests before claiming support; a successful cross-build is not an execution test. Before publishing, require fresh image SBOMs, all-severity/ignored-match vulnerability gates, licenses/source review, immutable identity/provenance and explicit manual approval. Commit Cargo.lock and pin external GitHub Actions by full commit. Dependabot opens review PRs only; never auto-merge or auto-publish a dependency update. Public GHCR package visibility is separate from repository visibility and must be verified before claiming anonymous pulls.
+Use native architecture tests before claiming support; a successful cross-build is not an execution test. Captured tuple baselines must come from unchanged native supplier output, not inferred versions/count thresholds; missing/UNKNOWN payloads or unreviewed architectures block. Keep all nonempty analysis diagnostics blocking unless a separate policy review authorizes a change; never enable matching filters or waive findings to silence them. Before publishing, require fresh image SBOMs, all-severity/ignored-match vulnerability gates, licenses/source review, immutable identity/provenance and explicit manual approval. Commit Cargo.lock and pin external GitHub Actions by full commit. Dependabot opens review PRs only; never auto-merge or auto-publish a dependency update. Public GHCR package visibility is separate from repository visibility and must be verified before claiming anonymous pulls.

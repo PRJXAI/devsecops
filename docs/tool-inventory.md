@@ -15,16 +15,20 @@ Source: PRJXAI/obsidian-sync `.github/workflows/ci.yml` plus its Dockerfile and 
 | kustomize | 5.8.1 | Render all consumer overlays without a cluster |
 | kubectl | Consumer inherits runner; this repo pins 1.37.0 | New image must choose a version compatible with the pinned kind node (Kubernetes 1.37); offline client tests first |
 | Docker CLI + Compose | Consumer inherits runner; this repo pins 29.9.2 + 5.6.1, Buildx 0.38.1 | Build/save/load/inspect/exec and Compose config/services; Docker engine remains external |
-| Git | Consumer inherits runner; Gitleaks image includes 2.56.0 | Local source/history operations; preserve detached/all-ref history and ignore isolation |
+| Git | Consumer inherits runner; Gitleaks image includes vendor build 2.56.0.1.g02cd7dbd28 | Local source/history operations; preserve detached/all-ref history and ignore isolation |
 
 ## Packaging and adoption limits
 
-- All released archives/raw downloads are pinned by literal SHA-256 for each architecture; supplier/base images and the Dockerfile frontend use digest pins. Docker native stages select architecture; extraction is exec-form, network-disabled. Rust owns orchestration, validation and publication.
+- Released archives/raw downloads use literal per-architecture SHA-256; supplier/base images use digest pins. Existing explicit Dockerfile frontend directives are digest-pinned; Syft/Grype/Gitleaks have no explicit directive and inherit the external builder's frontend. Do not claim a repository-wide explicit frontend pin. Native stages select architecture; extraction is exec-form/network-disabled. Rust owns orchestration/validation/publication.
 - cargo-audit amd64 uses the official RustSec static release. Static arm64 uses Cargo Quickinstall as a distinct supplier, with version-matched RustSec notices; this is not verified supplier equivalence.
 - cargo-deny without Cargo supports the tested external-metadata licensing/bans subset only. Real registry/source/advisory completeness is not established, and missing Cargo/index diagnostics can be nonfatal. Keep the consumer's host gate until a complete replacement is verified.
-- Gitleaks uses Git plus glibc loader/libc, PCRE2 and zlib from pinned compatible suppliers. Offline builtin history operations are tested; remote helpers/hooks/LFS are intentionally absent. This is not a general replacement for runner Git.
-- Docker includes both Compose and Buildx plugins. Its daemon stays external; no socket is present or mounted during version tests.
+- Gitleaks uses Git plus glibc loader/libc, PCRE2 and zlib from pinned suppliers. Native arm64 source/bare/deleted/all-ref/redaction controls have passed, but a later clean-HEAD invocation timed out and failed closed; see results. Remote helpers/hooks/LFS are absent. This is not full runtime acceptance or a general runner-Git replacement.
+- Docker includes both Compose and Buildx plugins. Its daemon stays external; no socket is present or mounted during image tests. Kind still lacks the external Docker/provider CLI it needs; its contract blocks and no cluster functionality is approved.
 - Literal release URL/hash updates and expected-version contracts require human review; dependency bots do not approve supplier/provenance/license changes or trigger publication.
+
+## Current inventory acceptance boundary
+
+`inventory/payloads.json` records 1,168 observed native arm64 package/location tuples and compiler metadata from independent pinned Syft output. Producer and publisher require those tuples without rewriting native reports. Four catalog profiles pass; kind's catalog pass is not functional readiness. Rust tool payload inventories are missing, Docker CLI version/dependencies are incomplete, and Kustomize/Kubectl include UNKNOWN components. All five tools and every unreviewed amd64 profile fail closed. This is captured regression coverage, not complete static-component attestation or native consumer acceptance. [Results](results.md) distinguishes source checks, native experiments and blocked release work.
 
 ## Keep outside the distroless CLI images
 

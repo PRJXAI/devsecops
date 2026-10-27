@@ -2,7 +2,7 @@
 
 ## Scope and baseline
 
-- Reviewed the current initialization, not a committed release: `main` has **no commits**, `git ls-files` is empty, and the repository files are untracked. No pre-existing `TASKS.md` was present. An empty tracked diff is not evidence of an unchanged implementation.
+- At the initial review baseline, this was an uncommitted initialization: `main` had **no commits**, `git ls-files` was empty, and repository files were untracked. No pre-existing `TASKS.md` was present. An empty tracked diff is not evidence of an unchanged implementation.
 - Read `AGENTS.md`, `README.md`, both `docs/*.md`, all three `.agents/skills/*/SKILL.md`, all first-party Rust (`src/main.rs`, `src/release.rs`, `checks.rs`: **1,888 physical lines including tests/blanks**), all nine Dockerfiles (211 lines), workflow/readiness/Dependabot configuration, Cargo manifest/lock, toolchain, ignore files and redistribution notes.
 - Executed on Darwin/arm64: `cargo test --locked --offline` (**18 passed**), `cargo fmt --all -- --check`, `cargo clippy --all-targets --locked --offline -- -D warnings`, and `cargo tree --locked --offline -e features`. These establish neither Linux runtime closure nor release acceptance. The Linux-only FIFO test branch was not exercised.
 - No Docker, network validation, publication, ignored `.work`/operator/credential inspection, or access to `obsidian-sync`. Historical measurements in `docs/results.md` were read, not independently reproduced. Supplier artifact contents, remote approvals and registry state remain unverified.
@@ -88,10 +88,11 @@
   - Removes **one full package-validation/map-building pass per scan**, without a new validated-object hierarchy. Preserve early rejection before Grype runs and the independent publisher-side SBOM check. Keep malformed/duplicate package, wrong-image/arch and finding-package mismatch tests; adjust their call sites rather than deleting them. Do not claim net LOC savings until measured.
   - Executed: producer keeps its borrowed package index and passes it into counting. Source/DB/severity/suppression validation and independent publisher parsing remain; test composition preserves every malformed/duplicate/wrong-image/package case. No persistent cache or metadata hierarchy; no net Rust-LOC saving claimed.
 
-- [ ] **S4 — Reconcile documentation with this executable baseline.**
+- [x] **S4 — Reconcile documentation with this executable baseline.**
   - `AGENTS.md` names `tests/`, while actual tests are in `checks.rs` and the binary modules. `docs/tool-inventory.md` broadly claims a digest-pinned frontend, but Syft/Grype/Gitleaks have no explicit frontend directive. README's native-evidence/publication language needs B1–B5 qualifications; `docs/results.md` measurements do not make missing fixtures part of CI.
   - Correct paths and distinguish declared targets, historical local measurements, current automated checks and blocked acceptance. Either narrow the frontend claim or separately review consistent frontend pinning. Preserve valuable historical results, but identify their revision/architecture/evidence limitations rather than presenting unreviewed logs as reproduced facts.
   - Re-run Markdown-link tests and compare every documented command/claim to its actual call path. Prefer links to inventory/results over another generated status matrix. This removes misleading parallel descriptions, not security requirements; no numeric saving claimed.
+  - Executed: actual Rust/test ownership, CLI paths, only-explicit frontend pins, configured CI vs native evidence, readiness enforcement, payload/functional gaps and trust/quota limits are reconciled across authored docs/skills. Link/policy tests pass. Historical counts/failures remain labeled; no net Rust-LOC or release-acceptance claim.
 
 ## Hypotheses and deferred/blocked prerequisites
 
@@ -111,11 +112,13 @@
   - `licenses/README.md`, readiness and results acknowledge missing transitive notices, exact Git corresponding source and Cargo Quickinstall arm64 provenance review. `images/docker/Dockerfile` copies no explicit supplier notices; Gitleaks's Git license URL names upstream 2.56.0 while the tested supplier build is `2.56.0.1.g02cd7dbd28`, whose exact source/patch obligations need review.
   - Obtain reviewed artifact-specific notices/source/provenance evidence before changing readiness. Manual redistribution input and a matching SHA are assertions, not automated legal review. The recorded owner publication authorization is not evidence of configured independent approval or branch protection; do not change repository protections or grant new authorization as part of simplification.
   - No network/source retrieval or legal acceptance was performed in this review. Keep the consumer's host cargo-deny gate and all existing consumer tests/pins untouched.
+  - Still blocked: no new artifact-specific legal/source/provenance approval or independent repository protection was supplied. All approval fields remain false; implementation/source-push permission does not satisfy this task.
 
 - [ ] **D4 — Obtain missing native/resource/publication evidence only after blockers are fixed.**
   - Native amd64 and arm64 runtime/functional tests, fresh real inventories/all-finding scans, authentic supplier/schema output, artifact handoff and full publication/attestation remain unverified here. Validate pinned artifact identities and licenses rather than inferring contents from Dockerfile text.
   - Also resolve host-disk bounds: `prepare_tool` checks `TAR_LIMIT` only after `docker save`; writable DB refresh cache has no capacity bound. Timeout/RAM limits and B8 do not establish a host-disk quota. Use separately reviewed bounded storage or narrow the claim; never waive errors to get a green release.
   - Publication testing requires the reviewed main-branch manual workflow, successful native evidence and D3 approval—not ad hoc pushes. Verify attestation subjects and public package visibility/anonymous pulls only under that later authorization. Partial registry writes are not a completed release; consumer adoption remains a separate reviewed task.
+  - Still blocked: partial native arm64 experiments and bounded captures are recorded, not complete acceptance. Native amd64/complete catalogs, reliable full contracts, host archive/export/DB quotas and registry/attestation/visibility remain unverified. No image push or real cluster operation was attempted; host-storage claims are explicitly narrowed.
 
 ## Explicitly retain
 
@@ -126,4 +129,4 @@
 - Explicit per-tool Dockerfiles, literal supplier/download pins, native architecture jobs, serial local checks, `check-all` versus release preparation, and review-only Dependabot updates. Separate scanner pins and independently reviewed expected-version contracts are not justification for an image/config generator.
 - No first-party SQLite authority exists in this repository or its dependency graph. Do not invent one, migrate another project's authority, or weaken existing bounded/streaming guarantees to reduce LOC.
 
-**Next change: B4/B5 — wire reproducible functional contracts and fail closed on actual catalog coverage gaps.**
+**Execution status: 14/18 checked. B4/B5 are implemented fail-closed in part but remain incomplete; D3/D4 require missing review/evidence/resource work. No publication or consumer adoption is approved by these checkboxes.**
