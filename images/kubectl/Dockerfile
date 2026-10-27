@@ -13,7 +13,7 @@ FROM binary-${TARGETARCH} AS binary
 
 # Supplier license; complete embedded-dependency notice review is required before publication.
 
-FROM cgr.dev/chainguard/static:latest@sha256:17367e4d3ae2b46c3290858e483fac09be085c92b372360fe3bf6a6150848fde
+FROM cgr.dev/chainguard/static:latest@sha256:9e2306b457ff71ce370043dc68c7b52bb1e6622c1c6c6714edbed57496f3116e
 LABEL org.opencontainers.image.title="kubectl" \
       org.opencontainers.image.version="1.37.0" \
       org.opencontainers.image.source="https://github.com/kubernetes/kubernetes" \
