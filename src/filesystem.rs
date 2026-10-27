@@ -121,11 +121,20 @@ fn required(tool: &str) -> Result<Vec<String>> {
         }
         "kind" => "usr/local/bin/docker",
         "gitleaks" => "usr/bin/git usr/lib/libc.so.6 usr/lib/libpcre2-8.so.0 usr/lib/libz.so.1",
+        "cargo-audit" => "usr/lib/libc.so.6 usr/lib/libm.so.6 usr/lib/libgcc_s.so.1",
         _ => "",
     };
     paths.extend(closure.split_ascii_whitespace().map(String::from));
-    if tool == "gitleaks" {
-        // glibc-dynamic base: confirmed regular native objects, not /lib aliases.
+    if tool == "cargo-audit" && cfg!(target_arch = "aarch64") {
+        // Official arm64 GNU DT_NEEDED includes the compatibility DSOs; amd64
+        // does not. These are regular files from the same pinned glibc supplier.
+        paths.extend([
+            "usr/lib/libpthread.so.0".into(),
+            "usr/lib/libdl.so.2".into(),
+        ]);
+    }
+    if matches!(tool, "gitleaks" | "cargo-audit") {
+        // Confirmed regular native objects, not /lib aliases.
         let loader = if cfg!(target_arch = "aarch64") {
             "usr/lib/ld-linux-aarch64.so.1"
         } else {
@@ -134,6 +143,14 @@ fn required(tool: &str) -> Result<Vec<String>> {
         paths.push(loader.into());
     }
     Ok(paths)
+}
+
+fn audit_loader_alias() -> &'static str {
+    if cfg!(target_arch = "aarch64") {
+        "lib"
+    } else {
+        "lib64"
+    }
 }
 
 fn elf(header: &[u8]) -> bool {
@@ -154,6 +171,7 @@ fn files(path: &Path, tool: &str) -> Result<()> {
     let required = required(tool)?;
     let mut input = release::regular(path, ARCHIVE)?.take(ARCHIVE + 1);
     let (mut seen, mut found) = (BTreeMap::new(), BTreeSet::new());
+    let mut audit_interpreter = false;
     let mut end = 0;
     {
         let mut archive = tar::Archive::new(&mut input);
@@ -227,6 +245,12 @@ fn files(path: &Path, tool: &str) -> Result<()> {
                 if forbidden(target) {
                     return Err("forbidden filesystem executable alias");
                 }
+                if tool == "cargo-audit" && name == audit_loader_alias() {
+                    if target != "usr/lib" {
+                        return Err("unexpected cargo-audit interpreter directory alias");
+                    }
+                    audit_interpreter = true;
+                }
             } else if entry.link_name_bytes().is_some() {
                 return Err("unexpected filesystem link target");
             }
@@ -260,6 +284,16 @@ fn files(path: &Path, tool: &str) -> Result<()> {
                     }
                 }
                 found.insert(name);
+            } else if tool == "cargo-audit" && kind.is_file() && size >= 4 {
+                // No unreviewed extra native payloads (e.g. libstdc++, ldconfig)
+                // may enter the official tool's deliberately minimal closure.
+                let mut magic = [0; 4];
+                entry
+                    .read_exact(&mut magic)
+                    .map_err(|_| "truncated filesystem file")?;
+                if magic == *b"\x7fELF" {
+                    return Err("unexpected cargo-audit ELF outside verified closure");
+                }
             }
         }
     }
@@ -283,6 +317,9 @@ fn files(path: &Path, tool: &str) -> Result<()> {
     }
     if consumed < end + 1024 || !consumed.is_multiple_of(512) {
         return Err("truncated filesystem trailer");
+    }
+    if tool == "cargo-audit" && !audit_interpreter {
+        return Err("missing cargo-audit interpreter directory alias");
     }
     if required.iter().any(|p| {
         !found.contains(p)
@@ -357,6 +394,12 @@ mod tests {
                 data.as_slice(),
             )
             .unwrap();
+        }
+        if tool == "cargo-audit" && omit != audit_loader_alias() {
+            let mut h = header(audit_loader_alias(), EntryType::Symlink, 0);
+            h.set_link_name("usr/lib").unwrap();
+            h.set_cksum();
+            tar.append(&h, &[][..]).unwrap();
         }
         if let Some((name, kind, data)) = extra {
             let mut h = header(
@@ -442,6 +485,65 @@ mod tests {
                 assert!(files(&path, tool).is_err(), "{tool}: aliased critical file");
             }
         }
+    }
+
+    #[test]
+    fn official_audit_requires_only_reviewed_native_abi_and_real_interpreter_alias() {
+        let paths = required("cargo-audit").unwrap();
+        for name in [
+            "usr/lib/libc.so.6",
+            "usr/lib/libm.so.6",
+            "usr/lib/libgcc_s.so.1",
+        ] {
+            assert!(paths.iter().any(|p| p == name));
+        }
+        for name in ["usr/lib/libpthread.so.0", "usr/lib/libdl.so.2"] {
+            assert_eq!(
+                paths.iter().any(|p| p == name),
+                cfg!(target_arch = "aarch64")
+            );
+        }
+        for name in paths.iter().filter(|p| p.as_str() != CA) {
+            let mut foreign = payload();
+            foreign[18..20].copy_from_slice(&0u16.to_le_bytes());
+            for data in [b"not ELF".as_slice(), &foreign, &[]] {
+                let (_driver, path) =
+                    fixture("cargo-audit", name, Some((name, EntryType::Regular, data)));
+                assert!(
+                    files(&path, "cargo-audit").is_err(),
+                    "invalid ABI file: {name}"
+                );
+            }
+        }
+        for target in [
+            None,
+            Some("elsewhere"),
+            Some("usr/lib/elsewhere"),
+            Some("/usr/lib"),
+        ] {
+            let extra = target.map(|t| (audit_loader_alias(), EntryType::Symlink, t.as_bytes()));
+            let (_driver, path) = fixture("cargo-audit", audit_loader_alias(), extra);
+            assert!(files(&path, "cargo-audit").is_err());
+        }
+        for name in [
+            "usr/lib/libstdc++.so.6",
+            "usr/bin/ldconfig",
+            "usr/local/bin/extra",
+        ] {
+            let data = payload();
+            let (_driver, path) =
+                fixture("cargo-audit", "", Some((name, EntryType::Regular, &data)));
+            assert!(
+                files(&path, "cargo-audit").is_err(),
+                "extra native file: {name}"
+            );
+        }
+        let (_driver, path) = fixture(
+            "cargo-audit",
+            CA,
+            Some((CA, EntryType::Regular, b"not PEM")),
+        );
+        assert!(files(&path, "cargo-audit").is_err());
     }
 
     #[test]

@@ -101,7 +101,7 @@ mod tests {
         })
     }
 
-    fn narrow_copy(args: &str, stages: &BTreeSet<String>) -> bool {
+    fn narrow_copy(args: &str, stages: &BTreeSet<String>, tool: &str) -> bool {
         let fields: Vec<_> = args.split_whitespace().collect();
         let mut flags = BTreeSet::new();
         let mut index = 0;
@@ -127,7 +127,7 @@ mod tests {
             && fields.len() >= index + 2
             && fields[index..fields.len() - 1].iter().all(|v| {
                 absolute_path(v, false)
-                    && matches!(
+                    && (matches!(
                         *v,
                         "/syft"
                             | "/grype"
@@ -151,9 +151,61 @@ mod tests {
                             | "/out/LICENSE-MIT"
                             | "/out/README.md"
                             | "/out/CHANGELOG.md"
-                    )
+                    ) || tool == "cargo-audit"
+                        && matches!(
+                            *v,
+                            "/usr/lib/ld-linux-x86-64.so.2"
+                                | "/usr/lib/ld-linux-aarch64.so.1"
+                                | "/usr/lib/libc.so.6"
+                                | "/usr/lib/libm.so.6"
+                                | "/usr/lib/libgcc_s.so.1"
+                                | "/usr/lib/libpthread.so.0"
+                                | "/usr/lib/libdl.so.2"
+                        ))
             })
             && absolute_path(fields[fields.len() - 1], true)
+    }
+
+    fn official_audit_supplier(text: &str) -> bool {
+        // Exact tool-specific stage graph, not a general inheritance exemption.
+        // Both final bases and every copied ELF must retain their reviewed pins.
+        let instructions: Vec<_> = text
+            .lines()
+            .filter_map(|line| {
+                let (op, args) = line.trim().split_once(' ')?;
+                let op = op.to_ascii_uppercase();
+                matches!(op.as_str(), "FROM" | "ADD" | "COPY" | "RUN" | "LABEL")
+                    .then(|| format!("{op} {args}"))
+            })
+            .collect();
+        let static_base = "cgr.dev/chainguard/static:latest@sha256:17367e4d3ae2b46c3290858e483fac09be085c92b372360fe3bf6a6150848fde";
+        let expected = [
+            "FROM scratch AS archive-amd64".into(),
+            "ADD --checksum=sha256:1890badd5f15831a9af4b074399fcd21e6f7c0fe42c84e9254cdffc9f813765c https://github.com/rustsec/rustsec/releases/download/cargo-audit/v0.22.1/cargo-audit-x86_64-unknown-linux-gnu-v0.22.1.tgz /cargo-audit.tgz".into(),
+            "FROM scratch AS archive-arm64".into(),
+            "ADD --checksum=sha256:4c8df835ee484441bd2c8c6bcac28c4ce4b4058ba9e7477cb9e0012fe7769f66 https://github.com/rustsec/rustsec/releases/download/cargo-audit/v0.22.1/cargo-audit-aarch64-unknown-linux-gnu-v0.22.1.tgz /cargo-audit.tgz".into(),
+            "FROM --platform=$BUILDPLATFORM alpine:3.23.7@sha256:ff7f0c727dd796aa36787bfcd9a64bf35a6ce72a73451b3359fde849b6703d63 AS extract".into(),
+            "RUN --network=none [\"mkdir\", \"/out\"]".into(),
+            "FROM extract AS binary-amd64".into(),
+            "COPY --from=archive-amd64 /cargo-audit.tgz /tmp/cargo-audit.tgz".into(),
+            "RUN --network=none [\"tar\", \"-xzf\", \"/tmp/cargo-audit.tgz\", \"-C\", \"/out\", \"--strip-components=1\"]".into(),
+            "FROM extract AS binary-arm64".into(),
+            "COPY --from=archive-arm64 /cargo-audit.tgz /tmp/cargo-audit.tgz".into(),
+            "RUN --network=none [\"tar\", \"-xzf\", \"/tmp/cargo-audit.tgz\", \"-C\", \"/out\", \"--strip-components=1\"]".into(),
+            "FROM binary-${TARGETARCH} AS binary".into(),
+            "FROM cgr.dev/chainguard/glibc-dynamic:latest@sha256:5380a8b913d0900cf44180e2205bf3ebf0e0b00a32a0f2fa4ab16cb06d7f9cdf AS glibc".into(),
+            format!("FROM {static_base} AS runtime-amd64"),
+            "COPY --from=glibc /usr/lib/ld-linux-x86-64.so.2 /usr/lib/ld-linux-x86-64.so.2".into(),
+            "COPY --from=glibc /usr/lib/libc.so.6 /usr/lib/libm.so.6 /usr/lib/libgcc_s.so.1 /usr/lib/".into(),
+            format!("FROM {static_base} AS runtime-arm64"),
+            "COPY --from=glibc /usr/lib/ld-linux-aarch64.so.1 /usr/lib/ld-linux-aarch64.so.1".into(),
+            "COPY --from=glibc /usr/lib/libc.so.6 /usr/lib/libm.so.6 /usr/lib/libgcc_s.so.1 /usr/lib/libpthread.so.0 /usr/lib/libdl.so.2 /usr/lib/".into(),
+            "FROM runtime-${TARGETARCH}".into(),
+            "LABEL org.opencontainers.image.title=\"cargo-audit\" org.opencontainers.image.version=\"0.22.1\" org.opencontainers.image.source=\"https://github.com/rustsec/rustsec\"".into(),
+            "COPY --from=binary --chmod=0555 /out/cargo-audit /usr/local/bin/cargo-audit".into(),
+            "COPY --from=binary-amd64 /out/LICENSE-APACHE /out/LICENSE-MIT /out/README.md /out/CHANGELOG.md /usr/share/licenses/cargo-audit/".into(),
+        ];
+        instructions == expected
     }
 
     fn docker_policy(text: &str, tool: &str) -> bool {
@@ -246,7 +298,7 @@ mod tests {
                     }
                 }
                 "COPY" => {
-                    if final_image.is_empty() || !narrow_copy(args, &stages) {
+                    if final_image.is_empty() || !narrow_copy(args, &stages, tool) {
                         return false;
                     }
                 }
@@ -300,9 +352,13 @@ mod tests {
         }
         pending.is_empty()
             && TOOLS.contains(&tool)
-            && pinned_image(&final_image)
-            && (final_image.starts_with("cgr.dev/chainguard/static:")
-                || final_image.starts_with("cgr.dev/chainguard/glibc-dynamic:"))
+            && (if tool == "cargo-audit" {
+                final_image == "runtime-${TARGETARCH}" && official_audit_supplier(text)
+            } else {
+                pinned_image(&final_image)
+                    && (final_image.starts_with("cgr.dev/chainguard/static:")
+                        || final_image.starts_with("cgr.dev/chainguard/glibc-dynamic:"))
+            })
             && !final_run
             && final_user == "65532:65532"
             && final_entrypoint == expected
@@ -588,6 +644,50 @@ mod tests {
             "syft"
         ));
         assert!(!docker_policy(&format!("# escape=`\n{text}"), "syft"));
+    }
+
+    #[test]
+    fn official_audit_supplier_and_minimal_closure_reject_substitution() {
+        let text = fs::read_to_string(root().join("images/cargo-audit/Dockerfile")).unwrap();
+        assert!(docker_policy(&text, "cargo-audit"));
+        for (old, new) in [
+            (
+                "https://github.com/rustsec/rustsec/releases/download/",
+                "https://github.com/cargo-bins/cargo-quickinstall/releases/download/",
+            ),
+            ("unknown-linux-gnu", "unknown-linux-musl"),
+            (
+                "4c8df835ee484441bd2c8c6bcac28c4ce4b4058ba9e7477cb9e0012fe7769f66",
+                "1890badd5f15831a9af4b074399fcd21e6f7c0fe42c84e9254cdffc9f813765c",
+            ),
+            (
+                "5380a8b913d0900cf44180e2205bf3ebf0e0b00a32a0f2fa4ab16cb06d7f9cdf",
+                "17367e4d3ae2b46c3290858e483fac09be085c92b372360fe3bf6a6150848fde",
+            ),
+            ("AS runtime-arm64", "AS unreviewed-arm64"),
+            ("FROM runtime-${TARGETARCH}", "FROM glibc"),
+            (
+                "COPY --from=binary --chmod=0555",
+                "COPY --from=binary-amd64 --chmod=0555",
+            ),
+            ("COPY --from=archive-arm64", "COPY --from=archive-amd64"),
+            ("/usr/lib/libpthread.so.0 /usr/lib/libdl.so.2 ", ""),
+            ("/usr/lib/libgcc_s.so.1 ", ""),
+            ("/usr/lib/libm.so.6 ", "/usr/lib/libstdc++.so.6 "),
+            ("/out/LICENSE-APACHE ", ""),
+            ("--strip-components=1", "strip-components=1"),
+        ] {
+            assert!(text.contains(old), "ineffective mutation: {old}");
+            assert!(
+                !docker_policy(&text.replace(old, new), "cargo-audit"),
+                "accepted: {new}"
+            );
+        }
+        let extra = text.replace(
+            "FROM runtime-${TARGETARCH}",
+            "FROM runtime-${TARGETARCH}\nCOPY --from=glibc /usr/lib/libc.so.6 /usr/local/bin/extra",
+        );
+        assert!(!docker_policy(&extra, "cargo-audit"));
     }
 
     #[test]
@@ -1181,6 +1281,7 @@ jobs:";
             "README.md",
             "docs/tool-inventory.md",
             "docs/results.md",
+            "docs/cargo-audit-supplier.md",
             ".agents/skills/maintain-tool-images/SKILL.md",
             ".agents/skills/verify-tool-images/SKILL.md",
             ".agents/skills/maintain-docs/SKILL.md",

@@ -18,7 +18,7 @@ GHCR namespace: **`ghcr.io/prjxai/devsecops/<tool>`**.
 | kubectl | 1.37.0 |
 | docker + Compose + Buildx | 29.9.2 + 5.6.1 + 0.38.1 |
 
-Packaging targets linux/amd64 and linux/arm64; native amd64 acceptance is not established. All final stages are pinned distroless/nonroot. Git requires a small glibc/library closure; the other payloads are static. These are explicit CLI invocations, **not whole GitHub Actions job containers**. See the [workflow inventory and exceptions](docs/tool-inventory.md).
+Packaging targets linux/amd64 and linux/arm64; native amd64 acceptance is not established. All final stages are pinned distroless/nonroot. Git and official GNU cargo-audit require verified minimal native library closures; the other payloads are static. These are explicit CLI invocations, **not whole GitHub Actions job containers**. See the [workflow inventory and exceptions](docs/tool-inventory.md).
 
 ## Local checks
 
@@ -56,7 +56,7 @@ GHCR packages are created on the first successful push. Package visibility is se
 
 - [Runner/filesystem trust boundary](docs/threat-model.md): same-UID processes, OS and local Docker are trusted. Leaf nofollow/hash checks are not race-free protection against those actors; archive/DB host storage has no hard quota.
 - Distroless does not remove embedded Go/Rust/native vulnerabilities. Existing supplier findings are expected to block the first publication; no waiver is configured.
-- cargo-audit arm64 uses **Cargo Quickinstall**, a distinct supplier because RustSec provides no static arm64 release. Supplier equivalence/provenance still requires review.
+- cargo-audit now uses official RustSec GNU releases on both architectures, not Quickinstall, with individually verified runtime ELF files. [Supplier/runtime evidence](docs/cargo-audit-supplier.md) does not establish complete build provenance, dependency inventory or redistribution approval.
 - Compiler-free cargo-deny requires external metadata and matching source/index/cache mounts. Missing-Cargo/index errors can be nonfatal: **exit 0 does not prove complete coverage**. It is not approved as a replacement for the consumer's full host cargo-deny gate.
 - Gitleaks includes only the Git builtin/runtime closure tested for offline history, not remote helpers, LFS or shell hooks.
 - Complete dependency notices, Git corresponding source and supplier provenance must be reviewed before checking the redistribution approval input. First-party code does not relicense the packaged binaries.
