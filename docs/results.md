@@ -8,6 +8,8 @@ B2: private per-build IID files now replace mutable check tags; the same immutab
 
 B3/B9: all archive loads now precede registry mutation and must identify exactly their expected IDs. Rust-only negative subprocess fixtures reject wrong/multiple/malformed eighteenth loads with zero pushes; a real native Syft save/load roundtrip passed with its ID preloaded. Lifecycle fixtures cover overflow, hangs, descendants holding streams, both termination signals, spawn/removal failure, cancellation-safe cleanup and final bounded reaping. Current integration: 36 tests passed, with fixture/manual integration entrypoints explicitly invoked by parent tests or separately. Linux-native verification remains pending.
 
+B6/B7: eleven policy tests now reject workflow permission/approval/comment/extra-workflow/shell bypasses and Docker case/user/entrypoint/rootfs-copy/ADD/tar/context-reinclusion mutations. All nine current Dockerfiles and the planned license-stage inlining remain positive. Language checks enumerate Git-eligible source instead of traversing ignored operator data.
+
 ## Initialization and publication pipeline — 2026-10-26
 
 Created `PRJXAI/devsecops`, initially private, then made it public at the owner's explicit request. GHCR publication is authorized through the manual main-branch workflow, not ad hoc pushes or automatic consumer adoption. No consumer pin, production setting or real cluster was changed. The consumer's existing uncommitted simplification work remains separate.

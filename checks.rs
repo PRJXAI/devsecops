@@ -3,123 +3,775 @@
 
 #[cfg(test)]
 mod tests {
-    use std::{collections::BTreeSet, fs, path::Path};
+    use std::{
+        collections::BTreeSet,
+        fs,
+        path::{Component, Path, PathBuf},
+        process::Command,
+    };
 
     fn root() -> &'static Path {
         Path::new(env!("CARGO_MANIFEST_DIR"))
     }
-    fn sha256(text: &str) {
-        let hash = text.split_whitespace().next().unwrap();
-        assert_eq!(hash.len(), 64, "expected literal SHA-256");
-        assert!(
-            hash.bytes()
+    const TOOLS: [&str; 9] = [
+        "cargo-audit",
+        "cargo-deny",
+        "docker",
+        "gitleaks",
+        "grype",
+        "kind",
+        "kubectl",
+        "kustomize",
+        "syft",
+    ];
+
+    fn sha256(hash: &str) -> bool {
+        hash.len() == 64
+            && hash
+                .bytes()
                 .all(|b| b.is_ascii_hexdigit() && !b.is_ascii_uppercase())
-        );
     }
-    #[test]
-    fn dockerfiles_pin_artifacts_and_distroless_nonroot_finals() {
-        let mut count = 0;
-        for entry in fs::read_dir(root().join("images")).unwrap() {
-            let path = entry.unwrap().path().join("Dockerfile");
-            let text = fs::read_to_string(path).unwrap();
-            let mut stages = BTreeSet::new();
-            for line in text.lines().map(str::trim) {
-                if let Some(syntax) = line.strip_prefix("# syntax=") {
-                    sha256(syntax.split_once("@sha256:").unwrap().1);
-                }
-                if let Some(from) = line.strip_prefix("FROM ") {
-                    let fields: Vec<_> = from.split_whitespace().collect();
-                    let image = fields.iter().find(|v| !v.starts_with("--")).unwrap();
-                    if let Some((_, hash)) = image.split_once("@sha256:") {
-                        sha256(hash);
-                    } else if *image != "scratch" {
-                        for arch in ["amd64", "arm64"] {
-                            assert!(
-                                stages.contains(&image.replace("${TARGETARCH}", arch)),
-                                "unpinned source: {image}"
-                            );
-                        }
-                    }
-                    if let Some(as_index) = fields.iter().position(|v| v.eq_ignore_ascii_case("AS"))
-                    {
-                        stages.insert(fields[as_index + 1].to_string());
-                    }
-                }
-                if line.starts_with("ADD ") && line.contains("https://") {
-                    sha256(line.split_once("--checksum=sha256:").unwrap().1);
-                }
-            }
-            let final_stage = text.rsplit_once("\nFROM ").unwrap().1;
-            assert!(
-                final_stage.starts_with("cgr.dev/chainguard/static:")
-                    || final_stage.starts_with("cgr.dev/chainguard/glibc-dynamic:")
-            );
-            assert!(final_stage.contains("USER 65532:65532"));
-            assert!(final_stage.contains("ENTRYPOINT [\"/"));
-            assert!(!final_stage.lines().any(|line| line.starts_with("RUN ")));
-            assert!(!final_stage.contains("COPY . "));
-            count += 1;
-        }
-        assert_eq!(count, 9, "review inventory when adding/removing tools");
+
+    fn pinned_image(image: &str) -> bool {
+        image.split_once("@sha256:").is_some_and(|(name, hash)| {
+            !name.is_empty()
+                && name
+                    .bytes()
+                    .all(|b| b.is_ascii_alphanumeric() || b"/._-:".contains(&b))
+                && sha256(hash)
+        })
     }
-    fn cargo_launcher(command: &str) -> bool {
-        command.starts_with("cargo ")
-            && ![";", "|", "&&", "$(", "`", "<<"]
-                .iter()
-                .any(|v| command.contains(v))
-    }
-    fn direct_extraction(command: &str) -> bool {
-        let Some((options, args)) = command.split_once('[') else {
+
+    fn absolute_path(path: &str, directory: bool) -> bool {
+        let Some(rest) = path.strip_prefix('/') else {
             return false;
         };
-        options.split_whitespace().all(|v| v.starts_with("--"))
-            && (args.starts_with("\"mkdir\",") || args.starts_with("\"tar\","))
+        let rest = if directory {
+            rest.trim_end_matches('/')
+        } else {
+            rest
+        };
+        !rest.is_empty()
+            && rest.split('/').all(|part| {
+                !part.is_empty()
+                    && part != "."
+                    && part != ".."
+                    && part
+                        .bytes()
+                        .all(|b| b.is_ascii_alphanumeric() || b"._-".contains(&b))
+            })
     }
-    #[test]
-    fn rust_is_the_only_glue_layer() {
-        let workflow = fs::read_to_string(root().join(".github/workflows/ci.yml")).unwrap();
-        for line in workflow.lines().map(str::trim) {
-            if let Some(command) = line
-                .strip_prefix("- run:")
-                .or_else(|| line.strip_prefix("run:"))
-            {
-                assert!(cargo_launcher(command.trim()), "CI must launch Rust only");
+
+    fn remote_add(args: &str) -> bool {
+        let fields: Vec<_> = args.split_whitespace().collect();
+        let mut checksum = false;
+        let mut mode = false;
+        let mut index = 0;
+        while let Some(option) = fields.get(index).filter(|v| v.starts_with("--")) {
+            if let Some(hash) = option.strip_prefix("--checksum=sha256:") {
+                if checksum || !sha256(hash) {
+                    return false;
+                }
+                checksum = true;
+            } else if matches!(*option, "--chmod=0444" | "--chmod=0555" | "--chmod=0644") {
+                if mode {
+                    return false;
+                }
+                mode = true;
+            } else {
+                return false;
             }
+            index += 1;
         }
-        fn walk(path: &Path) {
-            for entry in fs::read_dir(path).unwrap() {
-                let entry = entry.unwrap();
-                let path = entry.path();
-                let kind = entry.file_type().unwrap();
-                assert!(!kind.is_symlink(), "no symlinked glue inputs");
-                if kind.is_dir() {
-                    walk(&path);
-                } else {
-                    let extension = path.extension().and_then(|v| v.to_str()).unwrap_or("");
-                    assert!(
-                        !["py", "sh", "bash", "js", "mjs", "cjs", "ts", "ps1"].contains(&extension),
-                        "first-party glue must be Rust"
-                    );
-                    if path.file_name().unwrap() == "Dockerfile" {
-                        for line in fs::read_to_string(&path).unwrap().lines().map(str::trim) {
-                            if let Some(command) = line.strip_prefix("RUN ") {
-                                assert!(
-                                    direct_extraction(command),
-                                    "Docker RUN must be direct exec-form extraction"
-                                );
-                            }
+        if !checksum || fields.len() != index + 2 || !absolute_path(fields[index + 1], true) {
+            return false;
+        }
+        // No local ADD, Git/SSH URLs, HTTP, variable URLs or extra sources.
+        fields[index].strip_prefix("https://").is_some_and(|url| {
+            url.split_once('/').is_some_and(|(host, path)| {
+                host.contains('.')
+                    && !path.is_empty()
+                    && host
+                        .bytes()
+                        .all(|b| b.is_ascii_alphanumeric() || b".-".contains(&b))
+                    && path
+                        .bytes()
+                        .all(|b| b.is_ascii_alphanumeric() || b"/._-%".contains(&b))
+            })
+        })
+    }
+
+    fn narrow_copy(args: &str, stages: &BTreeSet<String>) -> bool {
+        let fields: Vec<_> = args.split_whitespace().collect();
+        let mut flags = BTreeSet::new();
+        let mut index = 0;
+        while let Some(option) = fields.get(index).filter(|v| v.starts_with("--")) {
+            let Some((key, value)) = option.split_once('=') else {
+                return false;
+            };
+            if !flags.insert(key)
+                || !match key {
+                    "--from" => stages.contains(value),
+                    "--chmod" => matches!(value, "0444" | "0555" | "0644"),
+                    "--chown" => value == "65532:65532",
+                    _ => false,
+                }
+            {
+                return false;
+            }
+            index += 1;
+        }
+        // Only individually named supplier files, never a whole rootfs/context,
+        // directory, glob, external image or alternate JSON COPY syntax.
+        flags.contains("--from")
+            && fields.len() >= index + 2
+            && fields[index..fields.len() - 1].iter().all(|v| {
+                absolute_path(v, false)
+                    && matches!(
+                        *v,
+                        "/syft"
+                            | "/grype"
+                            | "/kind"
+                            | "/kubectl"
+                            | "/LICENSE"
+                            | "/kustomize.tar.gz"
+                            | "/cargo-deny.tar.gz"
+                            | "/cargo-audit.tgz"
+                            | "/usr/bin/gitleaks"
+                            | "/usr/bin/git"
+                            | "/usr/lib/libpcre2-8.so.0"
+                            | "/usr/lib/libz.so.1"
+                            | "/usr/local/bin/docker"
+                            | "/usr/local/libexec/docker/cli-plugins/docker-compose"
+                            | "/usr/local/libexec/docker/cli-plugins/docker-buildx"
+                            | "/out/kustomize"
+                            | "/out/cargo-audit"
+                            | "/out/cargo-deny"
+                            | "/out/LICENSE-APACHE"
+                            | "/out/LICENSE-MIT"
+                            | "/out/README.md"
+                            | "/out/CHANGELOG.md"
+                    )
+            })
+            && absolute_path(fields[fields.len() - 1], true)
+    }
+
+    fn docker_policy(text: &str, tool: &str) -> bool {
+        let mut stages = BTreeSet::new();
+        let mut final_image = String::new();
+        let mut final_user = String::new();
+        let mut final_entrypoint = Vec::<String>::new();
+        let mut final_run = false;
+        let mut pending = String::new();
+        for raw in text.lines() {
+            let line = raw.trim();
+            if line.is_empty() {
+                continue;
+            }
+            if let Some(comment) = line.strip_prefix('#') {
+                if let Some((key, value)) = comment.trim().split_once('=') {
+                    if key.eq_ignore_ascii_case("syntax") {
+                        if !pinned_image(value) {
+                            return false;
                         }
+                    } else if key.eq_ignore_ascii_case("escape")
+                        || key.eq_ignore_ascii_case("check")
+                    {
+                        return false;
                     }
                 }
+                continue;
+            }
+            if line.contains(['\r', '\t']) {
+                return false;
+            }
+            let continued = line.ends_with('\\');
+            pending.push_str(line.strip_suffix('\\').unwrap_or(line));
+            if continued {
+                let instruction = pending.split_whitespace().next().unwrap_or("");
+                if !instruction.eq_ignore_ascii_case("ENV")
+                    && !instruction.eq_ignore_ascii_case("LABEL")
+                {
+                    return false;
+                }
+                pending.push(' ');
+                continue;
+            }
+            let Some((instruction, args)) = pending.split_once(char::is_whitespace) else {
+                return false;
+            };
+            let args = args.trim();
+            if args.is_empty() || args.contains(['\\', '\r', '\n']) {
+                return false;
+            }
+            match instruction.to_ascii_uppercase().as_str() {
+                "FROM" => {
+                    let mut fields: Vec<_> = args.split_whitespace().collect();
+                    if fields.first() == Some(&"--platform=$BUILDPLATFORM") {
+                        fields.remove(0);
+                    }
+                    if fields.len() != 1
+                        && !(fields.len() == 3 && fields[1].eq_ignore_ascii_case("AS"))
+                    {
+                        return false;
+                    }
+                    let image = fields[0];
+                    if image != "scratch"
+                        && !pinned_image(image)
+                        && !["amd64", "arm64"]
+                            .iter()
+                            .all(|arch| stages.contains(&image.replace("${TARGETARCH}", arch)))
+                    {
+                        return false;
+                    }
+                    if fields.len() == 3 {
+                        let alias = fields[2];
+                        if alias.is_empty()
+                            || !alias
+                                .bytes()
+                                .all(|b| b.is_ascii_lowercase() || b.is_ascii_digit() || b == b'-')
+                            || !stages.insert(alias.to_string())
+                        {
+                            return false;
+                        }
+                    }
+                    final_image = image.to_string();
+                    final_user.clear();
+                    final_entrypoint.clear();
+                    final_run = false;
+                }
+                "ADD" => {
+                    if final_image.is_empty() || !remote_add(args) {
+                        return false;
+                    }
+                }
+                "COPY" => {
+                    if final_image.is_empty() || !narrow_copy(args, &stages) {
+                        return false;
+                    }
+                }
+                "RUN" => {
+                    if final_image.is_empty() || !direct_extraction(args) {
+                        return false;
+                    }
+                    final_run = true;
+                }
+                "USER" => {
+                    if final_image.is_empty() {
+                        return false;
+                    }
+                    final_user = args.to_string();
+                }
+                "ENTRYPOINT" => {
+                    if final_image.is_empty() {
+                        return false;
+                    }
+                    let Ok(values) = serde_json::from_str::<Vec<String>>(args) else {
+                        return false;
+                    };
+                    final_entrypoint = values;
+                }
+                "CMD" => {
+                    if final_image.is_empty()
+                        || !matches!(tool, "cargo-audit" | "cargo-deny" | "docker")
+                        || serde_json::from_str::<Vec<String>>(args).ok().as_deref()
+                            != Some(&["--help".into()])
+                    {
+                        return false;
+                    }
+                }
+                "WORKDIR" => {
+                    if final_image.is_empty() || !absolute_path(args, true) {
+                        return false;
+                    }
+                }
+                "ENV" | "LABEL" => {
+                    if final_image.is_empty() || !args.contains('=') {
+                        return false;
+                    }
+                }
+                _ => return false,
+            }
+            pending.clear();
+        }
+        let mut expected = vec![format!("/usr/local/bin/{tool}")];
+        if tool == "cargo-audit" {
+            expected.push("audit".into());
+        }
+        pending.is_empty()
+            && TOOLS.contains(&tool)
+            && pinned_image(&final_image)
+            && (final_image.starts_with("cgr.dev/chainguard/static:")
+                || final_image.starts_with("cgr.dev/chainguard/glibc-dynamic:"))
+            && !final_run
+            && final_user == "65532:65532"
+            && final_entrypoint == expected
+    }
+
+    #[test]
+    fn dockerfiles_pin_artifacts_and_distroless_nonroot_finals() {
+        let mut names = BTreeSet::new();
+        for entry in fs::read_dir(root().join("images")).unwrap() {
+            let entry = entry.unwrap();
+            assert!(entry.file_type().unwrap().is_dir());
+            let tool = entry.file_name().into_string().unwrap();
+            let path = entry.path().join("Dockerfile");
+            assert!(fs::symlink_metadata(&path).unwrap().is_file());
+            let text = fs::read_to_string(&path).unwrap();
+            assert!(docker_policy(&text, &tool), "{}", path.display());
+            names.insert(tool);
+        }
+        assert_eq!(names, TOOLS.map(String::from).into_iter().collect());
+    }
+    fn cargo_launcher(command: &str) -> bool {
+        // An allowlist, not a shell parser: even single &, redirects, expansions,
+        // quotes, escapes and line breaks must never reach the runner's shell.
+        matches!(
+            command,
+            "cargo fmt --all -- --check"
+                | "cargo clippy --all-targets --locked -- -D warnings"
+                | "cargo test --locked"
+                | "cargo install cargo-audit --version 0.22.1 --locked"
+                | "cargo audit"
+                | "cargo run --locked --bin devsecops -- prepare-release"
+                | "cargo run --locked --bin devsecops -- publish-all"
+        ) || TOOLS
+            .iter()
+            .any(|tool| command == format!("cargo run --locked --bin devsecops -- check {tool}"))
+    }
+    fn direct_extraction(command: &str) -> bool {
+        let Some(json) = command.strip_prefix("--network=none ") else {
+            return false;
+        };
+        let Ok(args) = serde_json::from_str::<Vec<String>>(json) else {
+            return false;
+        };
+        if args == ["mkdir", "/out"] {
+            return true;
+        }
+        if args.len() < 5 || args[..2] != ["tar", "-xzf"] || args[3..5] != ["-C", "/out"] {
+            return false;
+        }
+        let archive = &args[2];
+        archive.starts_with("/tmp/")
+            && absolute_path(archive, false)
+            && (archive.ends_with(".tgz") || archive.ends_with(".tar.gz"))
+            && matches!(
+                args[5..]
+                    .iter()
+                    .map(String::as_str)
+                    .collect::<Vec<_>>()
+                    .as_slice(),
+                [] | ["--strip-components=1"] | ["kustomize"]
+            )
+    }
+    fn git_command(folder: &Path) -> Command {
+        let mut command = Command::new("git");
+        command
+            .arg("-C")
+            .arg(folder)
+            .env("GIT_CONFIG_NOSYSTEM", "1")
+            .env("GIT_CONFIG_GLOBAL", "/dev/null")
+            .env("GIT_CONFIG_COUNT", "0");
+        for key in [
+            "GIT_DIR",
+            "GIT_WORK_TREE",
+            "GIT_INDEX_FILE",
+            "GIT_COMMON_DIR",
+        ] {
+            command.env_remove(key);
+        }
+        command
+    }
+
+    fn eligible_files(folder: &Path) -> Vec<PathBuf> {
+        // Git, not recursive read_dir: include root/new directories and untracked
+        // eligible files, without opening ignored .work/target/operator contents.
+        let output = git_command(folder)
+            .args([
+                "ls-files",
+                "--cached",
+                "--others",
+                "--exclude-standard",
+                "-z",
+            ])
+            .output()
+            .unwrap();
+        assert!(
+            output.status.success(),
+            "cannot enumerate first-party files"
+        );
+        output
+            .stdout
+            .split(|b| *b == 0)
+            .filter(|v| !v.is_empty())
+            .map(|v| PathBuf::from(std::str::from_utf8(v).unwrap()))
+            .collect()
+    }
+
+    fn rust_glue_file(folder: &Path, relative: &Path) -> bool {
+        let mut path = folder.to_path_buf();
+        for component in relative.components() {
+            let Component::Normal(name) = component else {
+                return false;
+            };
+            let name_text = name.to_string_lossy();
+            if [".git", ".work", "target", "node_modules"]
+                .iter()
+                .any(|v| name == *v)
+                || name_text == ".env"
+                || name_text.starts_with(".env.")
+                || name_text.starts_with("credentials")
+            {
+                return false;
+            }
+            path.push(name);
+            let Ok(metadata) = fs::symlink_metadata(&path) else {
+                return false;
+            };
+            if metadata.file_type().is_symlink() {
+                return false;
             }
         }
-        for folder in ["images", "src", ".github", ".agents"] {
-            walk(&root().join(folder));
+        let name = relative.file_name().and_then(|v| v.to_str()).unwrap_or("");
+        let extension = relative
+            .extension()
+            .and_then(|v| v.to_str())
+            .unwrap_or("")
+            .to_ascii_lowercase();
+        if !["rs", "md", "toml", "lock", "json", "yml", "yaml", "txt"].contains(&extension.as_str())
+            && ![
+                "Dockerfile",
+                ".dockerignore",
+                ".gitignore",
+                "LICENSE",
+                "COPYING",
+                "NOTICE",
+            ]
+            .contains(&name)
+        {
+            return false;
+        }
+        let Ok(metadata) = fs::symlink_metadata(&path) else {
+            return false;
+        };
+        if !metadata.is_file() {
+            return false;
+        }
+        #[cfg(unix)]
+        {
+            use std::os::unix::fs::PermissionsExt;
+            if metadata.permissions().mode() & 0o111 != 0 && extension != "rs" {
+                return false;
+            }
+        }
+        let Ok(bytes) = fs::read(&path) else {
+            return false;
+        };
+        // Also catch extension-disguised interpreter launchers, not Rust attributes.
+        if bytes.starts_with(b"#!") && !bytes.starts_with(b"#![") {
+            return false;
+        }
+        if name == "Dockerfile" {
+            let Some(tool) = relative
+                .parent()
+                .and_then(Path::file_name)
+                .and_then(|v| v.to_str())
+            else {
+                return false;
+            };
+            return std::str::from_utf8(&bytes).is_ok_and(|text| docker_policy(text, tool));
+        }
+        true
+    }
+
+    #[test]
+    fn rust_is_the_only_glue_layer() {
+        for relative in eligible_files(root()) {
+            assert!(
+                rust_glue_file(root(), &relative),
+                "unreviewed/non-Rust glue: {}",
+                relative.display()
+            );
         }
     }
+    #[test]
+    fn docker_policy_rejects_adversarial_mutations() {
+        for tool in TOOLS {
+            let text =
+                fs::read_to_string(root().join(format!("images/{tool}/Dockerfile"))).unwrap();
+            // Docker instruction names are case-insensitive, their operands aren't.
+            let lowercase = text
+                .lines()
+                .map(|line| {
+                    if let Some((instruction, args)) = line.split_once(' ')
+                        && instruction.bytes().all(|b| b.is_ascii_uppercase())
+                    {
+                        return format!("{} {args}", instruction.to_ascii_lowercase());
+                    }
+                    line.to_string()
+                })
+                .collect::<Vec<_>>()
+                .join("\n");
+            assert!(docker_policy(&lowercase, tool), "lowercase {tool}");
+            for extra in [
+                "user 0",
+                "UsEr root",
+                "entrypoint [\"/bin/sh\"]",
+                "ENTRYPOINT /bin/sh",
+                "entrypoint [\"/usr/local/bin/other\"]",
+                "run --network=none [\"mkdir\", \"/out\"]",
+                "copy --from=unknown / /",
+                "COPY . /workspace",
+                "ONBUILD RUN sh -c x",
+                "FROM scratch",
+                "cmd [\"sh\", \"-c\", \"x\"]",
+            ] {
+                assert!(
+                    !docker_policy(&format!("{text}\n{extra}\n"), tool),
+                    "{tool}: {extra}"
+                );
+            }
+            assert!(!docker_policy(
+                &text.replace("USER 65532:65532", "# USER 65532:65532"),
+                tool
+            ));
+            assert!(docker_policy(
+                &format!("{text}\nUSER 0\nuser 65532:65532\n"),
+                tool
+            ));
+        }
+        let text = fs::read_to_string(root().join("images/syft/Dockerfile")).unwrap();
+        for source in [
+            "/", "/.", "/./", "/*", ".", "/rootfs", "/usr", "/syft/", "/../syft",
+        ] {
+            let changed = text.replace(
+                "COPY --from=supplier /syft",
+                &format!("copy --from=supplier {source}"),
+            );
+            assert!(
+                !docker_policy(&changed, "syft"),
+                "rootfs/context copy: {source}"
+            );
+        }
+        for source in [
+            "http://example.org/tool",
+            "git://example.org/tool",
+            "git@example.org:tool",
+            "https://example.org/${TOOL}",
+            "local.tgz",
+        ] {
+            let checksum = "a".repeat(64);
+            assert!(!remote_add(&format!(
+                "--checksum=sha256:{checksum} {source} /tool"
+            )));
+        }
+        for args in [
+            "https://example.org/tool /tool",
+            "--checksum=sha256:${HASH} https://example.org/tool /tool",
+            "--checksum=sha256:abc https://example.org/tool /tool",
+            "--checksum=sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa --keep-git-dir https://example.org/tool /tool",
+            "[\"https://example.org/tool\", \"/tool\"]",
+        ] {
+            assert!(!remote_add(args), "unsafe ADD: {args}");
+        }
+        let hash = "a".repeat(64);
+        let duplicate = format!(
+            "--checksum=sha256:{hash} --checksum=sha256:{hash} https://example.org/tool /tool"
+        );
+        assert!(!remote_add(&duplicate));
+        let bad_add = "add http://example.org/tool /tool\n";
+        assert!(!docker_policy(&format!("{text}\n{bad_add}"), "syft"));
+        assert!(!docker_policy(&text.replace("FROM anchore/syft:v1.55.0-nonroot@sha256:ec5bdbc745485920c6f444239f0c09ed87b3c4c165ff9433f95bc66b3500fbf9", "from anchore/syft:latest"), "syft"));
+        assert!(!docker_policy(
+            &format!("# syntax=docker/dockerfile:latest\n{text}"),
+            "syft"
+        ));
+        assert!(!docker_policy(&format!("# escape=`\n{text}"), "syft"));
+    }
+
+    #[test]
+    fn extraction_rejects_network_and_executable_options() {
+        for command in [
+            "--network=host [\"tar\", \"-xzf\", \"/tmp/a.tgz\", \"-C\", \"/out\"]",
+            "--network=none --mount=type=ssh [\"mkdir\", \"/out\"]",
+            "--security=insecure --network=none [\"mkdir\", \"/out\"]",
+            "[\"mkdir\", \"/out\"]",
+            "--network=none [\"mkdir\", \"-p\", \"/out\"]",
+            "--network=none [\"tar\", \"-xzf\", \"/tmp/a.tgz\", \"-C\", \"/\"]",
+            "--network=none [\"tar\", \"-xzf\", \"/tmp/a.tgz\", \"-C\", \"/out\", \"--checkpoint-action=exec=sh\"]",
+            "--network=none [\"tar\", \"-xzf\", \"/tmp/a.tgz\", \"-C\", \"/out\", \"--to-command=sh\"]",
+            "--network=none [\"tar\", \"-xzf\", \"/tmp/a.tgz\", \"-C\", \"/out\", \"--use-compress-program=sh\"]",
+            "--network=none [\"tar\", \"-I\", \"sh\", \"-xf\", \"/tmp/a.tgz\", \"-C\", \"/out\"]",
+            "--network=none [\"tar\", \"-xzf\", \"/tmp/../a.tgz\", \"-C\", \"/out\"]",
+            "--network=none [\"tar\", \"-xzf\", \"https://example.org/a.tgz\", \"-C\", \"/out\"]",
+            "--network=none [\"mkdir\", \"/out\"] && sh -c x",
+            "--network=none [\"mkdir\", \"/out\", 1]",
+        ] {
+            assert!(!direct_extraction(command), "unsafe extraction: {command}");
+        }
+        for tail in ["", ", \"--strip-components=1\"", ", \"kustomize\""] {
+            assert!(direct_extraction(&format!(
+                "--network=none [\"tar\", \"-xzf\", \"/tmp/a.tgz\", \"-C\", \"/out\"{tail}]"
+            )));
+        }
+        let text = fs::read_to_string(root().join("images/kustomize/Dockerfile")).unwrap();
+        assert!(!docker_policy(
+            &text.replace("RUN --network=none", "run --network=host"),
+            "kustomize"
+        ));
+        assert!(!docker_policy(
+            &text.replace("\"kustomize\"]", "\"--to-command=sh\"]"),
+            "kustomize"
+        ));
+    }
+
+    #[test]
+    fn license_only_stages_can_be_inlined_without_weakening_pins() {
+        for tool in ["kind", "kubectl", "kustomize"] {
+            let text =
+                fs::read_to_string(root().join(format!("images/{tool}/Dockerfile"))).unwrap();
+            // Positive S1 compatibility fixture, without changing any Dockerfile.
+            let Some((_, after)) = text.split_once("FROM scratch AS notices\n") else {
+                assert!(docker_policy(&text, tool));
+                continue;
+            };
+            let add = after.lines().next().unwrap();
+            assert!(add.starts_with("ADD ") && add.ends_with(" /LICENSE"));
+            let inlined = text
+                .replace(&format!("FROM scratch AS notices\n{add}\n"), "")
+                .replace(
+                    &format!("COPY --from=notices /LICENSE /usr/share/licenses/{tool}/LICENSE"),
+                    &format!(
+                        "{} /usr/share/licenses/{tool}/LICENSE",
+                        add.strip_suffix(" /LICENSE").unwrap()
+                    ),
+                );
+            assert!(docker_policy(&inlined, tool));
+            assert!(!docker_policy(
+                &inlined.replace("--checksum=sha256:", "--unsupported=sha256:"),
+                tool
+            ));
+        }
+    }
+
+    struct Scratch(PathBuf);
+    impl Scratch {
+        fn new() -> Self {
+            use std::sync::atomic::{AtomicU64, Ordering};
+            static SEQUENCE: AtomicU64 = AtomicU64::new(0);
+            let name = format!(
+                "devsecops-checks-{}-{}-{}",
+                std::process::id(),
+                std::time::SystemTime::now()
+                    .duration_since(std::time::UNIX_EPOCH)
+                    .unwrap()
+                    .as_nanos(),
+                SEQUENCE.fetch_add(1, Ordering::Relaxed)
+            );
+            let path = std::env::temp_dir().join(name);
+            fs::create_dir(&path).unwrap();
+            #[cfg(unix)]
+            {
+                use std::os::unix::fs::PermissionsExt;
+                fs::set_permissions(&path, fs::Permissions::from_mode(0o700)).unwrap();
+            }
+            Self(path)
+        }
+    }
+    impl Drop for Scratch {
+        fn drop(&mut self) {
+            fs::remove_dir_all(&self.0).unwrap();
+        }
+    }
+
+    #[test]
+    fn git_eligible_root_and_new_directory_glue_is_checked_without_ignored_data() {
+        let scratch = Scratch::new();
+        assert!(
+            git_command(&scratch.0)
+                .args(["init", "--quiet"])
+                .output()
+                .unwrap()
+                .status
+                .success()
+        );
+        fs::write(
+            scratch.0.join(".gitignore"),
+            "/.work/\n/target/\n/operator/\n",
+        )
+        .unwrap();
+        for dir in [".work", "target", "operator", "new-directory"] {
+            fs::create_dir(scratch.0.join(dir)).unwrap();
+        }
+        for file in [".work/private.py", "target/build.sh", "operator/local.js"] {
+            fs::write(scratch.0.join(file), "ignored synthetic data").unwrap();
+        }
+        fs::write(scratch.0.join("checks.rs"), "#![forbid(unsafe_code)]\n").unwrap();
+        fs::write(scratch.0.join("new-directory/task.rs"), "fn main() {}\n").unwrap();
+        for file in [
+            "root.py",
+            "root.sh",
+            "root.js",
+            "new-directory/task.ts",
+            "new-directory/task.go",
+            "new-directory/task.PS1",
+            "new-directory/launcher.md",
+        ] {
+            fs::write(scratch.0.join(file), "#!/usr/bin/env interpreter\n").unwrap();
+        }
+        let eligible = eligible_files(&scratch.0);
+        assert_eq!(eligible.len(), 10);
+        for file in &eligible {
+            let allowed = matches!(
+                file.to_str().unwrap(),
+                ".gitignore" | "checks.rs" | "new-directory/task.rs"
+            );
+            assert_eq!(
+                rust_glue_file(&scratch.0, file),
+                allowed,
+                "{}",
+                file.display()
+            );
+        }
+        assert!(!eligible.iter().any(|p| p.starts_with(".work")
+            || p.starts_with("target")
+            || p.starts_with("operator")));
+        #[cfg(unix)]
+        {
+            use std::os::unix::fs::{PermissionsExt, symlink};
+            symlink(
+                "../.work/private.py",
+                scratch.0.join("new-directory/link.rs"),
+            )
+            .unwrap();
+            assert!(!rust_glue_file(
+                &scratch.0,
+                Path::new("new-directory/link.rs")
+            ));
+            let disguised = scratch.0.join("new-directory/launcher.txt");
+            fs::write(&disguised, "interpreter data\n").unwrap();
+            fs::set_permissions(disguised, fs::Permissions::from_mode(0o700)).unwrap();
+            assert!(!rust_glue_file(
+                &scratch.0,
+                Path::new("new-directory/launcher.txt")
+            ));
+        }
+    }
+
     #[test]
     fn glue_policy_rejects_inline_scripts_and_shell_disguises() {
         for command in [
+            "cargo test --locked & other-command",
+            "cargo test --locked\ncargo audit",
+            "cargo test --locked\rnode x",
+            "cargo test --locked >output",
+            "cargo test --locked <input",
+            "cargo test --locked ${COMMAND}",
+            "cargo test --locked \\\nnode x",
+            "cargo test --locked # comment",
+            "cargo test --locked || node x",
+            "cargo test --locked &",
             "python -c x",
             "node -e x",
             "|",
@@ -142,48 +794,355 @@ mod tests {
             "cargo run --locked --bin devsecops -- check syft"
         ));
         assert!(direct_extraction(
-            "--network=none [\"tar\", \"-xzf\", \"/tmp/tool.tgz\"]"
+            "--network=none [\"tar\", \"-xzf\", \"/tmp/tool.tgz\", \"-C\", \"/out\"]"
         ));
     }
-    #[test]
-    fn publication_permissions_and_external_actions_are_scoped() {
-        let workflow = fs::read_to_string(root().join(".github/workflows/ci.yml")).unwrap();
-        let (build, publish) = workflow.split_once("  publish:\n").unwrap();
-        assert!(!build.contains("packages: write") && !build.contains("id-token: write"));
-        assert!(!workflow.contains("pull_request_target:") && !workflow.contains("workflow_run:"));
-        for required in [
-            "github.event_name == 'workflow_dispatch'",
-            "github.ref == 'refs/heads/main'",
-            "inputs.publish",
-            "inputs.redistribution_reviewed",
-            "needs: [structure, images]",
-            "DEVSECOPS_LICENSE_SOURCE_PROVENANCE_APPROVED_SHA: ${{ github.sha }}",
-            "subject-checksums: .work/published/subjects.checksums",
-        ] {
-            assert!(publish.contains(required));
-        }
-        assert!(
-            !workflow.contains(".work/scans/"),
-            "raw reports must not be uploaded"
-        );
-        for line in workflow.lines().map(str::trim) {
-            if let Some(action) = line
-                .strip_prefix("- uses: ")
-                .or_else(|| line.strip_prefix("uses: "))
+    // Deliberately support only this reviewed CI layout. These are policy fixtures,
+    // not YAML generation: alternate scalar/block/anchor/merge syntax needs review.
+    // Preserve indentation so the dispatch input can never be mistaken for a job.
+    const WORKFLOW_HEADER: &str = "\
+name: distroless-images
+on:
+  push:
+    branches: [main]
+  pull_request:
+  schedule:
+    - cron: '17 7 * * 1'
+  workflow_dispatch:
+    inputs:
+      publish:
+        description: Publish clean images to GHCR from main
+        type: boolean
+        default: false
+      redistribution_reviewed:
+        description: Confirm tool/dependency notices, Git corresponding source and supplier provenance have been reviewed
+        type: boolean
+        default: false
+permissions:
+  contents: read
+concurrency:
+  group: images-${{ github.ref }}
+  cancel-in-progress: false
+jobs:";
+    const STRUCTURE_JOB: &str = "  structure:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@PIN
+        with: {persist-credentials: false}
+      - run: cargo fmt --all -- --check
+      - run: cargo clippy --all-targets --locked -- -D warnings
+      - run: cargo test --locked
+      - run: cargo install cargo-audit --version 0.22.1 --locked
+      - run: cargo audit";
+    const IMAGES_JOB: &str = "  images:
+    needs: structure
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: ubuntu-24.04
+            arch: amd64
+          - runner: ubuntu-24.04-arm
+            arch: arm64
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@PIN
+        with: {persist-credentials: false}
+      - name: Rust builds, smokes, inventories and scans the exact native images
+        run: cargo run --locked --bin devsecops -- prepare-release
+      - name: Public count/status summary only
+        if: always()
+        uses: actions/upload-artifact@PIN
+        with:
+          name: security-status-${{ matrix.arch }}
+          path: .work/public-release/summary.json
+          retention-days: 14
+          if-no-files-found: error
+      - name: Preserve only clean archives, inventories and bound receipts
+        uses: actions/upload-artifact@PIN
+        with:
+          name: release-${{ matrix.arch }}
+          path: .work/release/
+          retention-days: 1
+          compression-level: 0
+          include-hidden-files: true
+          if-no-files-found: error";
+    const PUBLISH_JOB: &str = "  publish:
+    needs: [structure, images]
+    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && inputs.publish && inputs.redistribution_reviewed
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+      attestations: write
+    steps:
+      - uses: actions/checkout@PIN
+        with: {persist-credentials: false}
+      - uses: actions/download-artifact@PIN
+        with:
+          pattern: release-*
+          path: .work/downloaded
+      - uses: docker/login-action@PIN
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Verify both architectures and publish exact scanned bytes, never rebuild
+        env:
+          DEVSECOPS_PUBLISH_APPROVED: 'true'
+          DEVSECOPS_LICENSE_SOURCE_PROVENANCE_APPROVED_SHA: ${{ github.sha }}
+        run: cargo run --locked --bin devsecops -- publish-all
+      - name: Attest all published manifest digests through GitHub
+        uses: actions/attest-build-provenance@PIN
+        with:
+          subject-checksums: .work/published/subjects.checksums
+      - uses: actions/upload-artifact@PIN
+        with:
+          name: published-digests
+          path: .work/published/
+          if-no-files-found: error";
+
+    fn workflow_policy(text: &str) -> bool {
+        let mut lines = Vec::new();
+        for line in text.lines() {
+            if line.trim().is_empty() || line.trim_start().starts_with('#') {
+                continue;
+            }
+            if line.contains(['\t', '\r', '#']) || line.trim_end() != line {
+                return false;
+            }
+            let value = line.trim_start();
+            if let Some(command) = value
+                .strip_prefix("- run: ")
+                .or_else(|| value.strip_prefix("run: "))
+                && !cargo_launcher(command)
             {
-                let (_, revision) = action.split_once('@').unwrap();
-                assert_eq!(revision.len(), 40);
-                assert!(revision.bytes().all(|b| b.is_ascii_hexdigit()));
+                return false;
+            }
+            if let Some(action) = value
+                .strip_prefix("- uses: ")
+                .or_else(|| value.strip_prefix("uses: "))
+            {
+                let Some((_, revision)) = action.split_once('@') else {
+                    return false;
+                };
+                if revision.len() != 40 || !revision.bytes().all(|b| b.is_ascii_hexdigit()) {
+                    return false;
+                }
+                lines.push(format!("{}@PIN", line.split_once('@').unwrap().0));
+            } else {
+                lines.push(line.to_string());
             }
         }
+        let Some(jobs) = lines.iter().position(|line| line == "jobs:") else {
+            return false;
+        };
+        if lines[..=jobs].join("\n") != WORKFLOW_HEADER {
+            return false;
+        }
+        let bodies = &lines[jobs + 1..];
+        let boundaries: Vec<_> = bodies
+            .iter()
+            .enumerate()
+            .filter(|(_, line)| line.starts_with("  ") && !line.starts_with("   "))
+            .map(|(index, _)| index)
+            .chain(std::iter::once(bodies.len()))
+            .collect();
+        boundaries.len() == 4
+            && boundaries[0] == 0
+            && boundaries
+                .windows(2)
+                .zip([STRUCTURE_JOB, IMAGES_JOB, PUBLISH_JOB])
+                .all(|(range, expected)| bodies[range[0]..range[1]].join("\n") == expected)
     }
+
+    fn workflow_inventory(names: &[String]) -> bool {
+        names == ["ci.yml"]
+    }
+
+    #[test]
+    fn publication_permissions_and_external_actions_are_scoped() {
+        let folder = root().join(".github/workflows");
+        let mut names = Vec::new();
+        for entry in fs::read_dir(folder).unwrap() {
+            let entry = entry.unwrap();
+            assert!(
+                entry.file_type().unwrap().is_file(),
+                "no workflow indirection"
+            );
+            names.push(entry.file_name().into_string().unwrap());
+            assert!(workflow_policy(&fs::read_to_string(entry.path()).unwrap()));
+        }
+        assert!(workflow_inventory(&names), "unreviewed workflow inventory");
+    }
+
+    #[test]
+    fn workflow_policy_rejects_adversarial_mutations() {
+        let workflow = fs::read_to_string(root().join(".github/workflows/ci.yml")).unwrap();
+        assert!(workflow_policy(&workflow));
+        for (old, new) in [
+            (
+                "  structure:\n",
+                "  structure:\n    permissions: {packages: write}\n",
+            ),
+            (
+                "  images:\n",
+                "  images:\n    permissions:\n      id-token: write\n",
+            ),
+            (
+                "  contents: read\nconcurrency:",
+                "  contents: read\n  packages: write\nconcurrency:",
+            ),
+            (
+                "github.event_name == 'workflow_dispatch'",
+                "github.event_name == 'push'",
+            ),
+            (
+                "github.ref == 'refs/heads/main'",
+                "github.ref == 'refs/heads/dev'",
+            ),
+            (" && inputs.publish", " || inputs.publish"),
+            (" && inputs.redistribution_reviewed", ""),
+            ("    needs: [structure, images]", "    needs: structure"),
+            (
+                "          DEVSECOPS_PUBLISH_APPROVED: 'true'",
+                "          # DEVSECOPS_PUBLISH_APPROVED: 'true'",
+            ),
+            (
+                "          DEVSECOPS_LICENSE_SOURCE_PROVENANCE_APPROVED_SHA: ${{ github.sha }}",
+                "          # DEVSECOPS_LICENSE_SOURCE_PROVENANCE_APPROVED_SHA: ${{ github.sha }}",
+            ),
+            (
+                "APPROVED_SHA: ${{ github.sha }}",
+                "APPROVED_SHA: ${{ github.event.before }}",
+            ),
+            (
+                "subject-checksums: .work/published/subjects.checksums",
+                "subject-checksums: .work/other",
+            ),
+            (
+                "        run: cargo run --locked --bin devsecops -- publish-all",
+                "        # run: cargo run --locked --bin devsecops -- publish-all",
+            ),
+            ("cargo test --locked", "cargo test --locked & node x"),
+            (
+                "cargo test --locked",
+                "|\n          cargo test --locked\n          node x",
+            ),
+            (
+                "cargo test --locked",
+                "cargo test --locked\n        run: cargo audit",
+            ),
+            (
+                "actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803",
+                "actions/checkout@main",
+            ),
+            ("  publish:\n    needs:", "  extra:\n    needs:"),
+            (
+                "    permissions:\n      contents: read",
+                "    permissions: &privileged\n      contents: read",
+            ),
+        ] {
+            assert!(workflow.contains(old), "ineffective mutation: {old}");
+            assert!(
+                !workflow_policy(&workflow.replace(old, new)),
+                "accepted: {new}"
+            );
+        }
+        for job in ["structure", "images"] {
+            for permission in ["packages", "id-token"] {
+                let old = format!("  {job}:\n");
+                let new = format!("{old}    permissions:\n      {permission}: write\n");
+                assert!(!workflow_policy(&workflow.replace(&old, &new)));
+            }
+        }
+        for line in workflow.lines() {
+            let value = line.trim_start();
+            if let Some(action) = value
+                .strip_prefix("- uses: ")
+                .or_else(|| value.strip_prefix("uses: "))
+            {
+                let name = action.split_once('@').unwrap().0;
+                assert!(!workflow_policy(
+                    &workflow.replace(action, &format!("{name}@main"))
+                ));
+            }
+            if value.starts_with("if: github.event_name") || value.starts_with("subject-checksums:")
+            {
+                let commented = format!("{}# {value}", " ".repeat(line.len() - value.len()));
+                assert!(!workflow_policy(&workflow.replace(line, &commented)));
+            }
+        }
+        let approval =
+            "          DEVSECOPS_LICENSE_SOURCE_PROVENANCE_APPROVED_SHA: ${{ github.sha }}";
+        let misplaced = workflow.replace(approval, "").replace(
+            "  structure:\n",
+            &format!("  structure:\n    env:\n{approval}\n"),
+        );
+        assert!(!workflow_policy(&misplaced));
+        assert!(!workflow_inventory(&["ci.yml".into(), "extra.yml".into()]));
+        assert!(!workflow_inventory(&["ci.yaml".into()]));
+        assert!(!workflow_policy(&format!(
+            "{workflow}\n  bypass:\n    uses: owner/repo@main\n"
+        )));
+        assert!(workflow_policy(&format!("# harmless comment\n{workflow}")));
+    }
+    fn context_policy(text: &str) -> bool {
+        // Order is security-sensitive. Do not approximate Docker's glob engine:
+        // permit exactly the reviewed minimal inclusions, then terminal denials.
+        let rules: Vec<_> = text
+            .lines()
+            .map(str::trim)
+            .filter(|line| !line.is_empty() && !line.starts_with('#'))
+            .collect();
+        rules
+            == [
+                "**",
+                "!images/",
+                "!images/*/",
+                "!images/*/Dockerfile",
+                "!licenses/",
+                "!licenses/**",
+                ".git",
+                ".work",
+                "target",
+                "**/.env",
+                "**/.env.*",
+                "**/credentials*",
+            ]
+    }
+
     #[test]
     fn build_context_is_deny_by_default() {
         let rules = fs::read_to_string(root().join(".dockerignore")).unwrap();
-        assert_eq!(rules.lines().next(), Some("**"));
-        for required in [".git", ".work", "target", "**/.env", "**/credentials*"] {
-            assert!(rules.lines().any(|line| line == required));
+        assert!(context_policy(&rules));
+        for reinclusion in [
+            "!.work",
+            "!.work/**",
+            "!target/",
+            "!**/.env",
+            "!**/credentials*",
+            "!**",
+            "!images/*/secret.sh",
+        ] {
+            assert!(!context_policy(&format!("{rules}\n{reinclusion}\n")));
         }
+        for denial in [
+            ".git",
+            ".work",
+            "target",
+            "**/.env",
+            "**/.env.*",
+            "**/credentials*",
+        ] {
+            assert!(!context_policy(&rules.replace(denial, "")));
+        }
+        assert!(!context_policy(&rules.replacen("**\n", "*\n", 1)));
+        assert!(!context_policy(&rules.replacen("!licenses/**", "!**", 1)));
     }
     #[test]
     fn documentation_links_resolve() {
