@@ -1,8 +1,10 @@
 #![forbid(unsafe_code)]
 
+mod archive;
 mod audit;
 #[cfg(test)]
 mod builder;
+mod coverage;
 mod release;
 
 use std::{
