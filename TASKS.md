@@ -72,10 +72,11 @@
   - `images/{kind,kubectl,kustomize}/Dockerfile` each has `FROM scratch AS notices`, one checksummed `ADD`, then a final `COPY`. Move that same literal ADD directly to its existing final license destination, as Syft/Grype already do.
   - Removes **three stages and six instruction lines total**, with no new abstraction. Preserve URL, checksum, mode and destination exactly; test those literals and later compare packaged license bytes. This does not resolve missing transitive notices/source obligations.
 
-- [ ] **S2 — Remove Chrono's unused local-timezone feature.**
+- [x] **S2 — Remove Chrono's unused local-timezone feature.**
   - `Cargo.toml` enables `chrono/clock`; `src/release.rs` uses UTC now/RFC3339 arithmetic, never local time. The offline feature tree shows `clock` pulling in `iana-time-zone` and macOS `core-foundation-sys`; `now` is a separate enabled feature.
   - Replace `clock` with `now`, retain `std`, and update only resulting lock resolution in a later authorized change, without version bumps. This removes an unused platform-timezone concept and those two active macOS dependencies; do not promise a total lockfile reduction before resolution.
   - Run existing stale/future/boundary timestamp tests and native supported-target checks. Retain Chrono itself rather than implementing a homemade RFC3339 parser. No broader dependency pruning without evidence.
+  - Executed: `clock` becomes `now`; UTC/RFC3339 tests, offline checks/Clippy and the Darwin/arm64 feature tree pass. At this isolated change the lockfile drops from 60 to 33 packages, with no surviving version/checksum changes. IANA/local-timezone dependencies disappear; later archive-parser dependencies are separate. Native hosted Linux evidence remains D4.
 
 - [ ] **S3 — Reuse the already validated SBOM package map.**
   - `src/release.rs::prepare_tool` discards the result of `sbom_packages` at line 444; `report_counts` reconstructs the same map at line 325 from the same in-memory SBOM. Retain the first result and pass it directly into counting, keeping report/source/DB validation there.
