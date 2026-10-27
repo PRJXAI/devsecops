@@ -160,6 +160,7 @@ fn write_new(path: &Path, data: &[u8], mode: u32) -> Result<()> {
         .map_err(|_| "refusing existing or unwritable evidence")?;
     file.write_all(data)
         .and_then(|()| file.sync_all())
+        .and_then(|()| file.set_permissions(fs::Permissions::from_mode(mode)))
         .map_err(|_| "cannot write evidence")
 }
 
@@ -272,12 +273,36 @@ fn scanner(
     command.extend_from_slice(args);
     let result = driver.docker(&command, 900, false);
     let cleanup = driver.docker(&["rm", "--force", &name], 15, true);
-    match (result, cleanup) {
+    let output = match (result, cleanup) {
         (_, Err(_)) => Err("scanner container cleanup not confirmed"),
         (Err(e), Ok(_)) => Err(e),
         (Ok(_), Ok(_)) if driver.cancelled.load(Ordering::Relaxed) => Err("release cancelled"),
         (Ok(path), Ok(_)) => Ok(path),
+    }?;
+    scanner_diagnostics(&super::captured_stderr(&output)?, engine)?;
+    Ok(output)
+}
+
+// Pinned Grype explicitly warns about its conservative module-only Go matching.
+// Keep that matching mode and EVERY finding; do not enable symbol filtering to
+// reduce counts. Only this exact reviewed warning is non-error, never other text.
+fn scanner_diagnostics(data: &[u8], engine: &str) -> Result<()> {
+    if data.is_empty() {
+        return Ok(());
     }
+    const MODULE_WARNING: &str = "go binary packages were found but none carry function symbols; go vulnerability matching falls back to module granularity and may report false positives. if scanning an SBOM, regenerate it with symbol capture enabled for more precise results.";
+    let text = std::str::from_utf8(data).map_err(|_| "invalid scanner diagnostics")?;
+    let text = text.strip_suffix('\n').unwrap_or(text);
+    if engine == GRYPE
+        && let Some((clock, message)) = text.split_once("]  WARN ")
+        && clock
+            .strip_prefix('[')
+            .is_some_and(|digits| digits.len() == 4 && digits.bytes().all(|b| b.is_ascii_digit()))
+        && message == MODULE_WARNING
+    {
+        return Ok(());
+    }
+    Err("scanner emitted unreviewed diagnostics; private logs retained")
 }
 
 fn sbom_packages<'a>(
@@ -409,17 +434,13 @@ fn prepare_tool(
     let scans = driver.root.join(".work/scans");
     let asset = scans.join(tool);
     mkdir(&asset, false)?;
-    let syft_out = asset.join("syft");
-    let grype_out = asset.join("grype");
-    mkdir(&syft_out, true)?;
-    mkdir(&grype_out, true)?;
     let tar = asset.join(format!("{tool}-{arch}.tar"));
     let tar_arg = tar.to_str().ok_or("invalid archive path")?;
     driver.docker(&["image", "save", "--output", tar_arg, &image], 600, false)?;
     regular(&tar, TAR_LIMIT)?;
     fs::set_permissions(&tar, fs::Permissions::from_mode(0o644))
         .map_err(|_| "cannot grant scanner archive read access")?;
-    scanner(
+    let sbom_path = scanner(
         driver,
         SYFT,
         &[
@@ -428,36 +449,29 @@ fn prepare_tool(
             "--scope",
             "all-layers",
             "--output",
-            "syft-json=/output/syft.json",
+            "syft-json",
         ],
-        &[
-            mount(&tar, "/input/image.tar", true)?,
-            mount(&syft_out, "/output", false)?,
-        ],
+        &[mount(&tar, "/input/image.tar", true)?],
         false,
     )?;
-    let sbom_path = syft_out.join("syft.json");
     let sbom = read_json(&sbom_path)?;
     let packages = sbom_packages(&sbom, &image, arch)?;
     let db = db.ok_or("fresh scan database unavailable")?;
-    scanner(
+    // Only public bounded inventory crosses into the next scanner; private
+    // captures are never writable report mounts.
+    let staged = asset.join("input.syft.json");
+    write_new(&staged, &bytes(&sbom_path, JSON_LIMIT)?, 0o644)?;
+    let report_path = scanner(
         driver,
         GRYPE,
+        &["sbom:/input/syft.json", "--output", "json"],
         &[
-            "sbom:/input/syft.json",
-            "--output",
-            "json",
-            "--file",
-            "/output/grype.json",
-        ],
-        &[
-            mount(&sbom_path, "/input/syft.json", true)?,
+            mount(&staged, "/input/syft.json", true)?,
             mount(&scans.join("cache"), "/cache", true)?,
-            mount(&grype_out, "/output", false)?,
         ],
         false,
     )?;
-    let report = read_json(&grype_out.join("grype.json"))?;
+    let report = read_json(&report_path)?;
     let now = Utc::now();
     let counts = report_counts(&sbom, &packages, &report, db, now)?;
     let count = total(&counts);
@@ -1247,6 +1261,81 @@ mod tests {
         assert!(preflight(&fixture.0, REV, now()).is_err());
         write_new(&last, &original, 0o600).unwrap();
         assert!(preflight(&fixture.0, REV, now()).is_ok());
+    }
+
+    #[test]
+    fn scanner_diagnostics_only_allow_the_reviewed_conservative_matching_warning() {
+        let warning = b"[0000]  WARN go binary packages were found but none carry function symbols; go vulnerability matching falls back to module granularity and may report false positives. if scanning an SBOM, regenerate it with symbol capture enabled for more precise results.\n";
+        assert!(scanner_diagnostics(b"", SYFT).is_ok());
+        assert!(scanner_diagnostics(warning, GRYPE).is_ok());
+        assert!(scanner_diagnostics(warning, SYFT).is_err());
+        for extra in [b"SYNTHETIC_PRIVATE_DIAGNOSTIC".as_slice(), warning, b"\n"] {
+            assert!(scanner_diagnostics(&[warning, extra].concat(), GRYPE).is_err());
+        }
+        for wrong in [
+            b"[abcd]  WARN invalid".as_slice(),
+            b"[0000] ERROR database",
+            b"[0000]  WARN incomplete inventory",
+            &[255],
+        ] {
+            assert!(scanner_diagnostics(wrong, GRYPE).is_err());
+        }
+    }
+
+    #[test]
+    #[ignore = "approved public candidate SBOM/cache capture replay; offline, no image publication"]
+    fn native_bounded_scan_captures_preserve_all_module_granularity_findings() {
+        let mut driver = Driver::new().unwrap();
+        let arch = driver.native().unwrap();
+        let scans = driver.root.join(".work/scans");
+        let cache = mount(&scans.join("cache"), "/cache", true).unwrap();
+        let status = scanner(
+            &mut driver,
+            GRYPE,
+            &["db", "status", "--output", "json"],
+            std::slice::from_ref(&cache),
+            false,
+        )
+        .unwrap();
+        let db = read_json(&status).unwrap();
+        db_status(&db, Utc::now()).unwrap();
+        let mut statuses = Vec::new();
+        for tool in ["syft", "grype", "gitleaks"] {
+            let input = scans.join(tool).join("input.syft.json");
+            let bom = read_json(&input).unwrap();
+            let output = scanner(
+                &mut driver,
+                GRYPE,
+                &["sbom:/input/syft.json", "--output", "json"],
+                &[
+                    cache.clone(),
+                    mount(&input, "/input/syft.json", true).unwrap(),
+                ],
+                false,
+            )
+            .unwrap();
+            let report = read_json(&output).unwrap();
+            let counts = report_counts(
+                &bom,
+                &report,
+                text(&bom, "/source/metadata/imageID").unwrap(),
+                arch,
+                &db,
+                Utc::now(),
+            )
+            .unwrap();
+            assert!(
+                total(&counts) > 0,
+                "known vulnerable candidate unexpectedly clean"
+            );
+            let size = regular(&output, crate::LOG_LIMIT as u64)
+                .unwrap()
+                .metadata()
+                .unwrap()
+                .len();
+            statuses.push(json!({"tool": tool, "status": "findings", "count": total(&counts), "counts": counts, "report_bytes": size}));
+        }
+        write_json(&driver.root.join(".work/tasks-native-verified-counts.json"), &json!({"scope":"offline candidate capture replay, not release acceptance", "arch": arch, "tools": statuses})).unwrap();
     }
 
     #[test]

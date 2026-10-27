@@ -474,6 +474,38 @@ impl Driver {
     }
 }
 
+// Shared structural capture invariant; callers retain their own empty/diagnostic
+// policy. Unlike JSON evidence, a stderr stream may legitimately be empty.
+fn captured_stderr(stdout: &Path) -> Result<Vec<u8>> {
+    use rustix::fs::{Mode, OFlags, open};
+    let stem = stdout
+        .file_name()
+        .and_then(|s| s.to_str())
+        .and_then(|s| s.strip_suffix("-stdout.log"))
+        .ok_or("invalid private capture path")?;
+    let fd = open(
+        stdout.with_file_name(format!("{stem}-stderr.log")),
+        OFlags::RDONLY | OFlags::NOFOLLOW | OFlags::NONBLOCK | OFlags::CLOEXEC,
+        Mode::empty(),
+    )
+    .map_err(|_| "cannot open private diagnostics")?;
+    let file = File::from(fd);
+    let meta = file
+        .metadata()
+        .map_err(|_| "cannot inspect private diagnostics")?;
+    if !meta.is_file() || meta.len() > LOG_LIMIT as u64 {
+        return Err("invalid private diagnostics type or size");
+    }
+    let mut data = Vec::new();
+    file.take(LOG_LIMIT as u64 + 1)
+        .read_to_end(&mut data)
+        .map_err(|_| "cannot read private diagnostics")?;
+    if data.len() > LOG_LIMIT {
+        return Err("private diagnostics grew beyond limit");
+    }
+    Ok(data)
+}
+
 fn built_image_id(path: &Path) -> Result<String> {
     let bytes = release::bytes(path, 128)?;
     let text = std::str::from_utf8(&bytes)
@@ -547,6 +579,43 @@ fn main() {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn diagnostic_captures_allow_empty_but_reject_links_special_and_oversized_files() {
+        let driver = Driver::new().unwrap();
+        let output = driver.logs.join("fixture-stdout.log");
+        let stderr = driver.logs.join("fixture-stderr.log");
+        fs::write(&stderr, b"").unwrap();
+        assert_eq!(captured_stderr(&output).unwrap(), b"");
+        fs::write(&stderr, b"SYNTHETIC_PRIVATE_DIAGNOSTIC").unwrap();
+        assert_eq!(
+            captured_stderr(&output).unwrap(),
+            b"SYNTHETIC_PRIVATE_DIAGNOSTIC"
+        );
+        File::options()
+            .write(true)
+            .open(&stderr)
+            .unwrap()
+            .set_len(LOG_LIMIT as u64 + 1)
+            .unwrap();
+        assert!(captured_stderr(&output).is_err());
+        fs::remove_file(&stderr).unwrap();
+        std::os::unix::fs::symlink(&driver.logs, &stderr).unwrap();
+        assert!(captured_stderr(&output).is_err());
+        fs::remove_file(&stderr).unwrap();
+        #[cfg(target_os = "linux")]
+        {
+            rustix::fs::mkfifoat(
+                rustix::fs::CWD,
+                &stderr,
+                rustix::fs::Mode::RUSR | rustix::fs::Mode::WUSR,
+            )
+            .unwrap();
+            assert!(captured_stderr(&output).is_err());
+            fs::remove_file(&stderr).unwrap();
+        }
+        assert!(captured_stderr(&output).is_err());
+    }
 
     // The test executable is the only fixture executable. Each invocation runs
     // exactly this ignored test in a fresh process; no shell or Docker is used.

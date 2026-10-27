@@ -594,18 +594,6 @@ fn parse(data: &[u8], lock: &Lock, revision: &str, vulnerable_control: bool) -> 
     })
 }
 
-fn diagnostics(stdout: &Path) -> Result<Vec<u8>> {
-    let prefix = stdout
-        .file_name()
-        .and_then(|v| v.to_str())
-        .and_then(|s| s.strip_suffix("-stdout.log"))
-        .ok_or("invalid private audit capture")?;
-    read_allow_empty(
-        &stdout.with_file_name(format!("{prefix}-stderr.log")),
-        LIMIT,
-    )
-}
-
 fn report(stdout: &Path, lock: &Lock, db: &Database, vulnerable: bool) -> Result<Counts> {
     let counts = parse(
         &release::bytes(stdout, LIMIT)?,
@@ -615,7 +603,10 @@ fn report(stdout: &Path, lock: &Lock, db: &Database, vulnerable: bool) -> Result
     )?;
     // JSON warnings are checked separately. Unexpected stderr is never evidence
     // of a clean audit, even when the tool returns zero and emits plausible JSON.
-    if !diagnostics(stdout)?.iter().all(u8::is_ascii_whitespace) {
+    if !super::captured_stderr(stdout)?
+        .iter()
+        .all(u8::is_ascii_whitespace)
+    {
         return Err("cargo-audit emitted diagnostics; private logs retained");
     }
     Ok(counts)
@@ -663,7 +654,10 @@ pub(super) fn contract(driver: &mut Driver, image: &str) -> Result<()> {
         return Err("cargo-audit vulnerable control was clean");
     }
     let output = run(driver, image, &clean, None, 1)?;
-    missing_database(&read_allow_empty(&output, LIMIT)?, &diagnostics(&output)?)
+    missing_database(
+        &read_allow_empty(&output, LIMIT)?,
+        &super::captured_stderr(&output)?,
+    )
 }
 
 fn summary(driver: &mut Driver, status: &str, counts: Option<&Counts>) -> Result<()> {
