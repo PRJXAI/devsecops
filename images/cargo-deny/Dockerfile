@@ -11,7 +11,7 @@ COPY --from=archive /cargo-deny.tar.gz /tmp/cargo-deny.tar.gz
 RUN --network=none ["mkdir", "/out"]
 RUN --network=none ["tar", "-xzf", "/tmp/cargo-deny.tar.gz", "-C", "/out", "--strip-components=1"]
 
-FROM cgr.dev/chainguard/static:latest@sha256:17367e4d3ae2b46c3290858e483fac09be085c92b372360fe3bf6a6150848fde
+FROM cgr.dev/chainguard/static:latest@sha256:9e2306b457ff71ce370043dc68c7b52bb1e6622c1c6c6714edbed57496f3116e
 LABEL org.opencontainers.image.title="cargo-deny" org.opencontainers.image.version="0.20.2" org.opencontainers.image.source="https://github.com/EmbarkStudios/cargo-deny"
 COPY --from=extract --chmod=0555 /out/cargo-deny /usr/local/bin/cargo-deny
 COPY --from=extract /out/LICENSE-APACHE /out/LICENSE-MIT /out/README.md /usr/share/licenses/cargo-deny/
