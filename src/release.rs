@@ -279,30 +279,18 @@ fn scanner(
         (Ok(_), Ok(_)) if driver.cancelled.load(Ordering::Relaxed) => Err("release cancelled"),
         (Ok(path), Ok(_)) => Ok(path),
     }?;
-    scanner_diagnostics(&super::captured_stderr(&output)?, engine)?;
+    scanner_diagnostics(&super::captured_stderr(&output)?)?;
     Ok(output)
 }
 
-// Pinned Grype explicitly warns about its conservative module-only Go matching.
-// Keep that matching mode and EVERY finding; do not enable symbol filtering to
-// reduce counts. Only this exact reviewed warning is non-error, never other text.
-fn scanner_diagnostics(data: &[u8], engine: &str) -> Result<()> {
+// Precision notices also remain blocking without separate policy approval.
+// Never enable symbol filtering or waive findings merely to silence a warning.
+fn scanner_diagnostics(data: &[u8]) -> Result<()> {
     if data.is_empty() {
-        return Ok(());
+        Ok(())
+    } else {
+        Err("scanner emitted diagnostics; private logs retained")
     }
-    const MODULE_WARNING: &str = "go binary packages were found but none carry function symbols; go vulnerability matching falls back to module granularity and may report false positives. if scanning an SBOM, regenerate it with symbol capture enabled for more precise results.";
-    let text = std::str::from_utf8(data).map_err(|_| "invalid scanner diagnostics")?;
-    let text = text.strip_suffix('\n').unwrap_or(text);
-    if engine == GRYPE
-        && let Some((clock, message)) = text.split_once("]  WARN ")
-        && clock
-            .strip_prefix('[')
-            .is_some_and(|digits| digits.len() == 4 && digits.bytes().all(|b| b.is_ascii_digit()))
-        && message == MODULE_WARNING
-    {
-        return Ok(());
-    }
-    Err("scanner emitted unreviewed diagnostics; private logs retained")
 }
 
 fn sbom_packages<'a>(
@@ -1264,13 +1252,12 @@ mod tests {
     }
 
     #[test]
-    fn scanner_diagnostics_only_allow_the_reviewed_conservative_matching_warning() {
+    fn scanner_diagnostics_reject_even_the_pinned_precision_notice() {
         let warning = b"[0000]  WARN go binary packages were found but none carry function symbols; go vulnerability matching falls back to module granularity and may report false positives. if scanning an SBOM, regenerate it with symbol capture enabled for more precise results.\n";
-        assert!(scanner_diagnostics(b"", SYFT).is_ok());
-        assert!(scanner_diagnostics(warning, GRYPE).is_ok());
-        assert!(scanner_diagnostics(warning, SYFT).is_err());
+        assert!(scanner_diagnostics(b"").is_ok());
+        assert!(scanner_diagnostics(warning).is_err());
         for extra in [b"SYNTHETIC_PRIVATE_DIAGNOSTIC".as_slice(), warning, b"\n"] {
-            assert!(scanner_diagnostics(&[warning, extra].concat(), GRYPE).is_err());
+            assert!(scanner_diagnostics(&[warning, extra].concat()).is_err());
         }
         for wrong in [
             b"[abcd]  WARN invalid".as_slice(),
@@ -1278,7 +1265,7 @@ mod tests {
             b"[0000]  WARN incomplete inventory",
             &[255],
         ] {
-            assert!(scanner_diagnostics(wrong, GRYPE).is_err());
+            assert!(scanner_diagnostics(wrong).is_err());
         }
     }
 
@@ -1303,7 +1290,8 @@ mod tests {
         for tool in ["syft", "grype", "gitleaks"] {
             let input = scans.join(tool).join("input.syft.json");
             let bom = read_json(&input).unwrap();
-            let output = scanner(
+            let primary = driver.sequence + 1;
+            let result = scanner(
                 &mut driver,
                 GRYPE,
                 &["sbom:/input/syft.json", "--output", "json"],
@@ -1312,8 +1300,13 @@ mod tests {
                     mount(&input, "/input/syft.json", true).unwrap(),
                 ],
                 false,
-            )
-            .unwrap();
+            );
+            assert!(
+                result.is_err(),
+                "unapproved precision notice must still block"
+            );
+            let output = driver.logs.join(format!("{primary}-stdout.log"));
+            assert!(scanner_diagnostics(&super::super::captured_stderr(&output).unwrap()).is_err());
             let report = read_json(&output).unwrap();
             let counts = report_counts(
                 &bom,
@@ -1333,9 +1326,9 @@ mod tests {
                 .metadata()
                 .unwrap()
                 .len();
-            statuses.push(json!({"tool": tool, "status": "findings", "count": total(&counts), "counts": counts, "report_bytes": size}));
+            statuses.push(json!({"tool": tool, "status": "blocked-diagnostics-and-findings", "count": total(&counts), "counts": counts, "report_bytes": size}));
         }
-        write_json(&driver.root.join(".work/tasks-native-verified-counts.json"), &json!({"scope":"offline candidate capture replay, not release acceptance", "arch": arch, "tools": statuses})).unwrap();
+        write_json(&driver.root.join(".work/tasks-native-verified-counts.json"), &json!({"scope":"blocked offline candidate capture inspection, not scan/release acceptance", "arch": arch, "tools": statuses})).unwrap();
     }
 
     #[test]
