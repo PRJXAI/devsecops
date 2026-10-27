@@ -792,7 +792,13 @@ pub(super) fn publish(driver: &mut Driver) -> Result<()> {
     // No token is read: docker/login-action supplies Docker credentials externally.
     let assets = preflight(&driver.root, &revision, Utc::now())?;
     driver.native()?;
-    load_assets(driver, &assets)?;
+    publish_preflighted(driver, &assets, &revision)
+}
+
+// One concrete post-preflight phase so regression tests exercise the SAME
+// load barrier and registry mutation sequence as the authorized entrypoint.
+fn publish_preflighted(driver: &mut Driver, assets: &[Asset], revision: &str) -> Result<()> {
+    load_assets(driver, assets)?;
     let published = driver.root.join(".work/published");
     mkdir(&published, false)?;
     let mut subjects = String::new();
