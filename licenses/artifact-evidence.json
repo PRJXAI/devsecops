@@ -1,0 +1,1899 @@
+{
+  "approval": false,
+  "archive_inventory": [
+    {
+      "literal_pin_matches": true,
+      "name": "audit-official-archive",
+      "selected_files": [
+        {
+          "evidence_file": "audit-official-archive-0",
+          "path": "cargo-audit-x86_64-unknown-linux-musl-v0.22.1/CHANGELOG.md",
+          "sha256": "a89b0a749a242ebde99ea710a7c20a9f8b1a21397f9b1f46531bbbfd76e86412",
+          "size": 17464
+        },
+        {
+          "evidence_file": "audit-official-archive-1",
+          "path": "cargo-audit-x86_64-unknown-linux-musl-v0.22.1/LICENSE-APACHE",
+          "sha256": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2",
+          "size": 10847
+        },
+        {
+          "evidence_file": "audit-official-archive-2",
+          "path": "cargo-audit-x86_64-unknown-linux-musl-v0.22.1/README.md",
+          "sha256": "9d73dca4f1bb04cffa64f77c921db96a806a84abb70138b06d323c0968c8c9b5",
+          "size": 5686
+        },
+        {
+          "evidence_file": "audit-official-archive-3",
+          "path": "cargo-audit-x86_64-unknown-linux-musl-v0.22.1/LICENSE-MIT",
+          "sha256": "29662666b44dff84977b46e05642cdef910bc3a93a17b5fd86e632bafa59cf21",
+          "size": 1071
+        },
+        {
+          "evidence_file": "audit-official-archive-4",
+          "path": "cargo-audit-x86_64-unknown-linux-musl-v0.22.1/cargo-audit",
+          "sha256": "d7a4f8034d548b36bc12ed6f1f341e2917436748a56faaa3d6a0e2cb0549696e",
+          "size": 14816000
+        }
+      ],
+      "sha256": "c32506f338bdcdaef5a17fb9f33abb6ecf9561324cfd34237fd335f9283a1eab"
+    },
+    {
+      "literal_pin_matches": true,
+      "name": "audit-quick-archive",
+      "selected_files": [
+        {
+          "evidence_file": "audit-quick-archive-0",
+          "path": "cargo-audit",
+          "sha256": "c6df2b6b85f2596026ccf3fbec9b28855aee617c3dfc638b44b03f2a62a74193",
+          "size": 11980184
+        }
+      ],
+      "sha256": "b33ed5d95ac0ccda2e281a885a117a03fa92084c3e83f468fb82c2272fb26b60"
+    },
+    {
+      "literal_pin_matches": false,
+      "name": "git-source",
+      "selected_files": [
+        {
+          "evidence_file": "git-source-0",
+          "path": "git-a018953688f1b10bddf91bff8747068f5f4746a4/COPYING",
+          "sha256": "5b2198d1645f767585e8a88ac0499b04472164c0d2da22e75ecf97ef443ab32e",
+          "size": 18765
+        },
+        {
+          "evidence_file": "git-source-1",
+          "path": "git-a018953688f1b10bddf91bff8747068f5f4746a4/contrib/subtree/COPYING",
+          "sha256": "ab15fd526bd8dd18a9e77ebc139656bf4d33e97fc7238cd11bf60e2b9b8666c6",
+          "size": 17987
+        },
+        {
+          "evidence_file": "git-source-2",
+          "path": "git-a018953688f1b10bddf91bff8747068f5f4746a4/reftable/LICENSE",
+          "sha256": "8aa118e56e554e9086beb82494e8044d0856d5eb0b162a9061f3553a58f04d67",
+          "size": 1480
+        },
+        {
+          "evidence_file": "git-source-3",
+          "path": "git-a018953688f1b10bddf91bff8747068f5f4746a4/sha1dc/LICENSE.txt",
+          "sha256": "9daac99c665ddc38fde6d7c91b9173c112d5e6c6e7e5f7d8bb8747c630efc83d",
+          "size": 1270
+        },
+        {
+          "evidence_file": "git-source-4",
+          "path": "git-a018953688f1b10bddf91bff8747068f5f4746a4/t/unit-tests/clar/COPYING",
+          "sha256": "a0a61b4b407c613e20119c52e502b0d4a6d52af61e0929b1f71f1daa9b83e8f9",
+          "size": 748
+        }
+      ],
+      "sha256": "898ecd505bcec4390b3b7b2c1882509af3f11f3b62c56147d19f01e2a4e81355"
+    }
+  ],
+  "complete_transitive_notices_established": false,
+  "crypto_verification": [
+    {
+      "certificate_caller_source_constraints_checked": true,
+      "criteria_and_arguments": [
+        "verify-blob-attestation",
+        "--timeout",
+        "80s",
+        "--bundle",
+        ".work/approval-suppliers/http/compose-arm-sigstore.body",
+        "--certificate-github-workflow-repository",
+        "docker/compose",
+        "--certificate-github-workflow-ref",
+        "refs/tags/v5.6.1",
+        "--certificate-github-workflow-sha",
+        "6cbc19a3fd59e305fb814dca4d854a4fb67d2941",
+        "--certificate-identity",
+        "https://github.com/docker/github-builder/.github/workflows/bake.yml@58cb9f5b71b1836d6f690c1e95effdeb9b98cb8a",
+        "--certificate-oidc-issuer",
+        "https://token.actions.githubusercontent.com",
+        "--type",
+        "slsaprovenance1",
+        "--digest",
+        "42cfa75f51ad0ccf290bad37899e0038a8c10a0069e85233ecc1d53e3ff1347d",
+        "--digestAlg",
+        "sha256"
+      ],
+      "id": "compose-arm",
+      "signature_and_transparency_checks_disabled": false,
+      "tool": "cosign 3.1.1",
+      "verified": true
+    },
+    {
+      "certificate_caller_source_constraints_checked": true,
+      "criteria_and_arguments": [
+        "verify-blob-attestation",
+        "--timeout",
+        "80s",
+        "--bundle",
+        ".work/approval-suppliers/http/compose-amd-sigstore.body",
+        "--certificate-github-workflow-repository",
+        "docker/compose",
+        "--certificate-github-workflow-ref",
+        "refs/tags/v5.6.1",
+        "--certificate-github-workflow-sha",
+        "6cbc19a3fd59e305fb814dca4d854a4fb67d2941",
+        "--certificate-identity",
+        "https://github.com/docker/github-builder/.github/workflows/bake.yml@58cb9f5b71b1836d6f690c1e95effdeb9b98cb8a",
+        "--certificate-oidc-issuer",
+        "https://token.actions.githubusercontent.com",
+        "--type",
+        "slsaprovenance1",
+        "--digest",
+        "47737f4236e6d3ccea7291995203f8f018058783b4c3a9469119811a0b5db8c0",
+        "--digestAlg",
+        "sha256"
+      ],
+      "id": "compose-amd",
+      "signature_and_transparency_checks_disabled": false,
+      "tool": "cosign 3.1.1",
+      "verified": true
+    },
+    {
+      "certificate_caller_source_constraints_checked": true,
+      "criteria_and_arguments": [
+        "verify-blob-attestation",
+        "--timeout",
+        "80s",
+        "--bundle",
+        ".work/approval-suppliers/http/buildx-arm-sigstore.body",
+        "--certificate-github-workflow-repository",
+        "docker/buildx",
+        "--certificate-github-workflow-ref",
+        "refs/tags/v0.38.1",
+        "--certificate-github-workflow-sha",
+        "0dbe87f36ed472fe36b6796c3f70b4210a731fc5",
+        "--certificate-identity",
+        "https://github.com/docker/github-builder/.github/workflows/bake.yml@58cb9f5b71b1836d6f690c1e95effdeb9b98cb8a",
+        "--certificate-oidc-issuer",
+        "https://token.actions.githubusercontent.com",
+        "--type",
+        "slsaprovenance1",
+        "--digest",
+        "3b83b3731916ba433feccaaa689fe5bcdc81c641d92c8e6c2ea865dfa141c97a",
+        "--digestAlg",
+        "sha256"
+      ],
+      "id": "buildx-arm",
+      "signature_and_transparency_checks_disabled": false,
+      "tool": "cosign 3.1.1",
+      "verified": true
+    },
+    {
+      "certificate_caller_source_constraints_checked": true,
+      "criteria_and_arguments": [
+        "verify-blob-attestation",
+        "--timeout",
+        "80s",
+        "--bundle",
+        ".work/approval-suppliers/http/buildx-amd-sigstore.body",
+        "--certificate-github-workflow-repository",
+        "docker/buildx",
+        "--certificate-github-workflow-ref",
+        "refs/tags/v0.38.1",
+        "--certificate-github-workflow-sha",
+        "0dbe87f36ed472fe36b6796c3f70b4210a731fc5",
+        "--certificate-identity",
+        "https://github.com/docker/github-builder/.github/workflows/bake.yml@58cb9f5b71b1836d6f690c1e95effdeb9b98cb8a",
+        "--certificate-oidc-issuer",
+        "https://token.actions.githubusercontent.com",
+        "--type",
+        "slsaprovenance1",
+        "--digest",
+        "e25d5cd675092bb5d1d03632fdc46cdf3fede7b514dc5f023a105e00d3ce5ad4",
+        "--digestAlg",
+        "sha256"
+      ],
+      "id": "buildx-amd",
+      "signature_and_transparency_checks_disabled": false,
+      "tool": "cosign 3.1.1",
+      "verified": true
+    },
+    {
+      "certificate_caller_source_constraints_checked": false,
+      "criteria_and_arguments": [
+        "verify-attestation",
+        "--timeout",
+        "80s",
+        "--certificate-identity",
+        "https://github.com/chainguard-images/images/.github/workflows/release.yaml@refs/heads/main",
+        "--certificate-oidc-issuer",
+        "https://token.actions.githubusercontent.com",
+        "--type",
+        "slsaprovenance1",
+        "cgr.dev/chainguard/git@sha256:6b5b402aaba4db9a6446e363d70bcc158c773c5d00c75d4bcd68691fdaa539cc"
+      ],
+      "id": "git",
+      "signature_and_transparency_checks_disabled": false,
+      "tool": "cosign 3.1.1",
+      "verified": true
+    },
+    {
+      "certificate_caller_source_constraints_checked": false,
+      "criteria_and_arguments": [
+        "verify-attestation",
+        "--timeout",
+        "80s",
+        "--certificate-identity",
+        "https://github.com/chainguard-images/images/.github/workflows/release.yaml@refs/heads/main",
+        "--certificate-oidc-issuer",
+        "https://token.actions.githubusercontent.com",
+        "--type",
+        "slsaprovenance1",
+        "cgr.dev/chainguard/glibc-dynamic@sha256:5380a8b913d0900cf44180e2205bf3ebf0e0b00a32a0f2fa4ab16cb06d7f9cdf"
+      ],
+      "id": "glibc",
+      "signature_and_transparency_checks_disabled": false,
+      "tool": "cosign 3.1.1",
+      "verified": true
+    }
+  ],
+  "http": [
+    {
+      "bytes": 6402626,
+      "id": "audit-official-archive",
+      "retrieved_unix": 1793129446,
+      "sha256": "c32506f338bdcdaef5a17fb9f33abb6ecf9561324cfd34237fd335f9283a1eab",
+      "status": "retrieved",
+      "url": "https://github.com/rustsec/rustsec/releases/download/cargo-audit/v0.22.1/cargo-audit-x86_64-unknown-linux-musl-v0.22.1.tgz"
+    },
+    {
+      "bytes": 14322,
+      "id": "audit-official-release",
+      "retrieved_unix": 1793129384,
+      "sha256": "2045980e4713f2c1e69265e3fee1743a8af7649fcfc73b53590740ba4e0eb359",
+      "status": "retrieved",
+      "url": "https://api.github.com/repos/rustsec/rustsec/releases/tags/cargo-audit%2Fv0.22.1"
+    },
+    {
+      "bytes": 5884900,
+      "id": "audit-quick-archive",
+      "retrieved_unix": 1793129447,
+      "sha256": "b33ed5d95ac0ccda2e281a885a117a03fa92084c3e83f468fb82c2272fb26b60",
+      "status": "retrieved",
+      "url": "https://github.com/cargo-bins/cargo-quickinstall/releases/download/cargo-audit-0.22.1/cargo-audit-0.22.1-aarch64-unknown-linux-musl.tar.gz"
+    },
+    {
+      "bytes": 36827,
+      "id": "audit-quick-release",
+      "retrieved_unix": 1793129385,
+      "sha256": "64802d9b9e4b2f2a971f427831b5195376512e4a1b11d5df2b71f1d10aa64cb6",
+      "status": "retrieved",
+      "url": "https://api.github.com/repos/cargo-bins/cargo-quickinstall/releases/tags/cargo-audit-0.22.1"
+    },
+    {
+      "bytes": 347,
+      "id": "audit-quick-signature",
+      "retrieved_unix": 1793129448,
+      "sha256": "e7137c495ec6fa52d2060506a1d8914de7144afb32d30a7de5e843c6a485d295",
+      "status": "retrieved",
+      "url": "https://github.com/cargo-bins/cargo-quickinstall/releases/download/cargo-audit-0.22.1/cargo-audit-0.22.1-aarch64-unknown-linux-musl.tar.gz.sig"
+    },
+    {
+      "bytes": 375,
+      "id": "audit-tag",
+      "retrieved_unix": 1793129436,
+      "sha256": "3e1a37e75a9d3c2692b273f1d698dc04baa917dcbff8c3bff7e582f03f935285",
+      "status": "retrieved",
+      "url": "https://api.github.com/repos/rustsec/rustsec/git/ref/tags/cargo-audit/v0.22.1"
+    },
+    {
+      "bytes": 1680,
+      "id": "audit-tag-object",
+      "retrieved_unix": 1793129547,
+      "sha256": "38ce61ea3536accd6bb7e6ba9585789b4cea8224570c715f29352fa073c9036d",
+      "status": "retrieved",
+      "url": "https://api.github.com/repos/rustsec/rustsec/git/tags/c9f8506963a0050a7b53ce4d3781baa9485c7a89"
+    },
+    {
+      "bytes": 55597,
+      "id": "buildx-amd-provenance",
+      "retrieved_unix": 1793129443,
+      "sha256": "f159fab24d244896a34e20447a17adc6f51bb63fe0664392633591e1bd65de15",
+      "status": "retrieved",
+      "url": "https://github.com/docker/buildx/releases/download/v0.38.1/buildx-v0.38.1.linux-amd64.provenance.json"
+    },
+    {
+      "bytes": 84141,
+      "id": "buildx-amd-sigstore",
+      "retrieved_unix": 1793129445,
+      "sha256": "056488c76fd1749b2128487e9f6d6fe0b300e6d2929ecbed2782eb9263ee225f",
+      "status": "retrieved",
+      "url": "https://github.com/docker/buildx/releases/download/v0.38.1/buildx-v0.38.1.linux-amd64.sigstore.json"
+    },
+    {
+      "bytes": 55597,
+      "id": "buildx-arm-provenance",
+      "retrieved_unix": 1793129443,
+      "sha256": "ef7b69fe3266df0ac6e72e79c56ee74d2e0bfc03c75a3448a368eaa7be672b76",
+      "status": "retrieved",
+      "url": "https://github.com/docker/buildx/releases/download/v0.38.1/buildx-v0.38.1.linux-arm64.provenance.json"
+    },
+    {
+      "bytes": 410703,
+      "id": "buildx-arm-sbom",
+      "retrieved_unix": 1793129444,
+      "sha256": "5cb677fb499a8f7698b40604580284c6ea3df2ac9a96775ecd293ed7824c6e91",
+      "status": "retrieved",
+      "url": "https://github.com/docker/buildx/releases/download/v0.38.1/buildx-v0.38.1.linux-arm64.sbom.json"
+    },
+    {
+      "bytes": 84235,
+      "id": "buildx-arm-sigstore",
+      "retrieved_unix": 1793129445,
+      "sha256": "95b2241d6f0c98dd4f6ccbac13dd547bc52772d3bed681789af32ec2c204f8c6",
+      "status": "retrieved",
+      "url": "https://github.com/docker/buildx/releases/download/v0.38.1/buildx-v0.38.1.linux-arm64.sigstore.json"
+    },
+    {
+      "bytes": 11358,
+      "id": "buildx-license",
+      "retrieved_unix": 1793129545,
+      "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+      "status": "retrieved",
+      "url": "https://raw.githubusercontent.com/docker/buildx/0dbe87f36ed472fe36b6796c3f70b4210a731fc5/LICENSE"
+    },
+    {
+      "bytes": 0,
+      "id": "buildx-notice",
+      "retrieved_unix": 1793129545,
+      "sha256": null,
+      "status": "not_retrieved_anonymously",
+      "url": "https://raw.githubusercontent.com/docker/buildx/0dbe87f36ed472fe36b6796c3f70b4210a731fc5/NOTICE"
+    },
+    {
+      "bytes": 113341,
+      "id": "buildx-release",
+      "retrieved_unix": 1793129383,
+      "sha256": "5e9574470d0ec94ab46cf70eb580bca3736bc39383fcb06d6d602ae3e0f8e8d8",
+      "status": "retrieved",
+      "url": "https://api.github.com/repos/docker/buildx/releases/tags/v0.38.1"
+    },
+    {
+      "bytes": 331,
+      "id": "buildx-tag",
+      "retrieved_unix": 1793129386,
+      "sha256": "53da3ac9585232688d2550669f049d7267fe4d31e3d321241c14cdbcb4c05234",
+      "status": "retrieved",
+      "url": "https://api.github.com/repos/docker/buildx/git/ref/tags/v0.38.1"
+    },
+    {
+      "bytes": 2152,
+      "id": "buildx-tag-object",
+      "retrieved_unix": 1793129436,
+      "sha256": "81b7aa5a64f62a3ee0efe75336b00a94f349707f8ecc7897c15141ad7c6f8026",
+      "status": "retrieved",
+      "url": "https://api.github.com/repos/docker/buildx/git/tags/9a43f5f060a560384f2b7508d3180d19c2e71136"
+    },
+    {
+      "bytes": 0,
+      "id": "cgr-git-manifest",
+      "retrieved_unix": 1793129388,
+      "sha256": null,
+      "status": "not_retrieved_anonymously",
+      "url": "https://cgr.dev/v2/chainguard/git/manifests/sha256:6b5b402aaba4db9a6446e363d70bcc158c773c5d00c75d4bcd68691fdaa539cc"
+    },
+    {
+      "bytes": 0,
+      "id": "chainguard-git-exact-candidate",
+      "retrieved_unix": 1793129883,
+      "sha256": null,
+      "status": "not_retrieved_anonymously",
+      "url": "https://raw.githubusercontent.com/chainguard-dev/os/a3655395a06e663e8406d260a966b9e022e11f7e/git.yaml"
+    },
+    {
+      "bytes": 0,
+      "id": "chainguard-glibc-exact-candidate",
+      "retrieved_unix": 1793129883,
+      "sha256": null,
+      "status": "not_retrieved_anonymously",
+      "url": "https://raw.githubusercontent.com/chainguard-dev/os/29df9b08616c849ddc2af8dadea153f51259ac3b/glibc-2.44.yaml"
+    },
+    {
+      "bytes": 10765,
+      "id": "cli-license",
+      "retrieved_unix": 1793129544,
+      "sha256": "2d81ea060825006fc8f3fe28aa5dc0ffeb80faf325b612c955229157b8c10dc0",
+      "status": "retrieved",
+      "url": "https://raw.githubusercontent.com/docker/cli/a82e528901260c8df6073311379eac65f92db204/LICENSE"
+    },
+    {
+      "bytes": 635,
+      "id": "cli-notice",
+      "retrieved_unix": 1793129544,
+      "sha256": "a8c869fbda819afb8d80e0ac19bac52e766bc6c19cb38cf94f52d64c4be2aab6",
+      "status": "retrieved",
+      "url": "https://raw.githubusercontent.com/docker/cli/a82e528901260c8df6073311379eac65f92db204/NOTICE"
+    },
+    {
+      "bytes": 325,
+      "id": "cli-tag",
+      "retrieved_unix": 1793129385,
+      "sha256": "a884086c7e99b71afbd8fadc4608f1b066c20fce54496af52aeff37b27afc7ff",
+      "status": "retrieved",
+      "url": "https://api.github.com/repos/docker/cli/git/ref/tags/v29.9.2"
+    },
+    {
+      "bytes": 1448,
+      "id": "cli-tag-object",
+      "retrieved_unix": 1793129435,
+      "sha256": "48d6f346f1f9da839dcc6c03e73230e9421c9f6ca53e8f2cc7f4cc779e1149e4",
+      "status": "retrieved",
+      "url": "https://api.github.com/repos/docker/cli/git/tags/0cc0fc64632a9ee9cab5884b99fee3b43f08a3e2"
+    },
+    {
+      "bytes": 21979,
+      "id": "cli-vendor",
+      "retrieved_unix": 1793129544,
+      "sha256": "f7d72777b483c4880f2423083315d3277712287c75f888772d61ce7d7186c25c",
+      "status": "retrieved",
+      "url": "https://raw.githubusercontent.com/docker/cli/a82e528901260c8df6073311379eac65f92db204/vendor/modules.txt"
+    },
+    {
+      "bytes": 60611,
+      "id": "compose-amd-provenance",
+      "retrieved_unix": 1793129440,
+      "sha256": "1f27df6d66b9138cc2736ff4a1efa73b11594e2f0d03521db963f0a39b201a2a",
+      "status": "retrieved",
+      "url": "https://github.com/docker/compose/releases/download/v5.6.1/docker-compose-linux-x86_64.provenance.json"
+    },
+    {
+      "bytes": 91024,
+      "id": "compose-amd-sigstore",
+      "retrieved_unix": 1793129442,
+      "sha256": "c9f23ee4be15b110d2cdc2fdacdafb7ad2bf2e8f8c5c99a7f479f3dffd803025",
+      "status": "retrieved",
+      "url": "https://github.com/docker/compose/releases/download/v5.6.1/docker-compose-linux-x86_64.sigstore.json"
+    },
+    {
+      "bytes": 60612,
+      "id": "compose-arm-provenance",
+      "retrieved_unix": 1793129440,
+      "sha256": "db2fabe3a2945881cfc3ec815e2530eee2ab366f4cfaf131527248262cfc2993",
+      "status": "retrieved",
+      "url": "https://github.com/docker/compose/releases/download/v5.6.1/docker-compose-linux-aarch64.provenance.json"
+    },
+    {
+      "bytes": 229054,
+      "id": "compose-arm-sbom",
+      "retrieved_unix": 1793129441,
+      "sha256": "93931567480f668ef6fdd5d6676101f2e48334b9e2e7da5abf49833645bf767f",
+      "status": "retrieved",
+      "url": "https://github.com/docker/compose/releases/download/v5.6.1/docker-compose-linux-aarch64.sbom.json"
+    },
+    {
+      "bytes": 91001,
+      "id": "compose-arm-sigstore",
+      "retrieved_unix": 1793129442,
+      "sha256": "7c628e9f3fe2fb6183e0051a8e71931d64ed51f765808cfb7e83f24efcbc2454",
+      "status": "retrieved",
+      "url": "https://github.com/docker/compose/releases/download/v5.6.1/docker-compose-linux-aarch64.sigstore.json"
+    },
+    {
+      "bytes": 11357,
+      "id": "compose-license",
+      "retrieved_unix": 1793129544,
+      "sha256": "58d1e17ffe5109a7ae296caafcadfdbe6a7d176f0bc4ab01e12a689b0499d8bd",
+      "status": "retrieved",
+      "url": "https://raw.githubusercontent.com/docker/compose/6cbc19a3fd59e305fb814dca4d854a4fb67d2941/LICENSE"
+    },
+    {
+      "bytes": 140,
+      "id": "compose-notice",
+      "retrieved_unix": 1793129545,
+      "sha256": "b7dca0a6b01fa7365e4892877a6321179ee343d72ee87a96cfc222141b99a1e6",
+      "status": "retrieved",
+      "url": "https://raw.githubusercontent.com/docker/compose/6cbc19a3fd59e305fb814dca4d854a4fb67d2941/NOTICE"
+    },
+    {
+      "bytes": 96033,
+      "id": "compose-release",
+      "retrieved_unix": 1793129383,
+      "sha256": "de2783c9a254159dae3f1dfc395e4f3a375886238b64199063d9235143e453fa",
+      "status": "retrieved",
+      "url": "https://api.github.com/repos/docker/compose/releases/tags/v5.6.1"
+    },
+    {
+      "bytes": 331,
+      "id": "compose-tag",
+      "retrieved_unix": 1793129385,
+      "sha256": "1b95a88ec2da34fd449479400cde6f151aa538080d4bafa13890825bdadead04",
+      "status": "retrieved",
+      "url": "https://api.github.com/repos/docker/compose/git/ref/tags/v5.6.1"
+    },
+    {
+      "bytes": 1420,
+      "id": "compose-tag-object",
+      "retrieved_unix": 1793129435,
+      "sha256": "543f1947cbf9aa45d0bab6b7e1a45b9c15408b0a9fd00acf0db997de0185d97b",
+      "status": "retrieved",
+      "url": "https://api.github.com/repos/docker/compose/git/tags/02f05e3787e5b2e83220923907bb014e6a36b359"
+    },
+    {
+      "bytes": 6556,
+      "id": "docker-library-recipe",
+      "retrieved_unix": 1793129546,
+      "sha256": "3767fe96ef1fba1f75ef961da163a2eb861905e05ab0af5aecdb972e5d6f9e31",
+      "status": "retrieved",
+      "url": "https://raw.githubusercontent.com/docker-library/docker/a44773e1e79648f9fd7ebb7cb5cc00387dc05de0/29/cli/Dockerfile"
+    },
+    {
+      "bytes": 0,
+      "id": "git-commit",
+      "retrieved_unix": 1793129386,
+      "sha256": null,
+      "status": "not_retrieved_anonymously",
+      "url": "https://api.github.com/repos/git/git/commits/02cd7dbd28"
+    },
+    {
+      "bytes": 4729,
+      "id": "git-patch",
+      "retrieved_unix": 1793129744,
+      "sha256": "3b33720630833a3ffdfafde6d285fc17190a800e978ef13a9e0269d70ee7e90c",
+      "status": "retrieved",
+      "url": "https://github.com/git/git/commit/76524c2604bceee48481909e7824494498c39a34.patch"
+    },
+    {
+      "bytes": 12796779,
+      "id": "git-source",
+      "retrieved_unix": 1793129744,
+      "sha256": "898ecd505bcec4390b3b7b2c1882509af3f11f3b62c56147d19f01e2a4e81355",
+      "status": "retrieved",
+      "url": "https://github.com/git/git/archive/a018953688f1b10bddf91bff8747068f5f4746a4.tar.gz"
+    },
+    {
+      "bytes": 13230311,
+      "id": "git-supplier-source",
+      "retrieved_unix": 1793129947,
+      "sha256": "e0c14f098cf77326dff6bcfe75537f9f84722a4096e0413de8aaea237887bc7e",
+      "status": "retrieved",
+      "url": "https://tarballs.cgr.dev/p/13d95d86c3cf193d4f0417e059a08cc793fc772f803086b07d168643a0b50f40-a018953688f1b10bddf91bff8747068f5f4746a4.tar.gz"
+    },
+    {
+      "bytes": 18765,
+      "id": "git-upstream-copying",
+      "retrieved_unix": 1793129449,
+      "sha256": "5b2198d1645f767585e8a88ac0499b04472164c0d2da22e75ecf97ef443ab32e",
+      "status": "retrieved",
+      "url": "https://raw.githubusercontent.com/git/git/v2.56.0/COPYING"
+    },
+    {
+      "bytes": 1069,
+      "id": "gitleaks-license",
+      "retrieved_unix": 1793129448,
+      "sha256": "e3884b252b3bfc045e55be43a34d1e80da070bc6f804ac95bf4660e97d62ebc6",
+      "status": "retrieved",
+      "url": "https://raw.githubusercontent.com/gitleaks/gitleaks/83d9cd684c87d95d656c1458ef04895a7f1cbd8e/LICENSE"
+    },
+    {
+      "bytes": 19222,
+      "id": "gitleaks-release",
+      "retrieved_unix": 1793129384,
+      "sha256": "129ccc9276c61427508b1ccd06febab611b7c2f883d78bfea3b0282f948a7682",
+      "status": "retrieved",
+      "url": "https://api.github.com/repos/gitleaks/gitleaks/releases/tags/v8.30.1"
+    },
+    {
+      "bytes": 0,
+      "id": "glibc-copying",
+      "retrieved_unix": 1793129743,
+      "sha256": null,
+      "status": "not_retrieved_anonymously",
+      "url": "https://raw.githubusercontent.com/bminor/glibc/045c51476c7abf6144815a4db44f51a118b4cb3e/COPYING"
+    },
+    {
+      "bytes": 0,
+      "id": "glibc-copying-lib",
+      "retrieved_unix": 1793129743,
+      "sha256": null,
+      "status": "not_retrieved_anonymously",
+      "url": "https://raw.githubusercontent.com/bminor/glibc/045c51476c7abf6144815a4db44f51a118b4cb3e/COPYING.LIB"
+    },
+    {
+      "bytes": 0,
+      "id": "glibc-license",
+      "retrieved_unix": 1793129744,
+      "sha256": null,
+      "status": "not_retrieved_anonymously",
+      "url": "https://raw.githubusercontent.com/bminor/glibc/045c51476c7abf6144815a4db44f51a118b4cb3e/LICENSES"
+    },
+    {
+      "bytes": 0,
+      "id": "glibc-patch1",
+      "retrieved_unix": 1793129742,
+      "sha256": null,
+      "status": "not_retrieved_anonymously",
+      "url": "https://raw.githubusercontent.com/wolfi-dev/os/29df9b08616c849ddc2af8dadea153f51259ac3b/glibc-2.44/0001-Link-startup-files-without-package-metadata.patch"
+    },
+    {
+      "bytes": 0,
+      "id": "glibc-patch2",
+      "retrieved_unix": 1793129742,
+      "sha256": null,
+      "status": "not_retrieved_anonymously",
+      "url": "https://raw.githubusercontent.com/wolfi-dev/os/29df9b08616c849ddc2af8dadea153f51259ac3b/glibc-2.44/fdo.patch"
+    },
+    {
+      "bytes": 0,
+      "id": "glibc-patch3",
+      "retrieved_unix": 1793129743,
+      "sha256": null,
+      "status": "not_retrieved_anonymously",
+      "url": "https://raw.githubusercontent.com/wolfi-dev/os/29df9b08616c849ddc2af8dadea153f51259ac3b/glibc-2.44/fix-allowed-failures-escaping.patch"
+    },
+    {
+      "bytes": 42952513,
+      "id": "glibc-supplier-source",
+      "retrieved_unix": 1793129949,
+      "sha256": "9caf220e935fca38a6dd41f65e4fea8559cc94e5296ec76af64054e07252bd1e",
+      "status": "retrieved",
+      "url": "https://tarballs.cgr.dev/g/9390037ac2ec26cf74ce7c6709d852e0ce67205355e04fbdb9b9549f47a5bb40-045c51476c7abf6144815a4db44f51a118b4cb3e.tar.gz"
+    },
+    {
+      "bytes": 97,
+      "id": "pcre2-copying",
+      "retrieved_unix": 1793129879,
+      "sha256": "99272c55f3dcfa07a8a7e15a5c1a33096e4727de74241d65fa049fccfdd59507",
+      "status": "retrieved",
+      "url": "https://raw.githubusercontent.com/PCRE2Project/pcre2/6f9d7c1373262c541324a16a358785b33ef116cf/COPYING"
+    },
+    {
+      "bytes": 89,
+      "id": "pcre2-gitmodules",
+      "retrieved_unix": 1793130066,
+      "sha256": "7b0f71efeb749c114d98e659eeb0c17f560f804fc38f7a4978f5a52fe149fef2",
+      "status": "retrieved",
+      "url": "https://raw.githubusercontent.com/PCRE2Project/pcre2/6f9d7c1373262c541324a16a358785b33ef116cf/.gitmodules"
+    },
+    {
+      "bytes": 4011,
+      "id": "pcre2-licence-md",
+      "retrieved_unix": 1793129879,
+      "sha256": "197d8a73ffee0d6b09adba2f9c677b5f5aede24edf89258a68e48248d010d811",
+      "status": "retrieved",
+      "url": "https://raw.githubusercontent.com/PCRE2Project/pcre2/6f9d7c1373262c541324a16a358785b33ef116cf/LICENCE.md"
+    },
+    {
+      "bytes": 0,
+      "id": "pcre2-license",
+      "retrieved_unix": 1793129549,
+      "sha256": null,
+      "status": "not_retrieved_anonymously",
+      "url": "https://raw.githubusercontent.com/PCRE2Project/pcre2/6f9d7c1373262c541324a16a358785b33ef116cf/LICENCE"
+    },
+    {
+      "bytes": 3459541,
+      "id": "pcre2-source",
+      "retrieved_unix": 1793130066,
+      "sha256": "d2be545b3f16571d37a81795d0e528007e882b9d95335d6e9344a1574a9ef431",
+      "status": "retrieved",
+      "url": "https://github.com/PCRE2Project/pcre2/archive/6f9d7c1373262c541324a16a358785b33ef116cf.tar.gz"
+    },
+    {
+      "bytes": 133562,
+      "id": "pcre2-tree",
+      "retrieved_unix": 1793129747,
+      "sha256": "25fc58d1161a0f9ca0d555960f916a1222155f7e6a1fe6b0a579922299e5c26f",
+      "status": "retrieved",
+      "url": "https://api.github.com/repos/PCRE2Project/pcre2/git/trees/6f9d7c1373262c541324a16a358785b33ef116cf?recursive=1"
+    },
+    {
+      "bytes": 0,
+      "id": "quick-attestations",
+      "retrieved_unix": 1793129882,
+      "sha256": null,
+      "status": "not_retrieved_anonymously",
+      "url": "https://api.github.com/repos/cargo-bins/cargo-quickinstall/attestations/sha256:b33ed5d95ac0ccda2e281a885a117a03fa92084c3e83f468fb82c2272fb26b60"
+    },
+    {
+      "bytes": 3738,
+      "id": "quick-build-script",
+      "retrieved_unix": 1793129548,
+      "sha256": "cf891c8d5b6c2997ab706c7fbbfd5864959c51e688685bfd8312120f0bee0a6b",
+      "status": "retrieved",
+      "url": "https://raw.githubusercontent.com/cargo-bins/cargo-quickinstall/dfe265d82b120ce16dca1ec64a874cdd3c43c655/build-version.sh"
+    },
+    {
+      "bytes": 8816,
+      "id": "quick-build-workflow",
+      "retrieved_unix": 1793129547,
+      "sha256": "c70170b71b5435fe011bf9858a3921dfa6e338e2d17fa2ee5f0e9d5098d70e78",
+      "status": "retrieved",
+      "url": "https://raw.githubusercontent.com/cargo-bins/cargo-quickinstall/dfe265d82b120ce16dca1ec64a874cdd3c43c655/.github/workflows/build-package.yml"
+    },
+    {
+      "bytes": 113,
+      "id": "quick-minisign-key",
+      "retrieved_unix": 1793129547,
+      "sha256": "e46888d4cdb645fe475f9fc213a4575f16ba590aed56668bcf6b3d3ec216af0e",
+      "status": "retrieved",
+      "url": "https://raw.githubusercontent.com/cargo-bins/cargo-quickinstall/dfe265d82b120ce16dca1ec64a874cdd3c43c655/minisign.pub"
+    },
+    {
+      "bytes": 4265,
+      "id": "quick-readme",
+      "retrieved_unix": 1793129388,
+      "sha256": "499df0fbf00bde45d90d1d544871908120c65555122cd1ce06cf7c0206b09de7",
+      "status": "retrieved",
+      "url": "https://raw.githubusercontent.com/cargo-bins/cargo-quickinstall/main/README.md"
+    },
+    {
+      "bytes": 4497,
+      "id": "quick-release-build-script",
+      "retrieved_unix": 1793129953,
+      "sha256": "350b3cf6e3b916e0d0de80e703706ab28890bac167ce3ad1530774fd6368f955",
+      "status": "retrieved",
+      "url": "https://raw.githubusercontent.com/cargo-bins/cargo-quickinstall/ca927393f74234dabd791557ab79c8dc52973a53/build-version.sh"
+    },
+    {
+      "bytes": 8816,
+      "id": "quick-release-build-workflow",
+      "retrieved_unix": 1793129953,
+      "sha256": "170d53fc1dfb4374ed8ecf5383b245d947f78f2198266087da79206bf0262355",
+      "status": "retrieved",
+      "url": "https://raw.githubusercontent.com/cargo-bins/cargo-quickinstall/ca927393f74234dabd791557ab79c8dc52973a53/.github/workflows/build-package.yml"
+    },
+    {
+      "bytes": 6868,
+      "id": "quick-release-commit",
+      "retrieved_unix": 1793129881,
+      "sha256": "0d3654ac61c89a1be973e3e8a04942123c9a735e0bda202b0390d7d5d13c6213",
+      "status": "retrieved",
+      "url": "https://api.github.com/repos/cargo-bins/cargo-quickinstall/commits/ca927393f74234dabd791557ab79c8dc52973a53"
+    },
+    {
+      "bytes": 113,
+      "id": "quick-release-minisign-key",
+      "retrieved_unix": 1793129952,
+      "sha256": "e46888d4cdb645fe475f9fc213a4575f16ba590aed56668bcf6b3d3ec216af0e",
+      "status": "retrieved",
+      "url": "https://raw.githubusercontent.com/cargo-bins/cargo-quickinstall/ca927393f74234dabd791557ab79c8dc52973a53/minisign.pub"
+    },
+    {
+      "bytes": 19428,
+      "id": "quick-release-tree",
+      "retrieved_unix": 1793129881,
+      "sha256": "18de2d3ead06cc87c01c791899074680513c838584f26e3fa260d1ec2dba2667",
+      "status": "retrieved",
+      "url": "https://api.github.com/repos/cargo-bins/cargo-quickinstall/git/trees/ca927393f74234dabd791557ab79c8dc52973a53?recursive=1"
+    },
+    {
+      "bytes": 407,
+      "id": "quick-tag",
+      "retrieved_unix": 1793129748,
+      "sha256": "732691a9c9daf1a75cfc493804b1a74ef3bee3d2cc92f4ea944f835b065daa53",
+      "status": "retrieved",
+      "url": "https://api.github.com/repos/cargo-bins/cargo-quickinstall/git/ref/tags/cargo-audit-0.22.1"
+    },
+    {
+      "bytes": 19428,
+      "id": "quick-tree",
+      "retrieved_unix": 1793129436,
+      "sha256": "b77ff1551674ac8f21add80ee5831f8e20cc4532dd9446aeb55c1f6690e901b2",
+      "status": "retrieved",
+      "url": "https://api.github.com/repos/cargo-bins/cargo-quickinstall/git/trees/main?recursive=1"
+    },
+    {
+      "bytes": 0,
+      "id": "rustsec-attestations",
+      "retrieved_unix": 1793129882,
+      "sha256": null,
+      "status": "not_retrieved_anonymously",
+      "url": "https://api.github.com/repos/rustsec/rustsec/attestations/sha256:c32506f338bdcdaef5a17fb9f33abb6ecf9561324cfd34237fd335f9283a1eab"
+    },
+    {
+      "bytes": 10847,
+      "id": "rustsec-audit-license-apache",
+      "retrieved_unix": 1793129880,
+      "sha256": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2",
+      "status": "retrieved",
+      "url": "https://raw.githubusercontent.com/rustsec/rustsec/efcde93a237dc51f8c32d84d880bf97b442835c8/cargo-audit/LICENSE-APACHE"
+    },
+    {
+      "bytes": 1071,
+      "id": "rustsec-audit-license-mit",
+      "retrieved_unix": 1793129879,
+      "sha256": "29662666b44dff84977b46e05642cdef910bc3a93a17b5fd86e632bafa59cf21",
+      "status": "retrieved",
+      "url": "https://raw.githubusercontent.com/rustsec/rustsec/efcde93a237dc51f8c32d84d880bf97b442835c8/cargo-audit/LICENSE-MIT"
+    },
+    {
+      "bytes": 0,
+      "id": "rustsec-license-apache",
+      "retrieved_unix": 1793129749,
+      "sha256": null,
+      "status": "not_retrieved_anonymously",
+      "url": "https://raw.githubusercontent.com/rustsec/rustsec/efcde93a237dc51f8c32d84d880bf97b442835c8/LICENSE-APACHE"
+    },
+    {
+      "bytes": 0,
+      "id": "rustsec-license-mit",
+      "retrieved_unix": 1793129749,
+      "sha256": null,
+      "status": "not_retrieved_anonymously",
+      "url": "https://raw.githubusercontent.com/rustsec/rustsec/efcde93a237dc51f8c32d84d880bf97b442835c8/LICENSE-MIT"
+    },
+    {
+      "bytes": 109154,
+      "id": "rustsec-lock",
+      "retrieved_unix": 1793129880,
+      "sha256": "0210c0d884406276b49fbbc81b7b9d704af6f7240f1ab998acaa7b7d383c4b4f",
+      "status": "retrieved",
+      "url": "https://raw.githubusercontent.com/rustsec/rustsec/efcde93a237dc51f8c32d84d880bf97b442835c8/Cargo.lock"
+    },
+    {
+      "bytes": 4125,
+      "id": "rustsec-release-workflow",
+      "retrieved_unix": 1793129880,
+      "sha256": "582898c42a72f94490babda6fc0d4c0915353679bd7613c1dcbfc3271673f915",
+      "status": "retrieved",
+      "url": "https://raw.githubusercontent.com/rustsec/rustsec/efcde93a237dc51f8c32d84d880bf97b442835c8/.github/workflows/release.yml"
+    },
+    {
+      "bytes": 1124111,
+      "id": "rustsec-source",
+      "retrieved_unix": 1793130069,
+      "sha256": "5aa2af67748de29e70079efe93d8785216727e50086b9896970177ce0079ebfb",
+      "status": "retrieved",
+      "url": "https://github.com/rustsec/rustsec/archive/efcde93a237dc51f8c32d84d880bf97b442835c8.tar.gz"
+    },
+    {
+      "bytes": 99705,
+      "id": "rustsec-tree",
+      "retrieved_unix": 1793129748,
+      "sha256": "5912f9e6f94fe82b9b549de675404d13b3030fd2dbba1b2f159a7dfa59e55db0",
+      "status": "retrieved",
+      "url": "https://api.github.com/repos/rustsec/rustsec/git/trees/efcde93a237dc51f8c32d84d880bf97b442835c8?recursive=1"
+    },
+    {
+      "bytes": 1444,
+      "id": "sljit-license",
+      "retrieved_unix": 1793130066,
+      "sha256": "5f216505c0f6ea3273caec89e766eef93cdeb7bbb0c429f9360116d7c938feeb",
+      "status": "retrieved",
+      "url": "https://raw.githubusercontent.com/zherczeg/sljit/de0259c7aaf36aa40cba8014f3fad3edde9307f9/LICENSE"
+    },
+    {
+      "bytes": 0,
+      "id": "stereo-git-recipe",
+      "retrieved_unix": 1793129946,
+      "sha256": null,
+      "status": "not_retrieved_anonymously",
+      "url": "https://raw.githubusercontent.com/chainguard-dev/stereo/a3655395a06e663e8406d260a966b9e022e11f7e/git.yaml"
+    },
+    {
+      "bytes": 0,
+      "id": "stereo-glibc-recipe",
+      "retrieved_unix": 1793129946,
+      "sha256": null,
+      "status": "not_retrieved_anonymously",
+      "url": "https://raw.githubusercontent.com/chainguard-dev/stereo/29df9b08616c849ddc2af8dadea153f51259ac3b/glibc-2.44.yaml"
+    },
+    {
+      "bytes": 0,
+      "id": "stereo-pcre2-recipe",
+      "retrieved_unix": 1793129946,
+      "sha256": null,
+      "status": "not_retrieved_anonymously",
+      "url": "https://raw.githubusercontent.com/chainguard-dev/stereo/22949b2f2440b25b7c18a18e3b62ff13f57bffd4/pcre2.yaml"
+    },
+    {
+      "bytes": 0,
+      "id": "stereo-zlib-recipe",
+      "retrieved_unix": 1793129946,
+      "sha256": null,
+      "status": "not_retrieved_anonymously",
+      "url": "https://raw.githubusercontent.com/chainguard-dev/stereo/75278be0abfe311aedfbf7c3933f6f0b819980e6/zlib.yaml"
+    },
+    {
+      "bytes": 15705,
+      "id": "wolfi-git",
+      "retrieved_unix": 1793129386,
+      "sha256": "1bcf10c7c6dd59245a4ca7b5ae761af5062544e94479aada2dfa0b1dadc3653c",
+      "status": "retrieved",
+      "url": "https://raw.githubusercontent.com/wolfi-dev/os/main/git.yaml"
+    },
+    {
+      "bytes": 0,
+      "id": "wolfi-git-exact",
+      "retrieved_unix": 1793129740,
+      "sha256": null,
+      "status": "not_retrieved_anonymously",
+      "url": "https://raw.githubusercontent.com/wolfi-dev/os/a3655395a06e663e8406d260a966b9e022e11f7e/git.yaml"
+    },
+    {
+      "bytes": 15705,
+      "id": "wolfi-git-fixed",
+      "retrieved_unix": 1793129548,
+      "sha256": "1bcf10c7c6dd59245a4ca7b5ae761af5062544e94479aada2dfa0b1dadc3653c",
+      "status": "retrieved",
+      "url": "https://raw.githubusercontent.com/wolfi-dev/os/9be4d78acb4341573db86b483142a0ff0fbb95be/git.yaml"
+    },
+    {
+      "bytes": 17383,
+      "id": "wolfi-git-history",
+      "retrieved_unix": 1793129438,
+      "sha256": "904c58fcdcea3e5c37cf99020b6334a78fbc1d9c860c097c03a1d77e9d65aa33",
+      "status": "retrieved",
+      "url": "https://api.github.com/repos/wolfi-dev/os/commits?path=git.yaml&per_page=5"
+    },
+    {
+      "bytes": 0,
+      "id": "wolfi-glibc",
+      "retrieved_unix": 1793129387,
+      "sha256": null,
+      "status": "not_retrieved_anonymously",
+      "url": "https://raw.githubusercontent.com/wolfi-dev/os/main/glibc.yaml"
+    },
+    {
+      "bytes": 47587,
+      "id": "wolfi-glibc-current",
+      "retrieved_unix": 1793129548,
+      "sha256": "662fdf0bc6493b654aaf0bf7f98de982f565603aaefa93e3275b57996f92ee74",
+      "status": "retrieved",
+      "url": "https://raw.githubusercontent.com/wolfi-dev/os/9be4d78acb4341573db86b483142a0ff0fbb95be/glibc-2.44.yaml"
+    },
+    {
+      "bytes": 0,
+      "id": "wolfi-glibc-exact",
+      "retrieved_unix": 1793129741,
+      "sha256": null,
+      "status": "not_retrieved_anonymously",
+      "url": "https://raw.githubusercontent.com/wolfi-dev/os/29df9b08616c849ddc2af8dadea153f51259ac3b/glibc-2.44.yaml"
+    },
+    {
+      "bytes": 683,
+      "id": "wolfi-glibc-patch1-current",
+      "retrieved_unix": 1793129883,
+      "sha256": "4fb8772021dcd5f24941b4d031d10b30f81b48d885f71889c669933e5a51d142",
+      "status": "retrieved",
+      "url": "https://raw.githubusercontent.com/wolfi-dev/os/9be4d78acb4341573db86b483142a0ff0fbb95be/glibc-2.44/0001-Link-startup-files-without-package-metadata.patch"
+    },
+    {
+      "bytes": 488,
+      "id": "wolfi-glibc-patch2-current",
+      "retrieved_unix": 1793129883,
+      "sha256": "a187de88cb3143c440b33488793ba6dcae5aeb9710d081c587defaba0abb06b4",
+      "status": "retrieved",
+      "url": "https://raw.githubusercontent.com/wolfi-dev/os/9be4d78acb4341573db86b483142a0ff0fbb95be/glibc-2.44/fdo.patch"
+    },
+    {
+      "bytes": 1264,
+      "id": "wolfi-glibc-patch3-current",
+      "retrieved_unix": 1793129884,
+      "sha256": "d6a7c6a1affc812ce7f0439645bf4311d26572c73284740baeaa6e0c486bb6f3",
+      "status": "retrieved",
+      "url": "https://raw.githubusercontent.com/wolfi-dev/os/9be4d78acb4341573db86b483142a0ff0fbb95be/glibc-2.44/fix-allowed-failures-escaping.patch"
+    },
+    {
+      "bytes": 5340,
+      "id": "wolfi-pcre2",
+      "retrieved_unix": 1793129387,
+      "sha256": "d80d72f4c617b2eea08f94c8ae6237f8c646d5e19c762323bd62fa46884a40e9",
+      "status": "retrieved",
+      "url": "https://raw.githubusercontent.com/wolfi-dev/os/main/pcre2.yaml"
+    },
+    {
+      "bytes": 0,
+      "id": "wolfi-pcre2-exact",
+      "retrieved_unix": 1793129742,
+      "sha256": null,
+      "status": "not_retrieved_anonymously",
+      "url": "https://raw.githubusercontent.com/wolfi-dev/os/22949b2f2440b25b7c18a18e3b62ff13f57bffd4/pcre2.yaml"
+    },
+    {
+      "bytes": 5340,
+      "id": "wolfi-pcre2-fixed",
+      "retrieved_unix": 1793129549,
+      "sha256": "d80d72f4c617b2eea08f94c8ae6237f8c646d5e19c762323bd62fa46884a40e9",
+      "status": "retrieved",
+      "url": "https://raw.githubusercontent.com/wolfi-dev/os/9be4d78acb4341573db86b483142a0ff0fbb95be/pcre2.yaml"
+    },
+    {
+      "bytes": 1218964,
+      "id": "wolfi-tree",
+      "retrieved_unix": 1793129437,
+      "sha256": "37c562ba05288aaeb717214852b0746a908fcf7c496ebba46f936051482f1c49",
+      "status": "retrieved",
+      "url": "https://api.github.com/repos/wolfi-dev/os/git/trees/main?recursive=1"
+    },
+    {
+      "bytes": 6217,
+      "id": "wolfi-zlib",
+      "retrieved_unix": 1793129387,
+      "sha256": "31c6d726d0396ead7bd2e14d7b9933e156ed77031e8982b1c042695dde3a54f6",
+      "status": "retrieved",
+      "url": "https://raw.githubusercontent.com/wolfi-dev/os/main/zlib.yaml"
+    },
+    {
+      "bytes": 0,
+      "id": "wolfi-zlib-exact",
+      "retrieved_unix": 1793129742,
+      "sha256": null,
+      "status": "not_retrieved_anonymously",
+      "url": "https://raw.githubusercontent.com/wolfi-dev/os/75278be0abfe311aedfbf7c3933f6f0b819980e6/zlib.yaml"
+    },
+    {
+      "bytes": 6217,
+      "id": "wolfi-zlib-fixed",
+      "retrieved_unix": 1793129549,
+      "sha256": "31c6d726d0396ead7bd2e14d7b9933e156ed77031e8982b1c042695dde3a54f6",
+      "status": "retrieved",
+      "url": "https://raw.githubusercontent.com/wolfi-dev/os/9be4d78acb4341573db86b483142a0ff0fbb95be/zlib.yaml"
+    },
+    {
+      "bytes": 20305,
+      "id": "wolfi-zlib-history",
+      "retrieved_unix": 1793129439,
+      "sha256": "cc1aa678467fbb8b2a143f0d2b563161e6a76e2a00c63ffc184a35c953fe1b82",
+      "status": "retrieved",
+      "url": "https://api.github.com/repos/wolfi-dev/os/commits?path=zlib.yaml&per_page=5"
+    },
+    {
+      "bytes": 1002,
+      "id": "zlib-license",
+      "retrieved_unix": 1793129550,
+      "sha256": "e32ff4e00d9d94930537635291da39e7e612703334bf6fde8c7f1686fe8a45a2",
+      "status": "retrieved",
+      "url": "https://raw.githubusercontent.com/madler/zlib/767c4c947852e143f582c85f14cf573411df1b35/LICENSE"
+    },
+    {
+      "bytes": 1570307,
+      "id": "zlib-source",
+      "retrieved_unix": 1793130068,
+      "sha256": "cafa75b907cd067b471fba32a2772c010a859086241ef70d3d57eda6aeea3a64",
+      "status": "retrieved",
+      "url": "https://github.com/madler/zlib/archive/767c4c947852e143f582c85f14cf573411df1b35.tar.gz"
+    }
+  ],
+  "limits": [
+    "Signed index/image statements do not prove reproducible package binaries or legal acceptance.",
+    "Only native arm64 filesystem inspected; amd64 plugin signed release digests and registry metadata verified, not amd64 runtime or filesystem acceptance.",
+    "Git/glibc supplier source archives have measured hashes, not source-content authentication inferred from archive filenames.",
+    "Full dependency notices, exact stereo recipes/patches/toolchains, static native Rust dependencies and base-package obligations require further evidence/review.",
+    "Public Wolfi main recipes are explicitly candidates, not equivalents to stereo recipe revisions.",
+    "No approval flags, existing source/images/configuration, consumer pins or registry writes changed by this collection."
+  ],
+  "native_exports": [
+    {
+      "files": [
+        {
+          "link": null,
+          "path": "usr/bin/git",
+          "sha256": "bcbd198c0f82e788da87293cebffc5b0fa39784ad1b9e32c83dfe9b12b86b50e",
+          "size": 3213592
+        },
+        {
+          "link": "libpcre2-8.so.0.16.1",
+          "path": "usr/lib/libpcre2-8.so.0",
+          "sha256": null,
+          "size": 0
+        },
+        {
+          "link": null,
+          "path": "usr/lib/libpcre2-8.so.0.16.1",
+          "sha256": "d6a64c6aa72386c7334aaef33ae46a978f6e4b1626740f94e3d74bb4a734bfdd",
+          "size": 788464
+        },
+        {
+          "link": "libz.so.1.3.2",
+          "path": "usr/lib/libz.so.1",
+          "sha256": null,
+          "size": 0
+        },
+        {
+          "link": null,
+          "path": "usr/lib/libz.so.1.3.2",
+          "sha256": "afe41fdd58868461eae3b04068f334bfad2d4ecd0e11c7e30f9afafe06f28528",
+          "size": 133008
+        },
+        {
+          "link": null,
+          "path": "usr/local/bin/docker",
+          "sha256": "e330afc12592c0683664b00066d50fb9f3a879ab8820df589d50b9b1fe3a3c6a",
+          "size": 41636816
+        },
+        {
+          "link": null,
+          "path": "usr/local/libexec/docker/cli-plugins/docker-buildx",
+          "sha256": "3b83b3731916ba433feccaaa689fe5bcdc81c641d92c8e6c2ea865dfa141c97a",
+          "size": 63766690
+        },
+        {
+          "link": null,
+          "path": "usr/local/libexec/docker/cli-plugins/docker-compose",
+          "sha256": "42cfa75f51ad0ccf290bad37899e0038a8c10a0069e85233ecc1d53e3ff1347d",
+          "size": 30604453
+        }
+      ],
+      "method": "trusted local Docker; pinned public supplier; create --pull=never; export without start; streamed 512 MiB cap; removed",
+      "platform": "linux/arm64",
+      "supplier": "docker"
+    },
+    {
+      "files": [
+        {
+          "link": null,
+          "path": "usr/bin/git",
+          "sha256": "2fa2d612dab04da613a90c0d9be5f2b30337b7d246e77571567a8d303bd7b5c2",
+          "size": 4725968
+        },
+        {
+          "link": null,
+          "path": "usr/lib/ld-linux-aarch64.so.1",
+          "sha256": "3dae8ed729b29e0214cbf91ea0fdd7c0668877e2290df74cf7d71dae4b2c49ea",
+          "size": 232800
+        },
+        {
+          "link": null,
+          "path": "usr/lib/libc.so.6",
+          "sha256": "4efc00913cbbfc65176d3f7d7d3b5b70d07ef3eccc0bff3a44f07949a4cf4c0b",
+          "size": 2258312
+        },
+        {
+          "link": "libpcre2-8.so.0.16.1",
+          "path": "usr/lib/libpcre2-8.so.0",
+          "sha256": null,
+          "size": 0
+        },
+        {
+          "link": null,
+          "path": "usr/lib/libpcre2-8.so.0.16.1",
+          "sha256": "64899ac26d2bb1146ed37b9d10cdaa9e055846222fb5b5df9728a648d0cf3d90",
+          "size": 679952
+        },
+        {
+          "link": "libz.so.1.3.2.1-motley",
+          "path": "usr/lib/libz.so.1",
+          "sha256": null,
+          "size": 0
+        },
+        {
+          "link": null,
+          "path": "usr/lib/libz.so.1.3.2.1-motley",
+          "sha256": "c6536153651a19f5fefe3f9ff9e54bbe387d1c2874c1f3cc43c02371e6111911",
+          "size": 143640
+        }
+      ],
+      "method": "trusted local Docker; pinned public supplier; create --pull=never; export without start; streamed 512 MiB cap; removed",
+      "platform": "linux/arm64",
+      "supplier": "git"
+    },
+    {
+      "files": [
+        {
+          "link": null,
+          "path": "usr/lib/ld-linux-aarch64.so.1",
+          "sha256": "3dae8ed729b29e0214cbf91ea0fdd7c0668877e2290df74cf7d71dae4b2c49ea",
+          "size": 232800
+        },
+        {
+          "link": null,
+          "path": "usr/lib/libc.so.6",
+          "sha256": "4efc00913cbbfc65176d3f7d7d3b5b70d07ef3eccc0bff3a44f07949a4cf4c0b",
+          "size": 2258312
+        }
+      ],
+      "method": "trusted local Docker; pinned public supplier; create --pull=never; export without start; streamed 512 MiB cap; removed",
+      "platform": "linux/arm64",
+      "supplier": "glibc"
+    },
+    {
+      "files": [
+        {
+          "link": null,
+          "path": "usr/bin/git",
+          "sha256": "4dc0ceae17bca37c229db1b91c7479cf941b467949b62f759d01410570d5d339",
+          "size": 3080160
+        },
+        {
+          "link": null,
+          "path": "usr/bin/gitleaks",
+          "sha256": "db4d43dd4ab54f047a2d18d210a8d2294e2e5cc26d1e26a299a9675916f5647d",
+          "size": 21904478
+        },
+        {
+          "link": "libpcre2-8.so.0.14.0",
+          "path": "usr/lib/libpcre2-8.so.0",
+          "sha256": null,
+          "size": 0
+        },
+        {
+          "link": null,
+          "path": "usr/lib/libpcre2-8.so.0.14.0",
+          "sha256": "96f12ce474c569cb775e322d40b3ff63c6879a35eed7b65e49c3b864ddfaccd0",
+          "size": 722928
+        },
+        {
+          "link": "libz.so.1.3.1",
+          "path": "usr/lib/libz.so.1",
+          "sha256": null,
+          "size": 0
+        },
+        {
+          "link": null,
+          "path": "usr/lib/libz.so.1.3.1",
+          "sha256": "67fb66ae6b61b2fef8b3b6e2538926720b67737baaaf6711cdd6905352abd6e5",
+          "size": 133008
+        }
+      ],
+      "method": "trusted local Docker; pinned public supplier; create --pull=never; export without start; streamed 512 MiB cap; removed",
+      "platform": "linux/arm64",
+      "supplier": "gitleaks"
+    }
+  ],
+  "purpose": "2026-10-27 step-1 supplier evidence, NOT approval, NOT a release manifest",
+  "quickinstall_signature": {
+    "archive_signature_valid_for_retrieved_key": true,
+    "key_url": "https://raw.githubusercontent.com/cargo-bins/cargo-quickinstall/ca927393f74234dabd791557ab79c8dc52973a53/minisign.pub",
+    "method": "OpenSSL 4.0.3 Ed25519 verification of minisign ED prehashed BLAKE2b-512 archive and global trusted-comment signature; key ID match; altered digest rejected",
+    "public_key_sha256": "e46888d4cdb645fe475f9fc213a4575f16ba590aed56668bcf6b3d3ec216af0e",
+    "rustsec_authentication_or_build_provenance_established": false,
+    "trusted_comment_signature_valid": true
+  },
+  "recipes": [
+    {
+      "path": "images/docker/Dockerfile",
+      "sha256": "62a811f217b5263efc1117f87e294a05e68d44e2deddfc65da739c21fe966a97"
+    },
+    {
+      "path": "images/gitleaks/Dockerfile",
+      "sha256": "a77845d64c293af72c79bbf5c4c840d3d7e08eeab975b61db007852d4ff59389"
+    },
+    {
+      "path": "images/cargo-audit/Dockerfile",
+      "sha256": "bb5b0b6c97f615b79f319e5046496b0058196cf23299e55405daaaa1085f9ca6"
+    }
+  ],
+  "registry_metadata": [
+    {
+      "bytes": 3656,
+      "digest": "sha256:0cebc6f58c2ff424b20dc9bb78f0ce1aef79dddab9906adcb08f5a4fd063d203",
+      "digest_verified": true,
+      "url": "https://cgr.dev/v2/chainguard/git/blobs/sha256:0cebc6f58c2ff424b20dc9bb78f0ce1aef79dddab9906adcb08f5a4fd063d203"
+    },
+    {
+      "bytes": 2928,
+      "digest": "sha256:10c3f6798b2381b678d4b8b2f218a63ea3a08ec8d9ce659f8c719e21a9419fd9",
+      "digest_verified": true,
+      "url": "https://cgr.dev/v2/chainguard/git/blobs/sha256:10c3f6798b2381b678d4b8b2f218a63ea3a08ec8d9ce659f8c719e21a9419fd9"
+    },
+    {
+      "bytes": 2794,
+      "digest": "sha256:164d191a4ec13b1d78ba33c34544027df0aff46e146c3275cd2d5869aa355e15",
+      "digest_verified": true,
+      "url": "https://cgr.dev/v2/chainguard/git/blobs/sha256:164d191a4ec13b1d78ba33c34544027df0aff46e146c3275cd2d5869aa355e15"
+    },
+    {
+      "bytes": 2794,
+      "digest": "sha256:7552401744fa3cbcf160e05040a75dba0d340ae8ad0b5640b280ee430b70d274",
+      "digest_verified": true,
+      "url": "https://cgr.dev/v2/chainguard/git/blobs/sha256:7552401744fa3cbcf160e05040a75dba0d340ae8ad0b5640b280ee430b70d274"
+    },
+    {
+      "bytes": 238,
+      "digest": "sha256:7f4f6b0bf804cba3fb942c381910eb97d22220d61c7fe8466269949b3dfce1cd",
+      "digest_verified": true,
+      "url": "https://cgr.dev/v2/chainguard/git/blobs/sha256:7f4f6b0bf804cba3fb942c381910eb97d22220d61c7fe8466269949b3dfce1cd"
+    },
+    {
+      "bytes": 5128,
+      "digest": "sha256:e1d91b6614f262b7874042165f7fa23fd2144265b07aaa206c6c8dd86284844f",
+      "digest_verified": true,
+      "url": "https://cgr.dev/v2/chainguard/git/blobs/sha256:e1d91b6614f262b7874042165f7fa23fd2144265b07aaa206c6c8dd86284844f"
+    },
+    {
+      "bytes": 29588,
+      "digest": "sha256:299ba3cf6be59600370456993c1c7242ee6e822dad390e7a93f649c0fd85e23a",
+      "digest_verified": false,
+      "url": "https://cgr.dev/v2/chainguard/git/manifests/sha256-6b5b402aaba4db9a6446e363d70bcc158c773c5d00c75d4bcd68691fdaa539cc.att"
+    },
+    {
+      "bytes": 9958,
+      "digest": "sha256:76fe2969349b1f7c085c5c5ad60d5aa0ce60473894ff726bc5a451d24734caf3",
+      "digest_verified": false,
+      "url": "https://cgr.dev/v2/chainguard/git/manifests/sha256-6b5b402aaba4db9a6446e363d70bcc158c773c5d00c75d4bcd68691fdaa539cc.sig"
+    },
+    {
+      "bytes": 1111,
+      "digest": "sha256:6b5b402aaba4db9a6446e363d70bcc158c773c5d00c75d4bcd68691fdaa539cc",
+      "digest_verified": true,
+      "url": "https://cgr.dev/v2/chainguard/git/manifests/sha256:6b5b402aaba4db9a6446e363d70bcc158c773c5d00c75d4bcd68691fdaa539cc"
+    },
+    {
+      "bytes": 2485,
+      "digest": "sha256:8abe3134dde050de4cc6dc8d43b2a375455ecf721bd32db142ae1537e7ece9ff",
+      "digest_verified": true,
+      "url": "https://cgr.dev/v2/chainguard/git/manifests/sha256:8abe3134dde050de4cc6dc8d43b2a375455ecf721bd32db142ae1537e7ece9ff"
+    },
+    {
+      "bytes": 2486,
+      "digest": "sha256:8d67f6aec430fefbea18a8ef3af4b7ad626f4ab8bf4ef9f0476d6f7821c77d1f",
+      "digest_verified": true,
+      "url": "https://cgr.dev/v2/chainguard/git/manifests/sha256:8d67f6aec430fefbea18a8ef3af4b7ad626f4ab8bf4ef9f0476d6f7821c77d1f"
+    },
+    {
+      "bytes": 1312,
+      "digest": "sha256:1fb011d90ee04ea2795dba156270c957fa753d5e8255d9d09bd388be5d521117",
+      "digest_verified": true,
+      "url": "https://cgr.dev/v2/chainguard/glibc-dynamic/blobs/sha256:1fb011d90ee04ea2795dba156270c957fa753d5e8255d9d09bd388be5d521117"
+    },
+    {
+      "bytes": 1779,
+      "digest": "sha256:35ff984be0682e206bcea0481486cf31b9867433d9f1543a91ae3eeb00f78d62",
+      "digest_verified": true,
+      "url": "https://cgr.dev/v2/chainguard/glibc-dynamic/blobs/sha256:35ff984be0682e206bcea0481486cf31b9867433d9f1543a91ae3eeb00f78d62"
+    },
+    {
+      "bytes": 1779,
+      "digest": "sha256:a3cacbf7494c2fcfe26c3292383a486d4acd32f719541c08be05c0ce01c94346",
+      "digest_verified": true,
+      "url": "https://cgr.dev/v2/chainguard/glibc-dynamic/blobs/sha256:a3cacbf7494c2fcfe26c3292383a486d4acd32f719541c08be05c0ce01c94346"
+    },
+    {
+      "bytes": 5140,
+      "digest": "sha256:ba445330e795bccd3ebb16a5a18d13278ca7316819b1ce9a4b2d3415111043a7",
+      "digest_verified": true,
+      "url": "https://cgr.dev/v2/chainguard/glibc-dynamic/blobs/sha256:ba445330e795bccd3ebb16a5a18d13278ca7316819b1ce9a4b2d3415111043a7"
+    },
+    {
+      "bytes": 2196,
+      "digest": "sha256:d2cd90787b63f99b4da3a37bdb428a99122431e0f18550b21f05a3707a2539a1",
+      "digest_verified": true,
+      "url": "https://cgr.dev/v2/chainguard/glibc-dynamic/blobs/sha256:d2cd90787b63f99b4da3a37bdb428a99122431e0f18550b21f05a3707a2539a1"
+    },
+    {
+      "bytes": 248,
+      "digest": "sha256:ea495fbffe45bcc0cbbe01b831c6528534065797fe3c90240f2eb94c10785c49",
+      "digest_verified": true,
+      "url": "https://cgr.dev/v2/chainguard/glibc-dynamic/blobs/sha256:ea495fbffe45bcc0cbbe01b831c6528534065797fe3c90240f2eb94c10785c49"
+    },
+    {
+      "bytes": 29588,
+      "digest": "sha256:e10fc6c060f97c6299d038d49743048869a635ff855f6aacd7c770dd72fd01ac",
+      "digest_verified": false,
+      "url": "https://cgr.dev/v2/chainguard/glibc-dynamic/manifests/sha256-5380a8b913d0900cf44180e2205bf3ebf0e0b00a32a0f2fa4ab16cb06d7f9cdf.att"
+    },
+    {
+      "bytes": 9992,
+      "digest": "sha256:29de2e6a35228f8dcb3866c30a5040d4ca7a8653ac3a2933c4307f70cc48f999",
+      "digest_verified": false,
+      "url": "https://cgr.dev/v2/chainguard/glibc-dynamic/manifests/sha256-5380a8b913d0900cf44180e2205bf3ebf0e0b00a32a0f2fa4ab16cb06d7f9cdf.sig"
+    },
+    {
+      "bytes": 1151,
+      "digest": "sha256:5380a8b913d0900cf44180e2205bf3ebf0e0b00a32a0f2fa4ab16cb06d7f9cdf",
+      "digest_verified": true,
+      "url": "https://cgr.dev/v2/chainguard/glibc-dynamic/manifests/sha256:5380a8b913d0900cf44180e2205bf3ebf0e0b00a32a0f2fa4ab16cb06d7f9cdf"
+    },
+    {
+      "bytes": 1574,
+      "digest": "sha256:f484fa2aaff355191fef1154f4b12defeb21f0099ebaff19006eb2723e6df045",
+      "digest_verified": true,
+      "url": "https://cgr.dev/v2/chainguard/glibc-dynamic/manifests/sha256:f484fa2aaff355191fef1154f4b12defeb21f0099ebaff19006eb2723e6df045"
+    },
+    {
+      "bytes": 1574,
+      "digest": "sha256:fde84b5b973f0e1145c7cbde86811a64155c6d6557f0d57953d91f955bc449e2",
+      "digest_verified": true,
+      "url": "https://cgr.dev/v2/chainguard/glibc-dynamic/manifests/sha256:fde84b5b973f0e1145c7cbde86811a64155c6d6557f0d57953d91f955bc449e2"
+    },
+    {
+      "bytes": 28948,
+      "digest": "sha256:2b7176d4001f06bed93c2d39377480e679577222aec40c44b3325e73368448f0",
+      "digest_verified": true,
+      "url": "https://ghcr.io/v2/gitleaks/gitleaks/blobs/sha256:2b7176d4001f06bed93c2d39377480e679577222aec40c44b3325e73368448f0"
+    },
+    {
+      "bytes": 167,
+      "digest": "sha256:3182dba8c528c353b000147019539d1d269f0feedbee9f1801cf4fef47b688ee",
+      "digest_verified": true,
+      "url": "https://ghcr.io/v2/gitleaks/gitleaks/blobs/sha256:3182dba8c528c353b000147019539d1d269f0feedbee9f1801cf4fef47b688ee"
+    },
+    {
+      "bytes": 1977,
+      "digest": "sha256:4b81af4c7b4159acfdbbbfede6647bf49b4c9f24dc2a2bbd4581f39d5223fcfa",
+      "digest_verified": true,
+      "url": "https://ghcr.io/v2/gitleaks/gitleaks/blobs/sha256:4b81af4c7b4159acfdbbbfede6647bf49b4c9f24dc2a2bbd4581f39d5223fcfa"
+    },
+    {
+      "bytes": 167,
+      "digest": "sha256:56a1069d44691d25330baf28f696adf43cfd691f56d40433455b544aad998814",
+      "digest_verified": true,
+      "url": "https://ghcr.io/v2/gitleaks/gitleaks/blobs/sha256:56a1069d44691d25330baf28f696adf43cfd691f56d40433455b544aad998814"
+    },
+    {
+      "bytes": 1978,
+      "digest": "sha256:98cdb5c1bab61cb6687958ae769a04d74bb808bd0b65756e6e9c5cd119a7061c",
+      "digest_verified": true,
+      "url": "https://ghcr.io/v2/gitleaks/gitleaks/blobs/sha256:98cdb5c1bab61cb6687958ae769a04d74bb808bd0b65756e6e9c5cd119a7061c"
+    },
+    {
+      "bytes": 28948,
+      "digest": "sha256:cc89e3f50cd206a2d441183321836ca67ddedfdcaf4379b224b07f06847b81de",
+      "digest_verified": true,
+      "url": "https://ghcr.io/v2/gitleaks/gitleaks/blobs/sha256:cc89e3f50cd206a2d441183321836ca67ddedfdcaf4379b224b07f06847b81de"
+    },
+    {
+      "bytes": 1054,
+      "digest": "sha256:6b2d52241f9d176fc59e6e3b026ea52c98f390070587d9475d6ee2bc64941815",
+      "digest_verified": true,
+      "url": "https://ghcr.io/v2/gitleaks/gitleaks/manifests/sha256:6b2d52241f9d176fc59e6e3b026ea52c98f390070587d9475d6ee2bc64941815"
+    },
+    {
+      "bytes": 565,
+      "digest": "sha256:8af0bd9340d03a5ea0cde94d6359e17abba796e34f0e99c22d72e2f2b084af9e",
+      "digest_verified": true,
+      "url": "https://ghcr.io/v2/gitleaks/gitleaks/manifests/sha256:8af0bd9340d03a5ea0cde94d6359e17abba796e34f0e99c22d72e2f2b084af9e"
+    },
+    {
+      "bytes": 1054,
+      "digest": "sha256:b109bc5f8f76a38196a3e413704fc5b9e3c32360bce4e4b603bd6f45b3721dbb",
+      "digest_verified": true,
+      "url": "https://ghcr.io/v2/gitleaks/gitleaks/manifests/sha256:b109bc5f8f76a38196a3e413704fc5b9e3c32360bce4e4b603bd6f45b3721dbb"
+    },
+    {
+      "bytes": 1609,
+      "digest": "sha256:c00b6bd0aeb3071cbcb79009cb16a60dd9e0a7c60e2be9ab65d25e6bc8abbb7f",
+      "digest_verified": true,
+      "url": "https://ghcr.io/v2/gitleaks/gitleaks/manifests/sha256:c00b6bd0aeb3071cbcb79009cb16a60dd9e0a7c60e2be9ab65d25e6bc8abbb7f"
+    },
+    {
+      "bytes": 565,
+      "digest": "sha256:e4037a313035c932d6b14b934edc5da9bbf6212b52da0b94870e1448ed4b8e2b",
+      "digest_verified": true,
+      "url": "https://ghcr.io/v2/gitleaks/gitleaks/manifests/sha256:e4037a313035c932d6b14b934edc5da9bbf6212b52da0b94870e1448ed4b8e2b"
+    },
+    {
+      "bytes": 167,
+      "digest": "sha256:03354da415e60ced8dc305aa0d597ee3e98ebe124fc9e1db07fc1b2b9b69a3ae",
+      "digest_verified": true,
+      "url": "https://registry-1.docker.io/v2/library/docker/blobs/sha256:03354da415e60ced8dc305aa0d597ee3e98ebe124fc9e1db07fc1b2b9b69a3ae"
+    },
+    {
+      "bytes": 167,
+      "digest": "sha256:05a982b765703f16906dfe6ba8dc3860241b4cab86606b8fb5da8770e03b6a60",
+      "digest_verified": true,
+      "url": "https://registry-1.docker.io/v2/library/docker/blobs/sha256:05a982b765703f16906dfe6ba8dc3860241b4cab86606b8fb5da8770e03b6a60"
+    },
+    {
+      "bytes": 38222,
+      "digest": "sha256:0f70dc2055c2287ab1285dbc05dbe7211f299538fbf0078437f55894f3372dd5",
+      "digest_verified": true,
+      "url": "https://registry-1.docker.io/v2/library/docker/blobs/sha256:0f70dc2055c2287ab1285dbc05dbe7211f299538fbf0078437f55894f3372dd5"
+    },
+    {
+      "bytes": 38262,
+      "digest": "sha256:12b280ac05cdab2f18e1087222fb380d3dc430a7160a6f91c909a63cb7e416c1",
+      "digest_verified": true,
+      "url": "https://registry-1.docker.io/v2/library/docker/blobs/sha256:12b280ac05cdab2f18e1087222fb380d3dc430a7160a6f91c909a63cb7e416c1"
+    },
+    {
+      "bytes": 38222,
+      "digest": "sha256:67a8b0a00afdd87f8490681872153c8e3e069e9940803d74d973afc437ea3a26",
+      "digest_verified": true,
+      "url": "https://registry-1.docker.io/v2/library/docker/blobs/sha256:67a8b0a00afdd87f8490681872153c8e3e069e9940803d74d973afc437ea3a26"
+    },
+    {
+      "bytes": 8380,
+      "digest": "sha256:7691a001d1bf70d960395ef367f9f008db5f8d7d18556b2b88303596a4384d51",
+      "digest_verified": true,
+      "url": "https://registry-1.docker.io/v2/library/docker/blobs/sha256:7691a001d1bf70d960395ef367f9f008db5f8d7d18556b2b88303596a4384d51"
+    },
+    {
+      "bytes": 38056,
+      "digest": "sha256:85cd179776cecb54a871460acbf1b458bba50659e1e8ed5920595f429f74da42",
+      "digest_verified": true,
+      "url": "https://registry-1.docker.io/v2/library/docker/blobs/sha256:85cd179776cecb54a871460acbf1b458bba50659e1e8ed5920595f429f74da42"
+    },
+    {
+      "bytes": 8399,
+      "digest": "sha256:91b36450843da1d4e9477dd07f20e63bfbcfaba25ca79664ac154ae82fae0f67",
+      "digest_verified": true,
+      "url": "https://registry-1.docker.io/v2/library/docker/blobs/sha256:91b36450843da1d4e9477dd07f20e63bfbcfaba25ca79664ac154ae82fae0f67"
+    },
+    {
+      "bytes": 167,
+      "digest": "sha256:b67a64dba08aca40e6030fc9bda73cb166943f2878223a8c440d33bd792756e8",
+      "digest_verified": true,
+      "url": "https://registry-1.docker.io/v2/library/docker/blobs/sha256:b67a64dba08aca40e6030fc9bda73cb166943f2878223a8c440d33bd792756e8"
+    },
+    {
+      "bytes": 167,
+      "digest": "sha256:d3924fb3a1e76c9f4a09f2774039c48ba593c73ed1298b36fbd8386b09f36c8c",
+      "digest_verified": true,
+      "url": "https://registry-1.docker.io/v2/library/docker/blobs/sha256:d3924fb3a1e76c9f4a09f2774039c48ba593c73ed1298b36fbd8386b09f36c8c"
+    },
+    {
+      "bytes": 567,
+      "digest": "sha256:3fee0ece66ba16279120e443bbbf74c2da7c97106967cd1a7cc9bb3424ee2ae4",
+      "digest_verified": true,
+      "url": "https://registry-1.docker.io/v2/library/docker/manifests/sha256:3fee0ece66ba16279120e443bbbf74c2da7c97106967cd1a7cc9bb3424ee2ae4"
+    },
+    {
+      "bytes": 5149,
+      "digest": "sha256:5e6baf67325a79f64ed3bed6863954d5e05d0f3d4e57cbdb14809346814bbfdb",
+      "digest_verified": true,
+      "url": "https://registry-1.docker.io/v2/library/docker/manifests/sha256:5e6baf67325a79f64ed3bed6863954d5e05d0f3d4e57cbdb14809346814bbfdb"
+    },
+    {
+      "bytes": 567,
+      "digest": "sha256:874a32b45c52b75fd3492402b9106db787d3ded7223d8a646efc4fd0c8ccd62f",
+      "digest_verified": true,
+      "url": "https://registry-1.docker.io/v2/library/docker/manifests/sha256:874a32b45c52b75fd3492402b9106db787d3ded7223d8a646efc4fd0c8ccd62f"
+    },
+    {
+      "bytes": 2857,
+      "digest": "sha256:98776017a505b6d89c0adff8c63b0d8701ca10280c41315dbb0638fe3b5cf6e5",
+      "digest_verified": true,
+      "url": "https://registry-1.docker.io/v2/library/docker/manifests/sha256:98776017a505b6d89c0adff8c63b0d8701ca10280c41315dbb0638fe3b5cf6e5"
+    },
+    {
+      "bytes": 567,
+      "digest": "sha256:b6b735ee83fffe3e6fd8dd0d4f0c0700d1bacccf9d7cc8ebac3166b8f6f34a92",
+      "digest_verified": true,
+      "url": "https://registry-1.docker.io/v2/library/docker/manifests/sha256:b6b735ee83fffe3e6fd8dd0d4f0c0700d1bacccf9d7cc8ebac3166b8f6f34a92"
+    },
+    {
+      "bytes": 2859,
+      "digest": "sha256:d54eb9ef0f4cbcd82bfb87c6f8d8951c04ce5a01daf38682f3f57ed6a03acd6d",
+      "digest_verified": true,
+      "url": "https://registry-1.docker.io/v2/library/docker/manifests/sha256:d54eb9ef0f4cbcd82bfb87c6f8d8951c04ce5a01daf38682f3f57ed6a03acd6d"
+    },
+    {
+      "bytes": 567,
+      "digest": "sha256:dcf243db458ceeac8b3f92472e74cfd9ce132cd261e2dd82e1eabeb1781e0586",
+      "digest_verified": true,
+      "url": "https://registry-1.docker.io/v2/library/docker/manifests/sha256:dcf243db458ceeac8b3f92472e74cfd9ce132cd261e2dd82e1eabeb1781e0586"
+    }
+  ],
+  "schema": 1,
+  "source_archive_inventory": {
+    "archives": [
+      {
+        "archive_sha256": "898ecd505bcec4390b3b7b2c1882509af3f11f3b62c56147d19f01e2a4e81355",
+        "name": "git-source",
+        "regular_bytes": 50141150,
+        "regular_files": 4850,
+        "selected_notices": [
+          {
+            "evidence_file": "git-source-0",
+            "path": "git-a018953688f1b10bddf91bff8747068f5f4746a4/COPYING",
+            "sha256": "5b2198d1645f767585e8a88ac0499b04472164c0d2da22e75ecf97ef443ab32e",
+            "size": 18765
+          },
+          {
+            "evidence_file": "git-source-1",
+            "path": "git-a018953688f1b10bddf91bff8747068f5f4746a4/contrib/subtree/COPYING",
+            "sha256": "ab15fd526bd8dd18a9e77ebc139656bf4d33e97fc7238cd11bf60e2b9b8666c6",
+            "size": 17987
+          },
+          {
+            "evidence_file": "git-source-2",
+            "path": "git-a018953688f1b10bddf91bff8747068f5f4746a4/reftable/LICENSE",
+            "sha256": "8aa118e56e554e9086beb82494e8044d0856d5eb0b162a9061f3553a58f04d67",
+            "size": 1480
+          },
+          {
+            "evidence_file": "git-source-3",
+            "path": "git-a018953688f1b10bddf91bff8747068f5f4746a4/sha1dc/LICENSE.txt",
+            "sha256": "9daac99c665ddc38fde6d7c91b9173c112d5e6c6e7e5f7d8bb8747c630efc83d",
+            "size": 1270
+          },
+          {
+            "evidence_file": "git-source-4",
+            "path": "git-a018953688f1b10bddf91bff8747068f5f4746a4/t/unit-tests/clar/COPYING",
+            "sha256": "a0a61b4b407c613e20119c52e502b0d4a6d52af61e0929b1f71f1daa9b83e8f9",
+            "size": 748
+          }
+        ]
+      },
+      {
+        "archive_sha256": "e0c14f098cf77326dff6bcfe75537f9f84722a4096e0413de8aaea237887bc7e",
+        "name": "git-supplier-source",
+        "regular_bytes": 50140863,
+        "regular_files": 4850,
+        "selected_notices": [
+          {
+            "evidence_file": "git-supplier-source-0",
+            "path": "git-a018953688f1b10bddf91bff8747068f5f4746a4/COPYING",
+            "sha256": "5b2198d1645f767585e8a88ac0499b04472164c0d2da22e75ecf97ef443ab32e",
+            "size": 18765
+          },
+          {
+            "evidence_file": "git-supplier-source-1",
+            "path": "git-a018953688f1b10bddf91bff8747068f5f4746a4/contrib/subtree/COPYING",
+            "sha256": "ab15fd526bd8dd18a9e77ebc139656bf4d33e97fc7238cd11bf60e2b9b8666c6",
+            "size": 17987
+          },
+          {
+            "evidence_file": "git-supplier-source-2",
+            "path": "git-a018953688f1b10bddf91bff8747068f5f4746a4/reftable/LICENSE",
+            "sha256": "8aa118e56e554e9086beb82494e8044d0856d5eb0b162a9061f3553a58f04d67",
+            "size": 1480
+          },
+          {
+            "evidence_file": "git-supplier-source-3",
+            "path": "git-a018953688f1b10bddf91bff8747068f5f4746a4/sha1dc/LICENSE.txt",
+            "sha256": "9daac99c665ddc38fde6d7c91b9173c112d5e6c6e7e5f7d8bb8747c630efc83d",
+            "size": 1270
+          },
+          {
+            "evidence_file": "git-supplier-source-4",
+            "path": "git-a018953688f1b10bddf91bff8747068f5f4746a4/t/unit-tests/clar/COPYING",
+            "sha256": "a0a61b4b407c613e20119c52e502b0d4a6d52af61e0929b1f71f1daa9b83e8f9",
+            "size": 748
+          }
+        ]
+      },
+      {
+        "archive_sha256": "9caf220e935fca38a6dd41f65e4fea8559cc94e5296ec76af64054e07252bd1e",
+        "name": "glibc-supplier-source",
+        "regular_bytes": 269448028,
+        "regular_files": 20933,
+        "selected_notices": [
+          {
+            "evidence_file": "glibc-supplier-source-0",
+            "path": "glibc-045c51476c7abf6144815a4db44f51a118b4cb3e/COPYING.LESSERv2",
+            "sha256": "20e50fe7aae3e56378ebf0417d9de904f55a0e61e4df315333e632a4d3555d95",
+            "size": 26419
+          },
+          {
+            "evidence_file": "glibc-supplier-source-1",
+            "path": "glibc-045c51476c7abf6144815a4db44f51a118b4cb3e/COPYINGv2",
+            "sha256": "edaef632cbb643e4e7a221717a6c441a4c1a7c918e6e4d56debc3d8739b233f6",
+            "size": 17984
+          },
+          {
+            "evidence_file": "glibc-supplier-source-2",
+            "path": "glibc-045c51476c7abf6144815a4db44f51a118b4cb3e/COPYINGv3",
+            "sha256": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986",
+            "size": 35149
+          },
+          {
+            "evidence_file": "glibc-supplier-source-3",
+            "path": "glibc-045c51476c7abf6144815a4db44f51a118b4cb3e/LICENSES",
+            "sha256": "b22a69aa3f80a5201818c66cb0df0f25f9fa13cf5861b0093a058dbd12d50dce",
+            "size": 19665
+          },
+          {
+            "evidence_file": "glibc-supplier-source-4",
+            "path": "glibc-045c51476c7abf6144815a4db44f51a118b4cb3e/localedata/unicode-gen/unicode-license.txt",
+            "sha256": "abf84f74dea2812799e1dbef7f0581adf7db244881e4febb8684f441568da0ad",
+            "size": 1995
+          },
+          {
+            "evidence_file": "glibc-supplier-source-5",
+            "path": "glibc-045c51476c7abf6144815a4db44f51a118b4cb3e/support/bundled/linux/COPYING",
+            "sha256": "fb5a425bd3b3cd6071a3a9aff9909a859e7c1158d54d32e07658398cd67eb6a0",
+            "size": 496
+          }
+        ]
+      }
+    ],
+    "git_comparison": {
+      "added": [],
+      "different_or_missing": [
+        "compat/vcbuild/find_vs_env.bat",
+        "compat/vcbuild/vcpkg_copy_dlls.bat",
+        "compat/vcbuild/vcpkg_install.bat"
+      ]
+    }
+  },
+  "source_reproducibility_established": false,
+  "supplier_package_source_claims": [
+    {
+      "concluded_license": "NOASSERTION",
+      "declared_license": "Apache-2.0",
+      "download_url": "NOASSERTION",
+      "name": "git.yaml",
+      "package_sbom_path": "var/lib/db/sbom/git-2.56.0-r3.spdx.json",
+      "package_sbom_sha256": "3302e875fe2efe20f39868b964da48a4abba76656198c2837b3e9f82f0f15a8c",
+      "references": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:github/chainguard-dev/stereo@a3655395a06e663e8406d260a966b9e022e11f7e#git.yaml",
+          "referenceType": "purl"
+        }
+      ],
+      "version": "a3655395a06e663e8406d260a966b9e022e11f7e"
+    },
+    {
+      "concluded_license": "NOASSERTION",
+      "declared_license": "GPL-2.0-or-later AND ( Artistic-1.0-Perl OR GPL-1.0-or-later )",
+      "download_url": "https://tarballs.cgr.dev/p/13d95d86c3cf193d4f0417e059a08cc793fc772f803086b07d168643a0b50f40-a018953688f1b10bddf91bff8747068f5f4746a4.tar.gz",
+      "name": "pub/scm/git/git",
+      "package_sbom_path": "var/lib/db/sbom/git-2.56.0-r3.spdx.json",
+      "package_sbom_sha256": "3302e875fe2efe20f39868b964da48a4abba76656198c2837b3e9f82f0f15a8c",
+      "references": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:generic/pub%2Fscm%2Fgit%2Fgit@v2.56.0?vcs_url=git%2Bhttps:%2F%2Fkernel.googlesource.com%2Fpub%2Fscm%2Fgit%2Fgit.git%40a018953688f1b10bddf91bff8747068f5f4746a4",
+          "referenceType": "purl"
+        }
+      ],
+      "version": "v2.56.0"
+    },
+    {
+      "concluded_license": "NOASSERTION",
+      "declared_license": "Apache-2.0",
+      "download_url": "NOASSERTION",
+      "name": "glibc-2.44.yaml",
+      "package_sbom_path": "var/lib/db/sbom/glibc-2.44-2.44-r9.spdx.json",
+      "package_sbom_sha256": "b151a694097bbd4ee0351dafe80ecd03d27446794967bb6b1e91680d0f693c01",
+      "references": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:github/chainguard-dev/stereo@29df9b08616c849ddc2af8dadea153f51259ac3b#glibc-2.44.yaml",
+          "referenceType": "purl"
+        }
+      ],
+      "version": "29df9b08616c849ddc2af8dadea153f51259ac3b"
+    },
+    {
+      "concluded_license": "NOASSERTION",
+      "declared_license": "LGPL-2.1-or-later",
+      "download_url": "https://tarballs.cgr.dev/g/9390037ac2ec26cf74ce7c6709d852e0ce67205355e04fbdb9b9549f47a5bb40-045c51476c7abf6144815a4db44f51a118b4cb3e.tar.gz",
+      "name": "gnutools/glibc",
+      "package_sbom_path": "var/lib/db/sbom/glibc-2.44-2.44-r9.spdx.json",
+      "package_sbom_sha256": "b151a694097bbd4ee0351dafe80ecd03d27446794967bb6b1e91680d0f693c01",
+      "references": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:generic/gnutools%2Fglibc@045c51476c7abf6144815a4db44f51a118b4cb3e?vcs_url=git%2Bhttps:%2F%2Fgitlab.com%2Fgnutools%2Fglibc.git%40045c51476c7abf6144815a4db44f51a118b4cb3e",
+          "referenceType": "purl"
+        }
+      ],
+      "version": "045c51476c7abf6144815a4db44f51a118b4cb3e"
+    },
+    {
+      "concluded_license": "NOASSERTION",
+      "declared_license": "Apache-2.0",
+      "download_url": "NOASSERTION",
+      "name": "glibc-2.44.yaml",
+      "package_sbom_path": "var/lib/db/sbom/ld-linux-2.44-2.44-r9.spdx.json",
+      "package_sbom_sha256": "c457956ac56ff1eee5f2c1429f78e179a06585a03ac87e9ce95bd09d6d35e317",
+      "references": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:github/chainguard-dev/stereo@29df9b08616c849ddc2af8dadea153f51259ac3b#glibc-2.44.yaml",
+          "referenceType": "purl"
+        }
+      ],
+      "version": "29df9b08616c849ddc2af8dadea153f51259ac3b"
+    },
+    {
+      "concluded_license": "NOASSERTION",
+      "declared_license": "LGPL-2.1-or-later",
+      "download_url": "https://tarballs.cgr.dev/g/9390037ac2ec26cf74ce7c6709d852e0ce67205355e04fbdb9b9549f47a5bb40-045c51476c7abf6144815a4db44f51a118b4cb3e.tar.gz",
+      "name": "gnutools/glibc",
+      "package_sbom_path": "var/lib/db/sbom/ld-linux-2.44-2.44-r9.spdx.json",
+      "package_sbom_sha256": "c457956ac56ff1eee5f2c1429f78e179a06585a03ac87e9ce95bd09d6d35e317",
+      "references": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:generic/gnutools%2Fglibc@045c51476c7abf6144815a4db44f51a118b4cb3e?vcs_url=git%2Bhttps:%2F%2Fgitlab.com%2Fgnutools%2Fglibc.git%40045c51476c7abf6144815a4db44f51a118b4cb3e",
+          "referenceType": "purl"
+        }
+      ],
+      "version": "045c51476c7abf6144815a4db44f51a118b4cb3e"
+    },
+    {
+      "concluded_license": "NOASSERTION",
+      "declared_license": "Apache-2.0",
+      "download_url": "NOASSERTION",
+      "name": "pcre2.yaml",
+      "package_sbom_path": "var/lib/db/sbom/libpcre2-8-0-10.49-r1.spdx.json",
+      "package_sbom_sha256": "c77a096d9462948500595881926e155298557f4a8711d66ce2744d738e5c2361",
+      "references": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:github/chainguard-dev/stereo@22949b2f2440b25b7c18a18e3b62ff13f57bffd4#pcre2.yaml",
+          "referenceType": "purl"
+        }
+      ],
+      "version": "22949b2f2440b25b7c18a18e3b62ff13f57bffd4"
+    },
+    {
+      "concluded_license": "NOASSERTION",
+      "declared_license": "BSD-3-Clause",
+      "download_url": "https://github.com/PCRE2Project/pcre2/archive/6f9d7c1373262c541324a16a358785b33ef116cf.tar.gz",
+      "name": "pcre2",
+      "package_sbom_path": "var/lib/db/sbom/libpcre2-8-0-10.49-r1.spdx.json",
+      "package_sbom_sha256": "c77a096d9462948500595881926e155298557f4a8711d66ce2744d738e5c2361",
+      "references": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:github/pcre2project/pcre2@pcre2-10.49",
+          "referenceType": "purl"
+        }
+      ],
+      "version": "pcre2-10.49"
+    },
+    {
+      "concluded_license": "NOASSERTION",
+      "declared_license": "MPL-2.0 AND MIT",
+      "download_url": "NOASSERTION",
+      "name": "zlib",
+      "package_sbom_path": "var/lib/db/sbom/zlib-1.3.2.1_rc20260921-r0.spdx.json",
+      "package_sbom_sha256": "d8ea7446235162e9b6f7fbf3b3ce18cc49daa4d48da600fe95c61c663dc37cf8",
+      "references": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:apk/wolfi/zlib@1.3.2.1_rc20260921-r0?arch=aarch64&distro=wolfi",
+          "referenceType": "purl"
+        },
+        {
+          "referenceCategory": "SECURITY",
+          "referenceLocator": "cpe:2.3:a:zlib:zlib:1.3.2.1_rc20260921:*:*:*:*:*:*:*",
+          "referenceType": "cpe23Type"
+        }
+      ],
+      "version": "1.3.2.1_rc20260921-r0"
+    },
+    {
+      "concluded_license": "NOASSERTION",
+      "declared_license": "Apache-2.0",
+      "download_url": "NOASSERTION",
+      "name": "zlib.yaml",
+      "package_sbom_path": "var/lib/db/sbom/zlib-1.3.2.1_rc20260921-r0.spdx.json",
+      "package_sbom_sha256": "d8ea7446235162e9b6f7fbf3b3ce18cc49daa4d48da600fe95c61c663dc37cf8",
+      "references": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:github/chainguard-dev/stereo@75278be0abfe311aedfbf7c3933f6f0b819980e6#zlib.yaml",
+          "referenceType": "purl"
+        }
+      ],
+      "version": "75278be0abfe311aedfbf7c3933f6f0b819980e6"
+    },
+    {
+      "concluded_license": "NOASSERTION",
+      "declared_license": "MPL-2.0 AND MIT",
+      "download_url": "https://github.com/madler/zlib/archive/767c4c947852e143f582c85f14cf573411df1b35.tar.gz",
+      "name": "zlib",
+      "package_sbom_path": "var/lib/db/sbom/zlib-1.3.2.1_rc20260921-r0.spdx.json",
+      "package_sbom_sha256": "d8ea7446235162e9b6f7fbf3b3ce18cc49daa4d48da600fe95c61c663dc37cf8",
+      "references": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceLocator": "pkg:github/madler/zlib@767c4c947852e143f582c85f14cf573411df1b35",
+          "referenceType": "purl"
+        }
+      ],
+      "version": "767c4c947852e143f582c85f14cf573411df1b35"
+    },
+    {
+      "concluded_license": "NOASSERTION",
+      "declared_license": "NOASSERTION",
+      "download_url": "NOASSERTION",
+      "name": "zlib",
+      "package_sbom_path": "var/lib/db/sbom/zlib-1.3.2.1_rc20260921-r0.spdx.json",
+      "package_sbom_sha256": "d8ea7446235162e9b6f7fbf3b3ce18cc49daa4d48da600fe95c61c663dc37cf8",
+      "references": null,
+      "version": "1.3.2.1_rc20260921-r0"
+    }
+  ]
+}

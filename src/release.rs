@@ -1718,18 +1718,56 @@ mod tests {
     #[ignore = "approved local native Docker; verifies public license bytes without registry writes"]
     fn native_inlined_license_bytes_and_modes() {
         let mut driver = Driver::new().unwrap();
-        for (tool, expected) in [
+        for (tool, file, expected) in [
             (
                 "kind",
+                "kind/LICENSE",
                 "b40930bbcf80744c86c46a12bc9da056641d722716c378f5659b9e555ef833e1",
             ),
             (
                 "kustomize",
+                "kustomize/LICENSE",
                 "b40930bbcf80744c86c46a12bc9da056641d722716c378f5659b9e555ef833e1",
             ),
             (
                 "kubectl",
+                "kubectl/LICENSE",
                 "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+            ),
+            (
+                "docker",
+                "docker/LICENSE",
+                "2d81ea060825006fc8f3fe28aa5dc0ffeb80faf325b612c955229157b8c10dc0",
+            ),
+            (
+                "docker",
+                "docker/NOTICE",
+                "a8c869fbda819afb8d80e0ac19bac52e766bc6c19cb38cf94f52d64c4be2aab6",
+            ),
+            (
+                "docker",
+                "compose/LICENSE",
+                "58d1e17ffe5109a7ae296caafcadfdbe6a7d176f0bc4ab01e12a689b0499d8bd",
+            ),
+            (
+                "docker",
+                "compose/NOTICE",
+                "b7dca0a6b01fa7365e4892877a6321179ee343d72ee87a96cfc222141b99a1e6",
+            ),
+            (
+                "docker",
+                "buildx/LICENSE",
+                "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+            ),
+            (
+                "kind",
+                "docker/LICENSE",
+                "2d81ea060825006fc8f3fe28aa5dc0ffeb80faf325b612c955229157b8c10dc0",
+            ),
+            (
+                "kind",
+                "docker/NOTICE",
+                "a8c869fbda819afb8d80e0ac19bac52e766bc6c19cb38cf94f52d64c4be2aab6",
             ),
         ] {
             let image = driver.check(tool).unwrap();
@@ -1738,7 +1776,7 @@ mod tests {
                 driver.logs.file_name().unwrap().to_str().unwrap(),
                 tool
             );
-            let destination = driver.logs.join(format!("{tool}-LICENSE"));
+            let destination = driver.logs.join(format!("notice-{}", driver.sequence));
             let result = (|| -> Result<()> {
                 driver.docker(
                     &[
@@ -1758,7 +1796,7 @@ mod tests {
                 driver.docker(
                     &[
                         "cp",
-                        &format!("{name}:/usr/share/licenses/{tool}/LICENSE"),
+                        &format!("{name}:/usr/share/licenses/{file}"),
                         destination.to_str().ok_or("invalid license fixture path")?,
                     ],
                     30,

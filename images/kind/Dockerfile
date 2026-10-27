@@ -24,6 +24,9 @@ LABEL org.opencontainers.image.title="kind" \
 COPY --from=binary /kind /usr/local/bin/kind
 COPY --from=provider --chown=65532:65532 /usr/local/bin/docker /usr/local/bin/docker
 ADD --checksum=sha256:b40930bbcf80744c86c46a12bc9da056641d722716c378f5659b9e555ef833e1 --chmod=0444 https://raw.githubusercontent.com/kubernetes-sigs/kind/407a9675e6d9af1200b5f57f9ca52ec6cdacce74/LICENSE /usr/share/licenses/kind/LICENSE
+# Provider's top-level notices, not complete transitive legal approval.
+ADD --checksum=sha256:2d81ea060825006fc8f3fe28aa5dc0ffeb80faf325b612c955229157b8c10dc0 --chmod=0444 https://raw.githubusercontent.com/docker/cli/a82e528901260c8df6073311379eac65f92db204/LICENSE /usr/share/licenses/docker/LICENSE
+ADD --checksum=sha256:a8c869fbda819afb8d80e0ac19bac52e766bc6c19cb38cf94f52d64c4be2aab6 --chmod=0444 https://raw.githubusercontent.com/docker/cli/a82e528901260c8df6073311379eac65f92db204/NOTICE /usr/share/licenses/docker/NOTICE
 ENV HOME=/tmp DOCKER_CONFIG=/tmp/docker
 USER 65532:65532
 # Cluster operations require separately authorized control-plane access; no socket is included.
