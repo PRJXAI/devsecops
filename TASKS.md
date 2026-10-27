@@ -69,9 +69,10 @@
 
 ## Safe simplifications, separate from acceptance gates
 
-- [ ] **S1 — Inline the three license-only scratch stages.**
+- [x] **S1 — Inline the three license-only scratch stages.**
   - `images/{kind,kubectl,kustomize}/Dockerfile` each has `FROM scratch AS notices`, one checksummed `ADD`, then a final `COPY`. Move that same literal ADD directly to its existing final license destination, as Syft/Grype already do.
   - Removes **three stages and six instruction lines total**, with no new abstraction. Preserve URL, checksum, mode and destination exactly; test those literals and later compare packaged license bytes. This does not resolve missing transitive notices/source obligations.
+  - Executed: literal ADDs now target the same final paths. Eleven policy tests pass; a persisted native arm64 test rebuilds/smokes all three and compares packaged SHA-256 bytes and mode 0444, with unconditional owned-container removal. Only Dockerfile instruction savings are claimed; the regression test adds Rust lines. Transitive/source obligations remain blocked.
 
 - [x] **S2 — Remove Chrono's unused local-timezone feature.**
   - `Cargo.toml` enables `chrono/clock`; `src/release.rs` uses UTC now/RFC3339 arithmetic, never local time. The offline feature tree shows `clock` pulling in `iana-time-zone` and macOS `core-foundation-sys`; `now` is a separate enabled feature.

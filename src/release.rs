@@ -1401,6 +1401,75 @@ mod tests {
     }
 
     #[test]
+    #[ignore = "approved local native Docker; verifies public license bytes without registry writes"]
+    fn native_inlined_license_bytes_and_modes() {
+        let mut driver = Driver::new().unwrap();
+        for (tool, expected) in [
+            (
+                "kind",
+                "b40930bbcf80744c86c46a12bc9da056641d722716c378f5659b9e555ef833e1",
+            ),
+            (
+                "kustomize",
+                "b40930bbcf80744c86c46a12bc9da056641d722716c378f5659b9e555ef833e1",
+            ),
+            (
+                "kubectl",
+                "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+            ),
+        ] {
+            let image = driver.check(tool).unwrap();
+            let name = format!(
+                "license-{}-{}",
+                driver.logs.file_name().unwrap().to_str().unwrap(),
+                tool
+            );
+            let destination = driver.logs.join(format!("{tool}-LICENSE"));
+            let result = (|| -> Result<()> {
+                driver.docker(
+                    &[
+                        "create",
+                        "--name",
+                        &name,
+                        "--network=none",
+                        "--read-only",
+                        "--user=65532:65532",
+                        "--cap-drop=ALL",
+                        "--security-opt=no-new-privileges",
+                        &image,
+                    ],
+                    30,
+                    false,
+                )?;
+                driver.docker(
+                    &[
+                        "cp",
+                        &format!("{name}:/usr/share/licenses/{tool}/LICENSE"),
+                        destination.to_str().ok_or("invalid license fixture path")?,
+                    ],
+                    30,
+                    false,
+                )?;
+                if hash(&destination, 32 * 1024)? != expected
+                    || regular(&destination, 32 * 1024)?
+                        .metadata()
+                        .map_err(|_| "cannot inspect license mode")?
+                        .permissions()
+                        .mode()
+                        & 0o777
+                        != 0o444
+                {
+                    return Err("packaged license bytes or mode changed");
+                }
+                Ok(())
+            })();
+            let cleanup = driver.docker(&["rm", "--force", &name], 15, true);
+            assert!(result.is_ok(), "{tool}: {result:?}");
+            assert!(cleanup.is_ok(), "{tool}: license fixture removal failed");
+        }
+    }
+
+    #[test]
     fn index_rejects_missing_duplicate_wrong_digest_or_platform() {
         let members = vec![
             ("amd64", image()),

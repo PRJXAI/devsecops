@@ -12,8 +12,6 @@ ADD --checksum=sha256:922df28df248cc00a9e025f947704f1d1482de64ece54cfe57e61f19ea
 FROM binary-${TARGETARCH} AS binary
 
 # Supplier license; complete embedded-dependency notice review is required before publication.
-FROM scratch AS notices
-ADD --checksum=sha256:cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30 --chmod=0444 https://raw.githubusercontent.com/kubernetes/kubernetes/f54c212e3a2f75d674b717a9b29052b20b60aefc/LICENSE /LICENSE
 
 FROM cgr.dev/chainguard/static:latest@sha256:17367e4d3ae2b46c3290858e483fac09be085c92b372360fe3bf6a6150848fde
 LABEL org.opencontainers.image.title="kubectl" \
@@ -22,7 +20,7 @@ LABEL org.opencontainers.image.title="kubectl" \
       org.opencontainers.image.revision="f54c212e3a2f75d674b717a9b29052b20b60aefc" \
       org.opencontainers.image.licenses="Apache-2.0"
 COPY --from=binary /kubectl /usr/local/bin/kubectl
-COPY --from=notices /LICENSE /usr/share/licenses/kubectl/LICENSE
+ADD --checksum=sha256:cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30 --chmod=0444 https://raw.githubusercontent.com/kubernetes/kubernetes/f54c212e3a2f75d674b717a9b29052b20b60aefc/LICENSE /usr/share/licenses/kubectl/LICENSE
 ENV HOME=/tmp
 USER 65532:65532
 ENTRYPOINT ["/usr/local/bin/kubectl"]

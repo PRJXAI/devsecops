@@ -17,8 +17,6 @@ RUN --network=none ["mkdir", "/out"]
 RUN --network=none ["tar", "-xzf", "/tmp/kustomize.tar.gz", "-C", "/out", "kustomize"]
 
 # Supplier license; complete embedded-dependency notice review is required before publication.
-FROM scratch AS notices
-ADD --checksum=sha256:b40930bbcf80744c86c46a12bc9da056641d722716c378f5659b9e555ef833e1 --chmod=0444 https://raw.githubusercontent.com/kubernetes-sigs/kustomize/9790a1c3efd2fd35f1b768d495112834176581c1/LICENSE /LICENSE
 
 FROM cgr.dev/chainguard/static:latest@sha256:17367e4d3ae2b46c3290858e483fac09be085c92b372360fe3bf6a6150848fde
 LABEL org.opencontainers.image.title="kustomize" \
@@ -27,7 +25,7 @@ LABEL org.opencontainers.image.title="kustomize" \
       org.opencontainers.image.revision="9790a1c3efd2fd35f1b768d495112834176581c1" \
       org.opencontainers.image.licenses="Apache-2.0"
 COPY --from=extract --chmod=0555 /out/kustomize /usr/local/bin/kustomize
-COPY --from=notices /LICENSE /usr/share/licenses/kustomize/LICENSE
+ADD --checksum=sha256:b40930bbcf80744c86c46a12bc9da056641d722716c378f5659b9e555ef833e1 --chmod=0444 https://raw.githubusercontent.com/kubernetes-sigs/kustomize/9790a1c3efd2fd35f1b768d495112834176581c1/LICENSE /usr/share/licenses/kustomize/LICENSE
 ENV HOME=/tmp
 USER 65532:65532
 ENTRYPOINT ["/usr/local/bin/kustomize"]
