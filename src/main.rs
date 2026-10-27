@@ -106,30 +106,52 @@ impl Log {
     }
 }
 
-fn reap_until(child: &mut Child, limit: Duration) {
-    let start = Instant::now();
-    while start.elapsed() < limit {
-        if matches!(child.try_wait(), Ok(Some(_))) {
-            return;
+fn reap_until(child: &mut Child, limit: Duration) -> Result<()> {
+    // A kill request is not a reap. Give the final kill its own bounded wait too.
+    for force in [false, true] {
+        if force {
+            let _ = child.kill();
         }
-        thread::sleep(POLL);
+        let start = Instant::now();
+        loop {
+            if matches!(child.try_wait(), Ok(Some(_))) {
+                return Ok(());
+            }
+            // Monitoring errors must not bypass the final kill/reap attempt.
+            if start.elapsed() >= limit {
+                break;
+            }
+            thread::sleep(POLL);
+        }
     }
-    let _ = child.kill();
+    Err("command reaping was not confirmed")
 }
 
-fn terminate(child: &mut Child) {
-    // std has no safe process-group signalling API. Invoke kill directly, never a shell.
-    if let Ok(mut killer) = Command::new("/bin/kill")
+fn terminate(child: &mut Child) -> Result<()> {
+    // Current rustix features have no process API. Invoke kill directly, never a shell.
+    let group = Command::new("/bin/kill")
         .args(["-KILL", "--", &format!("-{}", child.id())])
         .stdin(Stdio::null())
         .stdout(Stdio::null())
         .stderr(Stdio::null())
+        .process_group(0)
         .spawn()
-    {
-        reap_until(&mut killer, Duration::from_secs(2));
-    }
+        .map_err(|_| "cannot start process-group cleanup")
+        .and_then(|mut killer| reap_until(&mut killer, Duration::from_secs(2)));
+    // A nonzero kill status can mean the group already exited. Always reap the
+    // direct child, even if launching/reaping the external group killer failed.
     let _ = child.kill();
-    reap_until(child, Duration::from_secs(2));
+    let reaped = reap_until(child, Duration::from_secs(2));
+    group.and(reaped)
+}
+
+fn container_output(result: Result<PathBuf>, cleanup: Result<PathBuf>) -> Result<PathBuf> {
+    match (result, cleanup) {
+        (Err(_), Err(_)) => Err("check failed and container cleanup was not confirmed"),
+        (Err(error), Ok(_)) => Err(error),
+        (Ok(_), Err(_)) => Err("container cleanup failed; private logs retained"),
+        (Ok(path), Ok(_)) => Ok(path),
+    }
 }
 
 struct Driver {
@@ -177,6 +199,42 @@ impl Driver {
     }
 
     fn docker(&mut self, args: &[&str], seconds: u64, cleanup: bool) -> Result<PathBuf> {
+        self.docker_exit(args, seconds, cleanup, 0)
+    }
+
+    fn docker_exit(
+        &mut self,
+        args: &[&str],
+        seconds: u64,
+        cleanup: bool,
+        expected_exit: i32,
+    ) -> Result<PathBuf> {
+        let mut command = Command::new("docker");
+        command.args(args).current_dir(&self.root);
+        self.execute(command, seconds, cleanup, expected_exit)
+    }
+
+    // Reserved for bounded host Cargo/Git fixtures, not arbitrary host programs.
+    #[allow(dead_code)]
+    fn host(&mut self, program: &str, args: &[&str], seconds: u64) -> Result<PathBuf> {
+        if !matches!(program, "cargo" | "git") {
+            return Err("unsupported host command");
+        }
+        let mut command = Command::new(program);
+        command.args(args).current_dir(&self.root);
+        self.execute(command, seconds, false, 0)
+    }
+
+    fn execute(
+        &mut self,
+        mut command: Command,
+        seconds: u64,
+        cleanup: bool,
+        expected_exit: i32,
+    ) -> Result<PathBuf> {
+        if !(0..=255).contains(&expected_exit) {
+            return Err("invalid expected exit code");
+        }
         if !cleanup && self.cancelled.load(Ordering::Relaxed) {
             return Err("check cancelled");
         }
@@ -184,15 +242,15 @@ impl Driver {
         let stdout_path = self.logs.join(format!("{}-stdout.log", self.sequence));
         let (mut stdout, out) = Log::new(&stdout_path)?;
         let (mut stderr, err) = Log::new(&self.logs.join(format!("{}-stderr.log", self.sequence)))?;
-        let mut child = Command::new("docker")
-            .args(args)
-            .current_dir(&self.root)
+        let mut child = command
             .stdin(Stdio::null())
             .stdout(out)
             .stderr(err)
             .process_group(0)
             .spawn()
-            .map_err(|_| "cannot start Docker command")?;
+            .map_err(|_| "cannot start command; private logs retained")?;
+        // Command retains its configured writer descriptors across spawn.
+        drop(command);
         let start = Instant::now();
         let result = (|| {
             let mut status = None;
@@ -201,27 +259,25 @@ impl Driver {
                     return Err("check cancelled");
                 }
                 if start.elapsed() >= Duration::from_secs(seconds) {
-                    return Err("Docker command timed out");
+                    return Err("command timed out");
                 }
                 stdout.drain()?;
                 stderr.drain()?;
                 if status.is_none() {
-                    status = child
-                        .try_wait()
-                        .map_err(|_| "cannot monitor Docker command")?;
+                    status = child.try_wait().map_err(|_| "cannot monitor command")?;
                 }
                 if let Some(status) = status.filter(|_| stdout.eof && stderr.eof) {
-                    return if status.success() {
+                    return if status.code() == Some(expected_exit) {
                         Ok(())
                     } else {
-                        Err("Docker command failed; private logs retained")
+                        Err("unexpected command exit; private logs retained")
                     };
                 }
                 thread::sleep(POLL);
             }
         })();
-        if result.is_err() {
-            terminate(&mut child);
+        if result.is_err() && terminate(&mut child).is_err() {
+            return Err("command failed and process cleanup was not confirmed");
         }
         result.map(|()| stdout_path)
     }
@@ -271,12 +327,7 @@ impl Driver {
         let result = self.docker(&run, 30, false);
         // Ignore the cancellation latch for this bounded cleanup, including spawn failures.
         let cleanup = self.docker(&["rm", "--force", &name], 10, true);
-        let output = match (result, cleanup) {
-            (Err(_), Err(_)) => return Err("check failed and container cleanup was not confirmed"),
-            (Err(error), Ok(_)) => return Err(error),
-            (Ok(_), Err(_)) => return Err("container cleanup failed; private logs retained"),
-            (Ok(path), Ok(_)) => path,
-        };
+        let output = container_output(result, cleanup)?;
         let expected = if entrypoint == Some("/usr/bin/git") {
             "2.56.0.1.g02cd7dbd28"
         } else {
@@ -485,7 +536,363 @@ fn main() {
 
 #[cfg(test)]
 mod tests {
-    use super::{TOOLS, version_args};
+    use super::*;
+
+    // The test executable is the only fixture executable. Each invocation runs
+    // exactly this ignored test in a fresh process; no shell or Docker is used.
+    fn fixture(mode: &str) -> Command {
+        let mut command = Command::new(std::env::current_exe().unwrap());
+        command
+            .args([
+                "--exact",
+                "tests::process_fixture",
+                "--ignored",
+                "--nocapture",
+            ])
+            .env("DEVSECOPS_FIXTURE", mode);
+        command
+    }
+
+    fn marker(command: &mut Command, path: &Path) {
+        command.env("DEVSECOPS_FIXTURE_MARKER", path);
+    }
+
+    fn mark() {
+        if let Some(path) = std::env::var_os("DEVSECOPS_FIXTURE_MARKER") {
+            fs::write(path, std::process::id().to_string()).unwrap();
+        }
+    }
+
+    fn kill_command(pid: &str, signal: &str) -> Child {
+        Command::new("/bin/kill")
+            .args([signal, "--", pid])
+            .stdin(Stdio::null())
+            .stdout(Stdio::null())
+            .stderr(Stdio::null())
+            .process_group(0)
+            .spawn()
+            .unwrap()
+    }
+
+    fn assert_stopped(pid: &str) {
+        let start = Instant::now();
+        loop {
+            // An orphan can briefly remain an init-owned zombie on Linux. It
+            // cannot run/hold streams; only its adopting parent can reap it.
+            #[cfg(target_os = "linux")]
+            match fs::read_to_string(format!("/proc/{pid}/stat")) {
+                Err(e) if e.kind() == std::io::ErrorKind::NotFound => return,
+                Ok(stat) if stat.rsplit_once(") ").unwrap().1.starts_with('Z') => return,
+                _ => (),
+            }
+            let mut probe = kill_command(pid, "-0");
+            reap_until(&mut probe, Duration::from_secs(1)).unwrap();
+            if !probe.try_wait().unwrap().unwrap().success() {
+                return;
+            }
+            assert!(
+                start.elapsed() < Duration::from_secs(2),
+                "fixture still running"
+            );
+            thread::sleep(POLL);
+        }
+    }
+
+    fn assert_private_logs(driver: &Driver) {
+        assert_eq!(
+            fs::metadata(&driver.logs).unwrap().permissions().mode() & 0o777,
+            0o700
+        );
+        for entry in fs::read_dir(&driver.logs).unwrap() {
+            let entry = entry.unwrap();
+            if entry.path().extension().is_some_and(|ext| ext == "log") {
+                let metadata = entry.metadata().unwrap();
+                assert_eq!(metadata.permissions().mode() & 0o777, 0o600);
+                assert!(metadata.len() <= LOG_LIMIT as u64);
+            }
+        }
+    }
+
+    #[test]
+    #[ignore = "Rust subprocess fixture, invoked only by lifecycle tests"]
+    fn process_fixture() {
+        let mode = std::env::var("DEVSECOPS_FIXTURE").unwrap();
+        match mode.as_str() {
+            "exit" => {
+                mark();
+                println!("synthetic-private-stdout");
+                eprintln!("synthetic-private-stderr");
+                let code = std::env::var("DEVSECOPS_FIXTURE_EXIT")
+                    .unwrap_or_else(|_| "0".into())
+                    .parse()
+                    .unwrap();
+                std::process::exit(code);
+            }
+            "stdout-overflow" | "stderr-overflow" => {
+                let mut stream: Box<dyn Write> = if mode == "stdout-overflow" {
+                    Box::new(std::io::stdout())
+                } else {
+                    Box::new(std::io::stderr())
+                };
+                for _ in 0..=(LOG_LIMIT / 8192) {
+                    if stream.write_all(&[b'x'; 8192]).is_err() {
+                        break;
+                    }
+                }
+            }
+            "hang" => {
+                mark();
+                thread::sleep(Duration::from_secs(30));
+            }
+            "descendant" => {
+                // Deliberately exit before an inherited stdout/stderr writer.
+                // The descendant remains in execute's process group.
+                // This fixture intentionally exits without waiting, modelling
+                // an orphaned stream-holding descendant (bounded to 30 seconds).
+                #[allow(clippy::zombie_processes)]
+                let _child = fixture("hang").spawn().unwrap();
+                std::process::exit(0);
+            }
+            "signal-driver" => {
+                let mut driver = Driver::new().unwrap();
+                let result = driver.execute(fixture("hang"), 15, false, 0);
+                assert_eq!(result, Err("check cancelled"));
+                assert_eq!(
+                    driver.execute(fixture("exit"), 2, false, 0),
+                    Err("check cancelled")
+                );
+                let mut cleanup = fixture("exit");
+                marker(
+                    &mut cleanup,
+                    &PathBuf::from(std::env::var_os("DEVSECOPS_FIXTURE_CLEANUP").unwrap()),
+                );
+                assert!(driver.execute(cleanup, 2, true, 0).is_ok());
+                assert_private_logs(&driver);
+            }
+            "signal-exit" => {
+                let mut killer = kill_command(&std::process::id().to_string(), "-TERM");
+                reap_until(&mut killer, Duration::from_secs(1)).unwrap();
+                panic!("signal did not terminate fixture");
+            }
+            _ => panic!("unknown Rust fixture"),
+        }
+    }
+
+    #[test]
+    fn exact_exit_codes_and_private_capture() {
+        let mut driver = Driver::new().unwrap();
+        let mut command = fixture("exit");
+        command.env("DEVSECOPS_FIXTURE_EXIT", "7");
+        let output = driver.execute(command, 5, false, 7).unwrap();
+        assert!(
+            fs::read_to_string(output)
+                .unwrap()
+                .contains("synthetic-private-stdout")
+        );
+        assert!(
+            fs::read_to_string(driver.logs.join("1-stderr.log"))
+                .unwrap()
+                .contains("synthetic-private-stderr")
+        );
+        let mut command = fixture("exit");
+        command.env("DEVSECOPS_FIXTURE_EXIT", "7");
+        assert_eq!(
+            driver.execute(command, 5, false, 0),
+            Err("unexpected command exit; private logs retained")
+        );
+        assert_eq!(
+            driver.execute(fixture("exit"), 5, false, 7),
+            Err("unexpected command exit; private logs retained")
+        );
+        assert_eq!(
+            driver.execute(fixture("signal-exit"), 5, false, 143),
+            Err("unexpected command exit; private logs retained")
+        );
+        assert_eq!(
+            driver.execute(fixture("exit"), 5, false, -1),
+            Err("invalid expected exit code")
+        );
+        assert_eq!(
+            driver.execute(fixture("exit"), 5, false, 256),
+            Err("invalid expected exit code")
+        );
+        assert_private_logs(&driver);
+    }
+
+    #[test]
+    fn stdout_and_stderr_overflow_fail_with_private_capped_logs() {
+        for (mode, stream) in [("stdout-overflow", "stdout"), ("stderr-overflow", "stderr")] {
+            let mut driver = Driver::new().unwrap();
+            let start = Instant::now();
+            assert_eq!(
+                driver.execute(fixture(mode), 30, false, 0),
+                Err("command output limit exceeded")
+            );
+            // Small Unix socket buffers can require many bounded polls to
+            // transfer 8 MiB. Use the existing smoke deadline, not larger caps.
+            assert!(start.elapsed() < Duration::from_secs(35));
+            assert_eq!(
+                fs::metadata(driver.logs.join(format!("1-{stream}.log")))
+                    .unwrap()
+                    .len(),
+                LOG_LIMIT as u64
+            );
+            assert_private_logs(&driver);
+        }
+    }
+
+    #[test]
+    fn silent_hang_and_exited_parent_with_open_descendant_streams_are_bounded() {
+        for mode in ["hang", "descendant"] {
+            let mut driver = Driver::new().unwrap();
+            let pidfile = driver.logs.join("fixture.pid");
+            let mut command = fixture(mode);
+            marker(&mut command, &pidfile);
+            let start = Instant::now();
+            assert_eq!(
+                driver.execute(command, 1, false, 0),
+                Err("command timed out")
+            );
+            assert!(start.elapsed() < Duration::from_secs(10));
+            assert_stopped(fs::read_to_string(pidfile).unwrap().trim());
+            assert_private_logs(&driver);
+        }
+    }
+
+    #[test]
+    fn final_kill_is_followed_by_a_bounded_reap() {
+        let mut command = fixture("hang");
+        let mut child = command
+            .stdin(Stdio::null())
+            .stdout(Stdio::null())
+            .stderr(Stdio::null())
+            .process_group(0)
+            .spawn()
+            .unwrap();
+        let pid = child.id().to_string();
+        let start = Instant::now();
+        reap_until(&mut child, Duration::from_millis(100)).unwrap();
+        let status = child.try_wait().unwrap().unwrap();
+        assert!(!status.success());
+        assert!(start.elapsed() < Duration::from_secs(2));
+        assert_stopped(&pid);
+    }
+
+    #[test]
+    fn spawn_failure_is_sanitized_and_cleanup_still_runs_after_cancellation() {
+        let mut driver = Driver::new().unwrap();
+        let result = driver.execute(
+            Command::new(driver.logs.join("missing-executable")),
+            1,
+            false,
+            0,
+        );
+        assert_eq!(result, Err("cannot start command; private logs retained"));
+        driver.cancelled.store(true, Ordering::Relaxed);
+        let done = driver.logs.join("removed");
+        let mut cleanup = fixture("exit");
+        marker(&mut cleanup, &done);
+        let cleanup = driver.execute(cleanup, 2, true, 0);
+        assert_eq!(
+            container_output(result, cleanup),
+            Err("cannot start command; private logs retained")
+        );
+        assert!(done.is_file());
+        assert_eq!(
+            driver.execute(fixture("exit"), 1, false, 0),
+            Err("check cancelled")
+        );
+        assert_private_logs(&driver);
+    }
+
+    #[test]
+    fn rust_removal_fixtures_preserve_primary_and_cleanup_failures() {
+        for primary_exit in [0, 7] {
+            for removal in ["exit", "hang", "spawn-failure"] {
+                let mut driver = Driver::new().unwrap();
+                let mut run = fixture("exit");
+                run.env("DEVSECOPS_FIXTURE_EXIT", primary_exit.to_string());
+                let result = driver.execute(run, 2, false, 0);
+                driver.cancelled.store(true, Ordering::Relaxed);
+                let mut rm = if removal == "spawn-failure" {
+                    Command::new(driver.logs.join("missing-removal"))
+                } else {
+                    fixture(removal)
+                };
+                rm.env("DEVSECOPS_FIXTURE_EXIT", "9");
+                let start = Instant::now();
+                let cleanup = driver.execute(rm, 1, true, 0);
+                assert!(cleanup.is_err());
+                assert!(start.elapsed() < Duration::from_secs(10));
+                assert_eq!(
+                    container_output(result, cleanup),
+                    Err(if primary_exit == 0 {
+                        "container cleanup failed; private logs retained"
+                    } else {
+                        "check failed and container cleanup was not confirmed"
+                    })
+                );
+                assert_private_logs(&driver);
+            }
+        }
+    }
+
+    #[test]
+    fn sigint_and_sigterm_cancel_the_driver_but_not_cleanup() {
+        for signal in ["-INT", "-TERM"] {
+            let driver = Driver::new().unwrap();
+            let ready = driver.logs.join("ready.pid");
+            let cleanup = driver.logs.join("cleanup.pid");
+            let mut command = fixture("signal-driver");
+            marker(&mut command, &ready);
+            command.env("DEVSECOPS_FIXTURE_CLEANUP", &cleanup);
+            let mut child = command
+                .stdin(Stdio::null())
+                .stdout(Stdio::null())
+                .stderr(Stdio::null())
+                .process_group(0)
+                .spawn()
+                .unwrap();
+            let start = Instant::now();
+            while !ready.is_file() && start.elapsed() < Duration::from_secs(5) {
+                thread::sleep(POLL);
+            }
+            if !ready.is_file() {
+                terminate(&mut child).unwrap();
+                panic!("signal fixture did not become ready");
+            }
+            let mut killer = kill_command(&child.id().to_string(), signal);
+            reap_until(&mut killer, Duration::from_secs(1)).unwrap();
+            assert!(killer.try_wait().unwrap().unwrap().success());
+            reap_until(&mut child, Duration::from_secs(5)).unwrap();
+            assert!(
+                child.try_wait().unwrap().unwrap().success(),
+                "signal fixture failed"
+            );
+            assert!(cleanup.is_file());
+            assert_stopped(fs::read_to_string(ready).unwrap().trim());
+            assert!(start.elapsed() < Duration::from_secs(10));
+        }
+    }
+
+    #[test]
+    fn host_commands_are_narrow_and_honor_cancellation() {
+        let mut driver = Driver::new().unwrap();
+        for program in ["sh", "/usr/bin/git", "node", "python", ""] {
+            assert_eq!(
+                driver.host(program, &[], 1),
+                Err("unsupported host command")
+            );
+        }
+        driver.cancelled.store(true, Ordering::Relaxed);
+        for program in ["git", "cargo"] {
+            assert_eq!(
+                driver.host(program, &["--version"], 1),
+                Err("check cancelled")
+            );
+        }
+        assert_eq!(driver.sequence, 0);
+    }
 
     #[test]
     fn explicit_tool_versions() {
