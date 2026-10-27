@@ -6,7 +6,12 @@ fn main() {
     let root = env::var("DEVSECOPS_FAKE_ROOT").unwrap();
     let mut log = OpenOptions::new().append(true).create(true).open(Path::new(&root).join("commands")).unwrap();
     writeln!(log, "{}", args.join(" ")).unwrap();
-    if args.first().map(String::as_str) == Some("context") {
+    if args.first().map(String::as_str) == Some("run") && env::var_os("DEVSECOPS_FAKE_CONTRACT").is_some() {
+        println!("{{\"synthetic\":\"complete\"}}");
+        if env::var("DEVSECOPS_FAKE_CONTRACT").unwrap() != "empty" { eprintln!("SYNTHETIC_PRIVATE_DIAGNOSTIC"); }
+    } else if args.first().map(String::as_str) == Some("rm") && env::var_os("DEVSECOPS_FAKE_CONTRACT").is_some() {
+        // Successful owned-container removal, including after analysis rejection.
+    } else if args.first().map(String::as_str) == Some("context") {
         println!("unix:///synthetic/docker.sock");
     } else if args.first().map(String::as_str) == Some("info") {
         println!("linux {}", if cfg!(target_arch="aarch64") { "arm64" } else { "amd64" });

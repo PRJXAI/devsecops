@@ -437,6 +437,7 @@ fn prepare_tool(
     db: Option<&Value>,
 ) -> Result<Value> {
     let image = driver.check(tool)?;
+    super::contracts::check(driver, tool, &image)?;
     let scans = driver.root.join(".work/scans");
     let asset = scans.join(tool);
     mkdir(&asset, false)?;
@@ -498,7 +499,7 @@ fn prepare_tool(
         let receipt = json!({
             "schema": 2, "tool": tool, "source_sha": revision, "arch": arch, "image_id": image, "config_id": config,
             "tar_sha256": hash(&clean_tar, TAR_LIMIT)?, "sbom_sha256": hash(&clean_sbom, JSON_LIMIT)?,
-            "count": 0, "counts": counts, "created": now.to_rfc3339(), "db": db,
+            "count": 0, "counts": counts, "contracts": "passed", "created": now.to_rfc3339(), "db": db,
             "syft": SYFT, "grype": GRYPE,
         });
         write_json(
@@ -652,6 +653,7 @@ fn receipt(
         || text(value, "/syft")? != SYFT
         || text(value, "/grype")? != GRYPE
         || value.get("count").and_then(Value::as_u64) != Some(0)
+        || value.get("contracts").and_then(Value::as_str) != Some("passed")
     {
         return Err("release receipt identity, scanner pin or clean gate mismatch");
     }
@@ -954,7 +956,7 @@ mod tests {
     }
     fn clean_receipt() -> Value {
         json!({"schema": 2, "tool": "syft", "arch": "amd64", "source_sha": REV, "image_id": image(), "config_id": image(),
-            "syft": SYFT, "grype": GRYPE, "count": 0, "created": now().to_rfc3339(), "db": db(),
+            "syft": SYFT, "grype": GRYPE, "count": 0, "contracts": "passed", "created": now().to_rfc3339(), "db": db(),
             "tar_sha256": "b".repeat(64), "sbom_sha256": "c".repeat(64),
             "counts": SEVERITIES.into_iter().map(|s| (s, 0u64)).collect::<BTreeMap<_, _>>()})
     }

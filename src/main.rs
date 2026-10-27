@@ -4,7 +4,10 @@ mod archive;
 mod audit;
 #[cfg(test)]
 mod builder;
+mod contracts;
 mod coverage;
+mod filesystem;
+mod grype_contract;
 mod release;
 
 use std::{
@@ -585,7 +588,7 @@ fn main() {
     }
     let tools = match args.as_slice() {
         [command] if command == "check-all" => TOOLS.to_vec(),
-        [command, tool] if command == "check" => {
+        [command, tool] if command == "check" || command == "contract" => {
             match tool.to_str().filter(|tool| version_args(tool).is_ok()) {
                 Some(tool) => vec![tool],
                 None => {
@@ -596,15 +599,20 @@ fn main() {
         }
         _ => {
             eprintln!(
-                "usage: devsecops check TOOL | check-all | audit-dependencies | prepare-release | publish-all"
+                "usage: devsecops check TOOL | contract TOOL | check-all | audit-dependencies | prepare-release | publish-all"
             );
             std::process::exit(2);
         }
     };
     let result = Driver::new().and_then(|mut driver| {
         for tool in tools {
-            driver.check(tool)?;
-            println!("{tool}: native image user/architecture and offline version smoke passed (not release acceptance)");
+            let image = driver.check(tool)?;
+            if args[0] == "contract" {
+                contracts::check(&mut driver, tool, &image)?;
+                println!("{tool}: native synthetic functional contract passed (not release acceptance)");
+            } else {
+                println!("{tool}: native image user/architecture and offline version smoke passed (not release acceptance)");
+            }
         }
         Ok(())
     });
