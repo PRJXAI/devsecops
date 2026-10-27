@@ -16,7 +16,7 @@ COPY --from=archive-arm64 /cargo-audit.tgz /tmp/cargo-audit.tgz
 RUN --network=none ["tar", "-xzf", "/tmp/cargo-audit.tgz", "-C", "/out"]
 FROM binary-${TARGETARCH} AS binary
 
-FROM cgr.dev/chainguard/static:latest@sha256:17367e4d3ae2b46c3290858e483fac09be085c92b372360fe3bf6a6150848fde
+FROM cgr.dev/chainguard/static:latest@sha256:9e2306b457ff71ce370043dc68c7b52bb1e6622c1c6c6714edbed57496f3116e
 LABEL org.opencontainers.image.title="cargo-audit" org.opencontainers.image.version="0.22.1" org.opencontainers.image.source="https://github.com/rustsec/rustsec" org.prjxai.audit.arm64.supplier="cargo-bins/cargo-quickinstall"
 COPY --from=binary --chmod=0555 /out/cargo-audit /usr/local/bin/cargo-audit
 COPY --from=binary-amd64 /out/LICENSE-APACHE /out/LICENSE-MIT /out/README.md /out/CHANGELOG.md /usr/share/licenses/cargo-audit/
