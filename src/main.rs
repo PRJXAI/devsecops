@@ -525,7 +525,9 @@ fn main() {
             }
         }
         _ => {
-            eprintln!("usage: devsecops check TOOL | check-all | audit-dependencies | prepare-release | publish-all");
+            eprintln!(
+                "usage: devsecops check TOOL | check-all | audit-dependencies | prepare-release | publish-all"
+            );
             std::process::exit(2);
         }
     };

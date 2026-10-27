@@ -80,9 +80,10 @@
   - Run existing stale/future/boundary timestamp tests and native supported-target checks. Retain Chrono itself rather than implementing a homemade RFC3339 parser. No broader dependency pruning without evidence.
   - Executed: `clock` becomes `now`; UTC/RFC3339 tests, offline checks/Clippy and the Darwin/arm64 feature tree pass. At this isolated change the lockfile drops from 60 to 33 packages, with no surviving version/checksum changes. IANA/local-timezone dependencies disappear; later archive-parser dependencies are separate. Native hosted Linux evidence remains D4.
 
-- [ ] **S3 — Reuse the already validated SBOM package map.**
+- [x] **S3 — Reuse the already validated SBOM package map.**
   - `src/release.rs::prepare_tool` discards the result of `sbom_packages` at line 444; `report_counts` reconstructs the same map at line 325 from the same in-memory SBOM. Retain the first result and pass it directly into counting, keeping report/source/DB validation there.
   - Removes **one full package-validation/map-building pass per scan**, without a new validated-object hierarchy. Preserve early rejection before Grype runs and the independent publisher-side SBOM check. Keep malformed/duplicate package, wrong-image/arch and finding-package mismatch tests; adjust their call sites rather than deleting them. Do not claim net LOC savings until measured.
+  - Executed: producer keeps its borrowed package index and passes it into counting. Source/DB/severity/suppression validation and independent publisher parsing remain; test composition preserves every malformed/duplicate/wrong-image/package case. No persistent cache or metadata hierarchy; no net Rust-LOC saving claimed.
 
 - [ ] **S4 — Reconcile documentation with this executable baseline.**
   - `AGENTS.md` names `tests/`, while actual tests are in `checks.rs` and the binary modules. `docs/tool-inventory.md` broadly claims a digest-pinned frontend, but Syft/Grype/Gitleaks have no explicit frontend directive. README's native-evidence/publication language needs B1–B5 qualifications; `docs/results.md` measurements do not make missing fixtures part of CI.

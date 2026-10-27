@@ -316,13 +316,11 @@ fn sbom_packages<'a>(
 
 fn report_counts(
     sbom: &Value,
+    packages: &BTreeMap<&str, &Value>,
     report: &Value,
-    image: &str,
-    arch: &str,
     db: &Value,
     now: DateTime<Utc>,
 ) -> Result<BTreeMap<String, u64>> {
-    let packages = sbom_packages(sbom, image, arch)?;
     let mut source = sbom["source"]["metadata"].clone();
     // The pinned Grype presenter normalizes these nil image collections to [].
     for key in ["tags", "repoDigests"] {
@@ -440,7 +438,7 @@ fn prepare_tool(
     )?;
     let sbom_path = syft_out.join("syft.json");
     let sbom = read_json(&sbom_path)?;
-    sbom_packages(&sbom, &image, arch)?;
+    let packages = sbom_packages(&sbom, &image, arch)?;
     let db = db.ok_or("fresh scan database unavailable")?;
     scanner(
         driver,
@@ -461,7 +459,7 @@ fn prepare_tool(
     )?;
     let report = read_json(&grype_out.join("grype.json"))?;
     let now = Utc::now();
-    let counts = report_counts(&sbom, &report, &image, arch, db, now)?;
+    let counts = report_counts(&sbom, &packages, &report, db, now)?;
     let count = total(&counts);
     if count == 0 {
         let release = driver.root.join(".work/release");
@@ -865,6 +863,19 @@ mod tests {
         json!({"descriptor": {"name": "syft", "version": "1.55.0"}, "schema": {"version": "16.1.11"},
             "source": {"id": "catalog", "type": "image", "metadata": {"imageID": image(), "architecture": "amd64", "os": "linux"}},
             "artifacts": [{"id": "pkg", "name": "synthetic", "version": "1", "type": "go-module"}]})
+    }
+    // Test the complete parse/identity/count composition; production carries
+    // the already validated borrowed package index through the scan.
+    fn report_counts(
+        sbom: &Value,
+        report: &Value,
+        image: &str,
+        arch: &str,
+        db: &Value,
+        now: DateTime<Utc>,
+    ) -> Result<BTreeMap<String, u64>> {
+        let packages = sbom_packages(sbom, image, arch)?;
+        super::report_counts(sbom, &packages, report, db, now)
     }
     fn report() -> Value {
         json!({"descriptor": {"name": "grype", "version": "0.121.0", "db": {"status": db(), "providers": {}}, "configuration": {"include-matcher-suppressions": true}},

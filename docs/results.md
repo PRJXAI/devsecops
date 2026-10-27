@@ -16,6 +16,8 @@ S1: kind/kubectl/kustomize license-only scratch stages were removed: three stage
 
 S2: Chrono now enables UTC `now`/`std`, not local-timezone `clock`. Existing UTC freshness/boundary tests, offline check/Clippy and the feature tree pass on Darwin/arm64. This isolated lock resolution removes 27 packages (60 → 33), including IANA/macOS timezone dependencies, without changing surviving versions/checksums. Archive parsing introduces separately reviewed dependencies later; native hosted Linux verification is not implied.
 
+S3: the producer passes its first borrowed SBOM package index into counting, removing one full reconstruction per scan. Early package rejection, report/source/DB/all-severity/suppression checks and independent publisher validation remain. Tests retain malformed/duplicate/wrong-image/architecture/finding-package cases through the same parse/count composition. This is a work/allocation reduction, not a claimed net Rust-LOC reduction. An isolated staged-tree check passed 45 tests, formatting and Clippy. Its first formatting check caught the preceding audit CLI help-line wrap; that formatting is corrected here. Native/manual fixture entrypoints remain separate.
+
 ## Initialization and publication pipeline — 2026-10-26
 
 Created `PRJXAI/devsecops`, initially private, then made it public at the owner's explicit request. GHCR publication is authorized through the manual main-branch workflow, not ad hoc pushes or automatic consumer adoption. No consumer pin, production setting or real cluster was changed. The consumer's existing uncommitted simplification work remains separate.
