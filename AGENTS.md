@@ -1,6 +1,6 @@
 # DevSecOps repository instructions
 
-Read README.md, docs/tool-inventory.md and docs/results.md before changing images or tests.
+Read README.md, docs/tool-inventory.md, docs/results.md and docs/threat-model.md before changing images or tests.
 
 ## Scope and simplicity
 
@@ -19,6 +19,8 @@ All first-party build/test/validation orchestration belongs in Rust. CI `run` st
 - Do not present these images as whole GitHub Actions job containers: runner steps need shell/Node, builds need compilers, and kind nodes/RustFS are services. Preserve consumer tests and all finding/error gates. Never change consumer pins automatically.
 
 ## Authorization and evidence
+
+Follow [the trust boundary](docs/threat-model.md): OS, same-UID runner processes and the local Docker daemon are trusted. Private parents/leaf checks are artifact hygiene, not race-free same-UID protection; unsigned hashes do not authenticate a malicious producer. Host archive/cache writes lack a hard storage quota. Do not broaden those claims without separate reviewed isolation.
 
 Only public artifacts and synthetic fixtures are allowed. Never access real vaults, clusters, buckets, operator overrides or credentials. Never use the current kubecontext. The owner authorized public GHCR publication through the reviewed main-branch pipeline on 2026-10-26. Publication still requires successful native tests/scans, complete redistribution/source review and manual workflow approval; failed/missing evidence blocks it. No real deployment, repository-protection changes, ad hoc registry pushes or automatic consumer adoption.
 

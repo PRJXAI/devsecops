@@ -18,6 +18,8 @@ S2: Chrono now enables UTC `now`/`std`, not local-timezone `clock`. Existing UTC
 
 S3: the producer passes its first borrowed SBOM package index into counting, removing one full reconstruction per scan. Early package rejection, report/source/DB/all-severity/suppression checks and independent publisher validation remain. Tests retain malformed/duplicate/wrong-image/architecture/finding-package cases through the same parse/count composition. This is a work/allocation reduction, not a claimed net Rust-LOC reduction. An isolated staged-tree check passed 45 tests, formatting and Clippy. Its first formatting check caught the preceding audit CLI help-line wrap; that formatting is corrected here. Native/manual fixture entrypoints remain separate.
 
+D2: the linked [threat model](threat-model.md) defines OS/root/same-UID/local-Docker and authorized producer trust. A synthetic parent-replacement test confirms nofollow/hash checks are not race-free parent authority. Unsigned receipt hashes do not authenticate malicious producers; no new signing/storage authority is invented. Archive/cache host storage is explicitly not hard-quota-bounded (D4).
+
 ## Initialization and publication pipeline — 2026-10-26
 
 Created `PRJXAI/devsecops`, initially private, then made it public at the owner's explicit request. GHCR publication is authorized through the manual main-branch workflow, not ad hoc pushes or automatic consumer adoption. No consumer pin, production setting or real cluster was changed. The consumer's existing uncommitted simplification work remains separate.

@@ -97,10 +97,11 @@
   - Use synthetic environment/context fixtures, never operator Docker configuration or credentials, to establish the pinned CLI's precedence and constrain unsupported selection. Environment strings in `publish_gate` are workflow-context assertions, not independent authentication. Keep publication dependent on the authorized workflow and its credential scope.
   - Only after binding endpoint/builder identity consider consolidating repeated native discovery (`prepare → native`, then each `check → native`). Do not remove a safety check merely to save subprocesses, or add an extensible backend abstraction.
 
-- [ ] **D2 — Define the filesystem attacker model before claiming race-free evidence.**
+- [x] **D2 — Define the filesystem attacker model before claiming race-free evidence.**
   - `regular` uses leaf `NOFOLLOW|NONBLOCK` and bounded reads; `directory` checks parents separately. `publish` hashes a path, then Docker reopens it. Parent replacement, same-UID writers and hardlinks are not excluded by these checks. Private 0700 parents constrain other-user access; no cross-user exploit was established.
   - Test with synthetic directories and explicitly state whether concurrent same-UID mutation is in scope. If it is, use the smallest descriptor-relative/immutable-handoff fix supported by that threat model, retaining bounded streaming hashing. Do not casually replace it with whole-archive reads or add a generic storage authority.
   - Receipts currently rely on same-workflow artifact provenance; hashes detect mismatch, not a malicious producer that rewrites both data and receipt. Document that trust boundary rather than inventing a signing service.
+  - Executed: linked threat model explicitly trusts OS/root/same-UID runner/local Docker and authenticated source/artifact producers. The synthetic parent-replacement test proves leaf validation is not immutable parent authority. No race-free or malicious-producer guarantee/signing service is claimed; host-disk quota remains D4.
 
 - [ ] **D3 — Keep legal/provenance/approval prerequisites genuinely blocked.**
   - `licenses/README.md`, readiness and results acknowledge missing transitive notices, exact Git corresponding source and Cargo Quickinstall arm64 provenance review. `images/docker/Dockerfile` copies no explicit supplier notices; Gitleaks's Git license URL names upstream 2.56.0 while the tested supplier build is `2.56.0.1.g02cd7dbd28`, whose exact source/patch obligations need review.

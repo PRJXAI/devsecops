@@ -46,6 +46,7 @@ GHCR packages are created on the first successful push. Package visibility is se
 
 ## Important limits
 
+- [Runner/filesystem trust boundary](docs/threat-model.md): same-UID processes, OS and local Docker are trusted. Leaf nofollow/hash checks are not race-free protection against those actors; archive/DB host storage has no hard quota.
 - Distroless does not remove embedded Go/Rust/native vulnerabilities. Existing supplier findings are expected to block the first publication; no waiver is configured.
 - cargo-audit arm64 uses **Cargo Quickinstall**, a distinct supplier because RustSec provides no static arm64 release. Supplier equivalence/provenance still requires review.
 - Compiler-free cargo-deny requires external metadata and matching source/index/cache mounts. Missing-Cargo/index errors can be nonfatal: **exit 0 does not prove complete coverage**. It is not approved as a replacement for the consumer's full host cargo-deny gate.
