@@ -491,7 +491,7 @@ fn prepare_tool(
 
 pub(super) fn prepare(driver: &mut Driver) -> Result<()> {
     let revision = sha(&std::env::var("GITHUB_SHA").map_err(|_| "missing GITHUB_SHA")?)?;
-    let arch = driver.native()?;
+    let (arch, _) = driver.native()?;
     let work = driver.root.join(".work");
     directory(&work)?;
     mkdir(&work.join("release"), false)?;
@@ -1273,7 +1273,7 @@ mod tests {
     #[ignore = "approved public candidate SBOM/cache capture replay; offline, no image publication"]
     fn native_bounded_scan_captures_preserve_all_module_granularity_findings() {
         let mut driver = Driver::new().unwrap();
-        let arch = driver.native().unwrap();
+        let (arch, _) = driver.native().unwrap();
         let scans = driver.root.join(".work/scans");
         let cache = mount(&scans.join("cache"), "/cache", true).unwrap();
         let status = scanner(
@@ -1473,7 +1473,7 @@ mod tests {
             )
             .unwrap();
         loaded_identity(&bytes(&output, 4096).unwrap(), &image).unwrap();
-        let arch = driver.native().unwrap();
+        let (arch, _) = driver.native().unwrap();
         assert_eq!(driver.inspect(&image, arch).unwrap(), image);
     }
 

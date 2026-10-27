@@ -93,10 +93,11 @@
 
 ## Hypotheses and deferred/blocked prerequisites
 
-- [ ] **D1 — Investigate builder/credential-context selection before hoisting endpoint checks.**
+- [x] **D1 — Investigate builder/credential-context selection before hoisting endpoint checks.**
   - `Driver::native` checks Unix Docker host/context and native daemon architecture; `Driver::docker` inherits environment/configuration, and `check` invokes `docker build` without explicitly binding a Buildx builder. A `BUILDX_BUILDER`/configuration-selected remote builder may escape the intended local-build boundary; this was **not exercised or confirmed**.
   - Use synthetic environment/context fixtures, never operator Docker configuration or credentials, to establish the pinned CLI's precedence and constrain unsupported selection. Environment strings in `publish_gate` are workflow-context assertions, not independent authentication. Keep publication dependent on the authorized workflow and its credential scope.
   - Only after binding endpoint/builder identity consider consolidating repeated native discovery (`prepare → native`, then each `check → native`). Do not remove a safety check merely to save subprocesses, or add an extensible backend abstraction.
+  - Executed: pinned Docker/Buildx synthetic socket-free probes establish poisoned BUILDX selection vs explicit default; combined BUILDKIT_HOST poisoning also tested, not its independent precedence. Production binds the effective checked Unix endpoint via global `--host`, clears context override for that invocation and uses `buildx build --builder default --load`. Exact context/host precedence has pure tests; real arm64 Syft build/contract passes. One checked build-only path also supports no-start filesystem evidence. Repeated native checks remain. Host credential isolation/all CLI versions are not claimed; runner trust remains D2.
 
 - [x] **D2 — Define the filesystem attacker model before claiming race-free evidence.**
   - `regular` uses leaf `NOFOLLOW|NONBLOCK` and bounded reads; `directory` checks parents separately. `publish` hashes a path, then Docker reopens it. Parent replacement, same-UID writers and hardlinks are not excluded by these checks. Private 0700 parents constrain other-user access; no cross-user exploit was established.

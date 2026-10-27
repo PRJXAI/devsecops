@@ -1,6 +1,8 @@
 #![forbid(unsafe_code)]
 
 mod audit;
+#[cfg(test)]
+mod builder;
 mod release;
 
 use std::{
@@ -216,7 +218,7 @@ impl Driver {
     }
 
     // Reserved for bounded host Cargo/Git fixtures, not arbitrary host programs.
-    #[allow(dead_code)]
+    #[cfg(test)]
     fn host(&mut self, program: &str, args: &[&str], seconds: u64) -> Result<PathBuf> {
         if !matches!(program, "cargo" | "git") {
             return Err("unsupported host command");
@@ -360,14 +362,7 @@ impl Driver {
         Ok(())
     }
 
-    fn native(&mut self) -> Result<&'static str> {
-        if let Some(host) = std::env::var_os("DOCKER_HOST")
-            && !host
-                .to_str()
-                .is_some_and(|host| host.starts_with("unix:///"))
-        {
-            return Err("only a local Unix-socket Docker endpoint is allowed");
-        }
+    fn native(&mut self) -> Result<(&'static str, String)> {
         let context = self.docker(
             &[
                 "context",
@@ -378,13 +373,12 @@ impl Driver {
             15,
             false,
         )?;
-        if !fs::read_to_string(context)
-            .map_err(|_| "cannot read Docker endpoint")?
-            .trim()
-            .starts_with("unix:///")
-        {
-            return Err("only a local Unix-socket Docker context is allowed");
-        }
+        let context = fs::read_to_string(context).map_err(|_| "cannot read Docker endpoint")?;
+        let endpoint = local_endpoint(
+            std::env::var_os("DOCKER_HOST").as_deref(),
+            std::env::var_os("DOCKER_CONTEXT").as_deref(),
+            context.trim(),
+        )?;
         let arch = match std::env::consts::ARCH {
             "x86_64" => "amd64",
             "aarch64" => "arm64",
@@ -404,7 +398,7 @@ impl Driver {
         if native.len() != 2 || native[0] != "linux" || !aliases.contains(&native[1]) {
             return Err("Docker daemon must use the native Linux architecture");
         }
-        Ok(arch)
+        Ok((arch, endpoint))
     }
 
     fn inspect(&mut self, image: &str, arch: &str) -> Result<String> {
@@ -424,9 +418,9 @@ impl Driver {
         Ok(fields[0].to_owned())
     }
 
-    fn check(&mut self, tool: &str) -> Result<String> {
-        let args = version_args(tool)?;
-        let arch = self.native()?;
+    fn build(&mut self, tool: &str) -> Result<String> {
+        version_args(tool)?;
+        let (arch, endpoint) = self.native()?;
         let platform = format!("linux/{arch}");
         let iidfile = self
             .logs
@@ -439,9 +433,20 @@ impl Driver {
             return Err("invalid source revision");
         }
         let revision_label = format!("org.opencontainers.image.revision={revision}");
-        self.docker(
-            &[
+        // Bind Buildx's builtin Docker driver to the checked local endpoint;
+        // inherited builder selection must not redirect work to another daemon.
+        let mut build = Command::new("docker");
+        build
+            .env_remove("DOCKER_CONTEXT")
+            .current_dir(&self.root)
+            .args([
+                "--host",
+                &endpoint,
+                "buildx",
                 "build",
+                "--builder",
+                "default",
+                "--load",
                 "--label",
                 "org.opencontainers.image.source=https://github.com/PRJXAI/devsecops",
                 "--label",
@@ -453,14 +458,18 @@ impl Driver {
                 "--iidfile",
                 iidfile.to_str().ok_or("invalid build identity path")?,
                 ".",
-            ],
-            1200,
-            false,
-        )?;
+            ]);
+        self.execute(build, 1200, false, 0)?;
         let image = built_image_id(&iidfile)?;
         if self.inspect(&image, arch)? != image {
             return Err("built image identity mismatch");
         }
+        Ok(image)
+    }
+
+    fn check(&mut self, tool: &str) -> Result<String> {
+        let args = version_args(tool)?;
+        let image = self.build(tool)?;
         // Carry this immutable build identity through smoke, export and scanning.
         self.smoke(&image, tool, args, None)?;
         if tool == "gitleaks" {
@@ -504,6 +513,33 @@ fn captured_stderr(stdout: &Path) -> Result<Vec<u8>> {
         return Err("private diagnostics grew beyond limit");
     }
     Ok(data)
+}
+
+// Match Docker's environment precedence, but retain conservative rejection of
+// any configured non-Unix host/context. The returned endpoint is bound to build.
+fn local_endpoint(
+    host: Option<&std::ffi::OsStr>,
+    explicit_context: Option<&std::ffi::OsStr>,
+    context: &str,
+) -> Result<String> {
+    let local = |value: &str| {
+        value.starts_with("unix:///") && value.len() <= 4096 && !value.chars().any(char::is_control)
+    };
+    if !local(context) {
+        return Err("only a local Unix-socket Docker context is allowed");
+    }
+    let host = host
+        .map(|host| host.to_str().ok_or("invalid Docker host"))
+        .transpose()?;
+    if host.is_some_and(|host| !local(host)) {
+        return Err("only a local Unix-socket Docker endpoint is allowed");
+    }
+    let selected = if explicit_context.is_some_and(|context| !context.is_empty()) {
+        context
+    } else {
+        host.unwrap_or(context)
+    };
+    Ok(selected.to_owned())
 }
 
 fn built_image_id(path: &Path) -> Result<String> {
@@ -615,6 +651,38 @@ mod tests {
             fs::remove_file(&stderr).unwrap();
         }
         assert!(captured_stderr(&output).is_err());
+    }
+
+    #[test]
+    fn effective_build_endpoint_preserves_context_precedence_and_local_boundary() {
+        use std::ffi::OsStr;
+        let context = "unix:///synthetic/context.sock";
+        let host = "unix:///synthetic/host.sock";
+        for (env_host, env_context, expected) in [
+            (None, None, context),
+            (Some(host), None, host),
+            (Some(host), Some(""), host),
+            (Some(host), Some("synthetic-context"), context),
+        ] {
+            assert_eq!(
+                local_endpoint(
+                    env_host.map(OsStr::new),
+                    env_context.map(OsStr::new),
+                    context
+                ),
+                Ok(expected.to_owned())
+            );
+        }
+        for value in [
+            "tcp://synthetic:2375",
+            "ssh://synthetic",
+            "unix://relative",
+            "unix:///synthetic\nsocket",
+            "",
+        ] {
+            assert!(local_endpoint(Some(OsStr::new(value)), None, context).is_err());
+            assert!(local_endpoint(None, None, value).is_err());
+        }
     }
 
     // The test executable is the only fixture executable. Each invocation runs

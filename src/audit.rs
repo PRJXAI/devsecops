@@ -630,7 +630,7 @@ fn missing_database(data: &[u8], diagnostics: &[u8]) -> Result<()> {
 
 /// Native offline clean/vulnerable/missing-DB controls; only synthetic lockfiles.
 pub(super) fn contract(driver: &mut Driver, image: &str) -> Result<()> {
-    let arch = driver.native()?;
+    let (arch, _) = driver.native()?;
     if driver.inspect(image, arch)? != image {
         return Err("cargo-audit native image identity mismatch");
     }
