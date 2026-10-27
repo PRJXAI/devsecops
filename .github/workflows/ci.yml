@@ -30,8 +30,15 @@ jobs:
       - run: cargo fmt --all -- --check
       - run: cargo clippy --all-targets --locked -- -D warnings
       - run: cargo test --locked
-      - run: cargo install cargo-audit --version 0.22.1 --locked
-      - run: cargo audit
+      - run: cargo run --locked --bin devsecops -- audit-dependencies
+      - name: Public dependency count/status summary only
+        if: always()
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
+        with:
+          name: dependency-security-status
+          path: .work/public-audit.json
+          retention-days: 14
+          if-no-files-found: error
   images:
     needs: structure
     strategy:

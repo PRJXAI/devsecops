@@ -331,8 +331,7 @@ mod tests {
             "cargo fmt --all -- --check"
                 | "cargo clippy --all-targets --locked -- -D warnings"
                 | "cargo test --locked"
-                | "cargo install cargo-audit --version 0.22.1 --locked"
-                | "cargo audit"
+                | "cargo run --locked --bin devsecops -- audit-dependencies"
                 | "cargo run --locked --bin devsecops -- prepare-release"
                 | "cargo run --locked --bin devsecops -- publish-all"
         ) || TOOLS
@@ -833,8 +832,15 @@ jobs:";
       - run: cargo fmt --all -- --check
       - run: cargo clippy --all-targets --locked -- -D warnings
       - run: cargo test --locked
-      - run: cargo install cargo-audit --version 0.22.1 --locked
-      - run: cargo audit";
+      - run: cargo run --locked --bin devsecops -- audit-dependencies
+      - name: Public dependency count/status summary only
+        if: always()
+        uses: actions/upload-artifact@PIN
+        with:
+          name: dependency-security-status
+          path: .work/public-audit.json
+          retention-days: 14
+          if-no-files-found: error";
     const IMAGES_JOB: &str = "  images:
     needs: structure
     strategy:

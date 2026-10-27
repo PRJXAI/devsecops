@@ -1,5 +1,6 @@
 #![forbid(unsafe_code)]
 
+mod audit;
 mod release;
 
 use std::{
@@ -491,6 +492,13 @@ fn built_image_id(path: &Path) -> Result<String> {
 
 fn main() {
     let args: Vec<_> = std::env::args_os().skip(1).collect();
+    if args.as_slice() == ["audit-dependencies"] {
+        if let Err(error) = Driver::new().and_then(|mut driver| audit::gate(&mut driver)) {
+            eprintln!("dependency audit failed: {error}");
+            std::process::exit(1);
+        }
+        return;
+    }
     if args.as_slice() == ["prepare-release"] || args.as_slice() == ["publish-all"] {
         let result = Driver::new().and_then(|mut driver| {
             if args[0] == "prepare-release" {
@@ -517,7 +525,7 @@ fn main() {
             }
         }
         _ => {
-            eprintln!("usage: devsecops check TOOL | check-all");
+            eprintln!("usage: devsecops check TOOL | check-all | audit-dependencies | prepare-release | publish-all");
             std::process::exit(2);
         }
     };

@@ -61,10 +61,11 @@
   - Exercise stdout/stderr overflow, a silent hung child, a descendant holding output open, SIGINT/SIGTERM, spawn failure, failed/timed-out container removal and child reaping. Assert deadlines and private capped output. No Docker or shell fixture is needed for the process primitives; Docker cleanup integration requires later authorization. These are essential safety tests, not deletion candidates.
   - Executed: bounded final reap, exact expected exits and Rust subprocess fixtures cover all listed process cases plus cleanup after cancellation. Shared result handling distinguishes primary and removal failure. Current integrated tests pass; native Linux-specific behavior remains part of D4.
 
-- [ ] **B10 — Keep the first-party dependency audit gate without public raw diagnostics.**
+- [x] **B10 — Keep the first-party dependency audit gate without public raw diagnostics.**
   - Evidence: `.github/workflows/ci.yml:33–34` installs and invokes host `cargo-audit` directly; its advisory retrieval/audit diagnostics bypass Rust private capture and counts/status reporting. Unlike image scans, this path does not enforce the repository's raw-provider-error logging boundary. No actual secret disclosure was observed.
   - Smallest change: route this audit through narrow Rust-controlled bounded capture and separated advisory retrieval/offline analysis, preferably reusing the pinned cargo-audit image once B4 proves its contract. Remove the host installer only if that replacement genuinely preserves the gate; do not merely suppress output or remove auditing.
   - Negative checks: vulnerable lock, missing/stale DB, fetch failure and synthetic sensitive diagnostic text must fail without exposing raw text. Keep CI launchers as single Cargo invocations; do not introduce shell glue or a general task-runner layer.
+  - Executed: CI calls Rust `audit-dependencies`, not a host installer. The packaged pinned image passes native arm64 clean/vulnerable/missing-DB controls; separate sanitized RustSec retrieval has a same-driver hash-bound ≤24h receipt. Nine audit tests cover schema/filter/coverage/freshness/failure/privacy; repository gate reports 0 vulnerabilities/0 warnings. Only counts/status are uploaded. Native amd64 and supplier provenance remain unverified.
 
 ## Safe simplifications, separate from acceptance gates
 
