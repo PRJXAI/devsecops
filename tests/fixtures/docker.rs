@@ -6,7 +6,24 @@ fn main() {
     let root = env::var("DEVSECOPS_FAKE_ROOT").unwrap();
     let mut log = OpenOptions::new().append(true).create(true).open(Path::new(&root).join("commands")).unwrap();
     writeln!(log, "{}", args.join(" ")).unwrap();
-    if args.first().map(String::as_str) == Some("run") && env::var_os("DEVSECOPS_FAKE_CONTRACT").is_some() {
+    if env::var_os("DEVSECOPS_FAKE_PREPARE").is_some()
+        && matches!(args.first().map(String::as_str), Some("pull" | "run" | "rm" | "--host")) {
+        let mode = env::var("DEVSECOPS_FAKE_PREPARE").unwrap();
+        let fail = match args[0].as_str() {
+            "pull" => mode == "pull",
+            "run" => (mode == "refresh" && args.iter().any(|a| a == "update"))
+                || (mode == "status" && args.iter().any(|a| a == "status")),
+            "--host" => true, // Independent per-tool build failure after shared setup.
+            _ => false,
+        };
+        if fail {
+            eprintln!("SYNTHETIC_PRIVATE_DIAGNOSTIC");
+            std::process::exit(9);
+        }
+        if args[0] == "run" && args.iter().any(|a| a == "status") {
+            println!("{{\"valid\":false,\"schemaVersion\":\"unreviewed\"}}");
+        }
+    } else if args.first().map(String::as_str) == Some("run") && env::var_os("DEVSECOPS_FAKE_CONTRACT").is_some() {
         println!("{{\"synthetic\":\"complete\"}}");
         if env::var("DEVSECOPS_FAKE_CONTRACT").unwrap() != "empty" { eprintln!("SYNTHETIC_PRIVATE_DIAGNOSTIC"); }
     } else if args.first().map(String::as_str) == Some("rm") && env::var_os("DEVSECOPS_FAKE_CONTRACT").is_some() {

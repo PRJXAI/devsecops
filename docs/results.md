@@ -1,5 +1,13 @@
 # Measured results and limitations
 
+## Pipeline failure attribution — 2026-10-28
+
+Run [40575344967](https://github.com/PRJXAI/devsecops/actions/runs/40575344967), source `89cc8f75dfaefb3fe6a0f9033d287010610c5aff`, passed structure/dependency audit and native catalog capture on both architectures, but both preparation jobs failed. Each public summary contained nine undifferentiated `error` entries; those artifacts establish no individual cause. Clean handoff upload and publication were skipped.
+
+Preparation now records a source-defined first-failing `stage` and exact-allowlisted `reason`, plus a separate shared scanner/DB `setup` status. A missing shared DB is attributed to `shared-setup`, not nine independent defects; independent earlier tool failures remain distinct. Later stages are not implied to have run. Unrecognized errors become `stage-failed`, never public raw text. Private capped captures, diagnostics/findings gates, immutable identities and publication approvals are unchanged.
+
+Local Darwin/arm64 validation: **94 ordinary tests pass** (12 policy + 82 binary), formatting and all-target Clippy pass. The new Rust fake-Docker regression exercises failed pull/refresh/status/DB validation, independent build failures, cleanup, private captures and absence of clean receipts. Exact-object privacy tests reject arbitrary text and known-error prefixes. This is attribution validation, not native image acceptance; hosted execution of this patch is pending. Workflow unchanged; actionlint was not rerun.
+
 ## Approval evidence implementation — current work
 
 The owner requested the [approval sequence](release-readiness.md). Readiness fields remain false; technical execution is not redistribution/provenance sign-off. The first hosted run [40568206091](https://github.com/PRJXAI/devsecops/actions/runs/40568206091) passed its native Linux amd64 structure/test/audit job; both native image-preparation jobs completed blocked with error statuses, and publication did not run. This is not complete image/native acceptance.

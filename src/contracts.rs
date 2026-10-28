@@ -16,6 +16,10 @@ const REPORT_LIMIT: u64 = 8 * 1024 * 1024;
 
 pub(super) fn check(driver: &mut Driver, tool: &str, image: &str) -> Result<()> {
     super::filesystem::check(driver, tool, image)?;
+    functional(driver, tool, image)
+}
+
+pub(super) fn functional(driver: &mut Driver, tool: &str, image: &str) -> Result<()> {
     match tool {
         "gitleaks" => gitleaks(driver, image),
         "syft" => syft(driver, image),

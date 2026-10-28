@@ -40,7 +40,7 @@ Containers are offline/read-only apart from explicit advisory retrieval and synt
 
 ## Updates and publishing
 
-[CI](.github/workflows/ci.yml) is configured for native amd64/arm64 preparation: functional prerequisites, unchanged native Syft inventories, captured payload/dependency coverage and offline Grype with separately refreshed data. Every finding—including Unknown/Negligible/ignored matches—and every scan/validation error blocks publication. Nonempty analysis diagnostics also block; no precision-notice exception or symbol-based finding filter is approved. Incomplete inventories and unreviewed architectures fail closed, not clean.
+[CI](.github/workflows/ci.yml) is configured for native amd64/arm64 preparation: functional prerequisites, unchanged native Syft inventories, captured payload/dependency coverage and offline Grype with separately refreshed data. Public security summaries identify the first failing preparation stage and an allowlisted reason, with shared scanner/DB setup reported separately; they never include raw errors or imply later checks ran. Every finding—including Unknown/Negligible/ignored matches—and every scan/validation error blocks publication. Nonempty analysis diagnostics also block; no precision-notice exception or symbol-based finding filter is approved. Incomplete inventories and unreviewed architectures fail closed, not clean.
 
 Dependabot opens weekly PRs for Cargo, Docker base/supplier images and Actions. **No auto-merge or automatic publishing.** Released binary URLs/checksums, Rust toolchain, expected versions, licenses and source provenance require coordinated human review; Dependabot cannot safely update all of those by itself.
 

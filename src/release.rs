@@ -430,15 +430,143 @@ fn total(counts: &BTreeMap<String, u64>) -> u64 {
         .sum()
 }
 
+// Public attribution is deliberately a small source-defined vocabulary. Never
+// serialize an error as a public reason, even when its current type is &'static str.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+enum PreparationStage {
+    SyftPull,
+    GrypePull,
+    DatabaseRefresh,
+    DatabaseStatus,
+    DatabaseValidation,
+    BuildSmoke,
+    FilesystemContract,
+    FunctionalContract,
+    ArchiveSave,
+    ArchiveIdentity,
+    CatalogScan,
+    CatalogValidation,
+    InventoryCoverage,
+    DatabaseRequired,
+    VulnerabilityScan,
+    ReportValidation,
+    CleanHandoff,
+}
+
+impl PreparationStage {
+    fn code(self) -> &'static str {
+        match self {
+            Self::SyftPull => "syft-pull",
+            Self::GrypePull => "grype-pull",
+            Self::DatabaseRefresh => "database-refresh",
+            Self::DatabaseStatus => "database-status",
+            Self::DatabaseValidation => "database-validation",
+            Self::BuildSmoke => "build-smoke",
+            Self::FilesystemContract => "filesystem-contract",
+            Self::FunctionalContract => "functional-contract",
+            Self::ArchiveSave => "archive-save",
+            Self::ArchiveIdentity => "archive-identity",
+            Self::CatalogScan => "catalog-scan",
+            Self::CatalogValidation => "catalog-validation",
+            Self::InventoryCoverage => "inventory-coverage",
+            Self::DatabaseRequired => "database-required",
+            Self::VulnerabilityScan => "vulnerability-scan",
+            Self::ReportValidation => "report-validation",
+            Self::CleanHandoff => "clean-handoff",
+        }
+    }
+}
+
+fn preparation_failure(stage: PreparationStage, error: &str) -> Value {
+    // Exact matches only: dynamic text, prefixes and future errors fall back to
+    // stage-failed. The raw explanation remains in the private capped captures.
+    let reason = match error {
+        "command timed out" => "command-timeout",
+        "command output limit exceeded" => "output-limit",
+        "unexpected command exit; private logs retained" => "command-exit",
+        "cannot start command; private logs retained" => "command-start",
+        "check cancelled" | "release cancelled" | "contract cancelled" => "cancelled",
+        "command failed and process cleanup was not confirmed" => "process-cleanup",
+        "check failed and container cleanup was not confirmed"
+        | "container cleanup failed; private logs retained"
+        | "scanner container cleanup not confirmed"
+        | "contract failed and container cleanup was not confirmed"
+        | "contract container cleanup failed; private logs retained" => "container-cleanup",
+        "scanner emitted diagnostics; private logs retained"
+        | "functional analysis emitted diagnostics; private logs retained" => "analysis-stderr",
+        "scanner errors or diagnostics require review"
+        | "scanner package alerts require review" => "analysis-json-diagnostics",
+        "malformed JSON evidence" => "invalid-json",
+        "evidence must be a nonempty bounded regular file"
+        | "evidence grew beyond limit"
+        | "JSON structural budget exceeded" => "evidence-limit-or-type",
+        "refusing stale or unwritable release directory"
+        | "refusing existing or unwritable evidence" => "evidence-path-unavailable",
+        "unexpected tool version; review supplier and version metadata together" => {
+            "version-mismatch"
+        }
+        "image identity, user or architecture check failed" | "built image identity mismatch" => {
+            "image-identity"
+        }
+        "unexpected effective image entrypoint" => "entrypoint-mismatch",
+        "unsupported filesystem member type" => "filesystem-member-type",
+        "unsafe filesystem path" => "filesystem-path",
+        "unexpected filesystem link target" => "filesystem-link-target",
+        "forbidden filesystem executable" | "forbidden filesystem executable alias" => {
+            "filesystem-forbidden-executable"
+        }
+        "critical filesystem file must be regular" => "filesystem-critical-file-type",
+        "SBOM tool or immutable image identity mismatch" => "catalog-identity",
+        "SBOM has no package artifacts" => "catalog-empty",
+        "SBOM omitted or changed a captured payload/dependency tuple" => "inventory-tuple-mismatch",
+        "UNKNOWN payload/dependency versions block catalog coverage" => "inventory-unknown-version",
+        "payload coverage lacks reviewed native architecture evidence" => {
+            "inventory-architecture-unreviewed"
+        }
+        "Rust payload/dependency/compiler inventory is absent" => "inventory-rust-missing",
+        "Docker CLI payload version and embedded dependencies remain unresolved" => {
+            "inventory-docker-incomplete"
+        }
+        "kind Docker provider payload inventory has not been reviewed" => {
+            "inventory-provider-unreviewed"
+        }
+        "Go payload location has no captured compiler inventory"
+        | "Go payload compiler inventory differs from native capture" => {
+            "inventory-compiler-mismatch"
+        }
+        "cargo-deny functional contract blocked: pinned compiler-free runtime cannot prove Cargo/index/advisory coverage" => {
+            "cargo-deny-coverage-unproven"
+        }
+        "kind functional contract blocked: provider inventory and separately authorized control-plane validation required" => {
+            "kind-control-plane-unapproved"
+        }
+        "fresh scan database unavailable" => "shared-setup-unavailable",
+        "invalid Grype database status or schema" => "database-invalid",
+        "stale or future-dated evidence" => "evidence-not-fresh",
+        _ => "stage-failed",
+    };
+    let mut status = json!({"status":"error", "stage":stage.code(), "reason":reason});
+    if stage == PreparationStage::DatabaseRequired {
+        status["blocked_by"] = json!("shared-setup");
+    }
+    status
+}
+
 fn prepare_tool(
     driver: &mut Driver,
     tool: &str,
     arch: &str,
     revision: &str,
     db: Option<&Value>,
+    stage: &mut PreparationStage,
 ) -> Result<Value> {
+    *stage = PreparationStage::BuildSmoke;
     let image = driver.check(tool)?;
-    super::contracts::check(driver, tool, &image)?;
+    *stage = PreparationStage::FilesystemContract;
+    super::filesystem::check(driver, tool, &image)?;
+    *stage = PreparationStage::FunctionalContract;
+    super::contracts::functional(driver, tool, &image)?;
+    *stage = PreparationStage::ArchiveSave;
     let scans = driver.root.join(".work/scans");
     let asset = scans.join(tool);
     mkdir(&asset, false)?;
@@ -446,9 +574,11 @@ fn prepare_tool(
     let tar_arg = tar.to_str().ok_or("invalid archive path")?;
     driver.docker(&["image", "save", "--output", tar_arg, &image], 600, false)?;
     regular(&tar, TAR_LIMIT)?;
+    *stage = PreparationStage::ArchiveIdentity;
     let config = super::archive::config_digest(&tar, arch, revision)?;
     fs::set_permissions(&tar, fs::Permissions::from_mode(0o644))
         .map_err(|_| "cannot grant scanner archive read access")?;
+    *stage = PreparationStage::CatalogScan;
     let sbom_path = scanner(
         driver,
         SYFT,
@@ -464,10 +594,14 @@ fn prepare_tool(
         false,
         0,
     )?;
+    *stage = PreparationStage::CatalogValidation;
     let sbom = read_json(&sbom_path)?;
     let packages = sbom_packages(&sbom, &config, arch)?;
+    *stage = PreparationStage::InventoryCoverage;
     super::coverage::check(&sbom, tool)?;
+    *stage = PreparationStage::DatabaseRequired;
     let db = db.ok_or("fresh scan database unavailable")?;
+    *stage = PreparationStage::VulnerabilityScan;
     // Only this public, bounded inventory is exposed to the next scanner. Logs
     // remain private; neither scanner gets any writable host report directory.
     let staged = asset.join("input.syft.json");
@@ -483,11 +617,13 @@ fn prepare_tool(
         false,
         0,
     )?;
+    *stage = PreparationStage::ReportValidation;
     let report = read_json(&report_path)?;
     let now = Utc::now();
     let counts = report_counts(&sbom, &packages, &report, db, now)?;
     let count = total(&counts);
     if count == 0 {
+        *stage = PreparationStage::CleanHandoff;
         let release = driver.root.join(".work/release");
         let clean_tar = release.join(format!("{tool}-{arch}.tar"));
         let clean_sbom = release.join(format!("{tool}-{arch}.syft.json"));
@@ -611,8 +747,13 @@ pub(super) fn prepare(driver: &mut Driver) -> Result<()> {
     mkdir(&work.join("scans"), false)?;
     mkdir(&work.join("scans/cache"), true)?;
     // Retrieval precedes, and is separate from, all offline catalog/analysis runs.
+    let mut setup_stage = PreparationStage::SyftPull;
     let setup: Result<Value> = (|| {
-        for engine in [SYFT, GRYPE] {
+        for (engine, stage) in [
+            (SYFT, PreparationStage::SyftPull),
+            (GRYPE, PreparationStage::GrypePull),
+        ] {
+            setup_stage = stage;
             driver.docker(
                 &["pull", "--platform", &format!("linux/{arch}"), engine],
                 600,
@@ -620,6 +761,7 @@ pub(super) fn prepare(driver: &mut Driver) -> Result<()> {
             )?;
         }
         let cache = work.join("scans/cache");
+        setup_stage = PreparationStage::DatabaseRefresh;
         scanner(
             driver,
             GRYPE,
@@ -628,6 +770,7 @@ pub(super) fn prepare(driver: &mut Driver) -> Result<()> {
             true,
             0,
         )?;
+        setup_stage = PreparationStage::DatabaseStatus;
         let status = scanner(
             driver,
             GRYPE,
@@ -636,6 +779,7 @@ pub(super) fn prepare(driver: &mut Driver) -> Result<()> {
             false,
             0,
         )?;
+        setup_stage = PreparationStage::DatabaseValidation;
         let db = read_json(&status)?;
         db_status(&db, Utc::now())?;
         // Never put provider paths/URLs/errors into the transferable receipt.
@@ -648,11 +792,23 @@ pub(super) fn prepare(driver: &mut Driver) -> Result<()> {
             0o600,
         )?;
     }
+    let setup_status = match &setup {
+        Ok(_) => json!({"status":"ready"}),
+        Err(error) => preparation_failure(setup_stage, error),
+    };
     let mut statuses = Vec::new();
     let mut failed = setup.is_err();
     for tool in TOOLS {
         // Even a shared DB failure does not skip other assets' build/catalog checks.
-        let result = prepare_tool(driver, tool, arch, &revision, setup.as_ref().ok());
+        let mut stage = PreparationStage::BuildSmoke;
+        let result = prepare_tool(
+            driver,
+            tool,
+            arch,
+            &revision,
+            setup.as_ref().ok(),
+            &mut stage,
+        );
         match result {
             Ok(status) => {
                 failed |= status["status"] != "clean";
@@ -665,13 +821,16 @@ pub(super) fn prepare(driver: &mut Driver) -> Result<()> {
                     json!({"reason": error}).to_string().as_bytes(),
                     0o600,
                 )?;
-                statuses.push(json!({"tool": tool, "arch": arch, "status": "error"}));
+                let mut status = preparation_failure(stage, error);
+                status["tool"] = json!(tool);
+                status["arch"] = json!(arch);
+                statuses.push(status);
             }
         }
     }
     write_json(
         &work.join("public-release/summary.json"),
-        &json!({"source_sha": revision, "arch": arch, "status": if failed { "blocked" } else { "clean" }, "tools": statuses}),
+        &json!({"schema":1, "source_sha": revision, "arch": arch, "status": if failed { "blocked" } else { "clean" }, "setup": setup_status, "tools": statuses}),
     )?;
     if failed {
         Err("release blocked by findings or errors; see counts-only summary and private scans")
@@ -1048,6 +1207,187 @@ mod tests {
             "syft": SYFT, "grype": GRYPE, "count": 0, "contracts": "passed", "created": now().to_rfc3339(), "db": db(),
             "tar_sha256": "b".repeat(64), "sbom_sha256": "c".repeat(64),
             "counts": SEVERITIES.into_iter().map(|s| (s, 0u64)).collect::<BTreeMap<_, _>>()})
+    }
+
+    #[test]
+    fn public_preparation_failures_use_only_exact_allowlisted_codes() {
+        for (stage, code) in [
+            (PreparationStage::SyftPull, "syft-pull"),
+            (PreparationStage::GrypePull, "grype-pull"),
+            (PreparationStage::DatabaseRefresh, "database-refresh"),
+            (PreparationStage::DatabaseStatus, "database-status"),
+            (PreparationStage::DatabaseValidation, "database-validation"),
+            (PreparationStage::BuildSmoke, "build-smoke"),
+            (PreparationStage::FilesystemContract, "filesystem-contract"),
+            (PreparationStage::FunctionalContract, "functional-contract"),
+            (PreparationStage::ArchiveSave, "archive-save"),
+            (PreparationStage::ArchiveIdentity, "archive-identity"),
+            (PreparationStage::CatalogScan, "catalog-scan"),
+            (PreparationStage::CatalogValidation, "catalog-validation"),
+            (PreparationStage::InventoryCoverage, "inventory-coverage"),
+            (PreparationStage::DatabaseRequired, "database-required"),
+            (PreparationStage::VulnerabilityScan, "vulnerability-scan"),
+            (PreparationStage::ReportValidation, "report-validation"),
+            (PreparationStage::CleanHandoff, "clean-handoff"),
+        ] {
+            for error in [
+                "SYNTHETIC_PRIVATE_DIAGNOSTIC",
+                "https://example.invalid/private?signature=synthetic",
+                "command timed out: SYNTHETIC_PRIVATE_DIAGNOSTIC",
+                "future unreviewed static error",
+                "",
+            ] {
+                let mut expected = json!({"status":"error","stage":code,"reason":"stage-failed"});
+                if stage == PreparationStage::DatabaseRequired {
+                    expected["blocked_by"] = json!("shared-setup");
+                }
+                // Exact whole-object equality rejects raw text or extra fields too.
+                assert_eq!(preparation_failure(stage, error), expected);
+            }
+        }
+        for (error, code) in [
+            ("command timed out", "command-timeout"),
+            ("command output limit exceeded", "output-limit"),
+            (
+                "unexpected command exit; private logs retained",
+                "command-exit",
+            ),
+            (
+                "scanner container cleanup not confirmed",
+                "container-cleanup",
+            ),
+            (
+                "scanner emitted diagnostics; private logs retained",
+                "analysis-stderr",
+            ),
+            (
+                "scanner errors or diagnostics require review",
+                "analysis-json-diagnostics",
+            ),
+            (
+                "UNKNOWN payload/dependency versions block catalog coverage",
+                "inventory-unknown-version",
+            ),
+            ("stale or future-dated evidence", "evidence-not-fresh"),
+        ] {
+            assert_eq!(
+                preparation_failure(PreparationStage::VulnerabilityScan, error),
+                json!({"status":"error","stage":"vulnerability-scan","reason":code})
+            );
+        }
+        assert_eq!(
+            preparation_failure(
+                PreparationStage::DatabaseRequired,
+                "fresh scan database unavailable"
+            ),
+            json!({"status":"error","stage":"database-required","reason":"shared-setup-unavailable","blocked_by":"shared-setup"})
+        );
+    }
+
+    #[test]
+    #[ignore = "Rust-only subprocess fixture invoked by the active preparation regression test"]
+    fn preparation_failure_fixture() {
+        let root = PathBuf::from(std::env::var_os("DEVSECOPS_FAKE_ROOT").unwrap());
+        mkdir(&root.join(".work"), false).unwrap();
+        let mut driver = Driver::new().unwrap();
+        driver.root = root.clone();
+        assert!(prepare(&mut driver).is_err());
+        let summary = read_json(&root.join(".work/public-release/summary.json")).unwrap();
+        let mode = std::env::var("DEVSECOPS_FAKE_PREPARE").unwrap();
+        let (stage, reason) = match mode.as_str() {
+            "pull" => ("syft-pull", "command-exit"),
+            "refresh" => ("database-refresh", "command-exit"),
+            "status" => ("database-status", "command-exit"),
+            "validation" => ("database-validation", "database-invalid"),
+            _ => panic!("unsupported fixture mode"),
+        };
+        assert_eq!(
+            summary["setup"],
+            json!({"status":"error","stage":stage,"reason":reason})
+        );
+        assert_eq!(summary["source_sha"], REV);
+        assert_eq!(summary["status"], "blocked");
+        let statuses = summary["tools"].as_array().unwrap();
+        assert_eq!(statuses.len(), TOOLS.len());
+        for (status, tool) in statuses.iter().zip(TOOLS) {
+            // Shared setup failure must not overwrite an independent build failure.
+            assert_eq!(
+                status,
+                &json!({"tool":tool,"arch":summary["arch"],"status":"error","stage":"build-smoke","reason":"command-exit"})
+            );
+        }
+        assert_eq!(fs::read_dir(root.join(".work/release")).unwrap().count(), 0);
+        assert!(!summary.to_string().contains("SYNTHETIC_PRIVATE_DIAGNOSTIC"));
+        let commands = fs::read_to_string(root.join("commands")).unwrap();
+        let runs = commands
+            .lines()
+            .filter(|line| line.starts_with("run "))
+            .count();
+        let removals = commands
+            .lines()
+            .filter(|line| line.starts_with("rm --force "))
+            .count();
+        assert_eq!(runs, removals);
+        assert_eq!(
+            runs,
+            match mode.as_str() {
+                "pull" => 0,
+                "refresh" => 1,
+                _ => 2,
+            }
+        );
+        // Raw supplier output remains available only in private capped logs.
+        let mut retained = false;
+        for entry in fs::read_dir(&driver.logs).unwrap() {
+            let path = entry.unwrap().path();
+            if path.extension().is_some_and(|ext| ext == "log") {
+                let metadata = fs::metadata(&path).unwrap();
+                assert_eq!(metadata.permissions().mode() & 0o777, 0o600);
+                assert!(metadata.len() <= super::super::LOG_LIMIT as u64);
+                retained |= fs::read_to_string(&path)
+                    .unwrap()
+                    .contains("SYNTHETIC_PRIVATE_DIAGNOSTIC");
+            }
+        }
+        assert!(retained);
+    }
+
+    #[test]
+    fn shared_setup_failures_are_distinct_from_tool_failures_and_keep_raw_output_private() {
+        let fixture = Fixture::new();
+        let bin = fixture.0.join("bin");
+        fs::create_dir(&bin).unwrap();
+        let mut driver = Driver::new().unwrap();
+        let mut compile = std::process::Command::new("rustc");
+        compile
+            .args(["--edition=2024", "--crate-name", "fake_docker"])
+            .arg(Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/docker.rs"))
+            .arg("-o")
+            .arg(bin.join("docker"));
+        driver.execute(compile, 60, false, 0).unwrap();
+        let path = std::env::join_paths(std::iter::once(bin).chain(std::env::split_paths(
+            &std::env::var_os("PATH").unwrap_or_default(),
+        )))
+        .unwrap();
+        for mode in ["pull", "refresh", "status", "validation"] {
+            let root = fixture.0.join(mode);
+            mkdir(&root, false).unwrap();
+            let mut child = std::process::Command::new(std::env::current_exe().unwrap());
+            child
+                .args([
+                    "--exact",
+                    "release::tests::preparation_failure_fixture",
+                    "--ignored",
+                    "--nocapture",
+                ])
+                .env("PATH", &path)
+                .env("DEVSECOPS_FAKE_ROOT", &root)
+                .env("DEVSECOPS_FAKE_PREPARE", mode)
+                .env("GITHUB_SHA", REV)
+                .env_remove("DOCKER_HOST")
+                .env_remove("DOCKER_CONTEXT");
+            driver.execute(child, 30, false, 0).unwrap();
+        }
     }
 
     #[test]
