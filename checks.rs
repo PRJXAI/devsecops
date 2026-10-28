@@ -572,6 +572,75 @@ mod tests {
         ));
     }
     #[test]
+    fn collected_go_notice_bytes_and_module_coverage_match_the_index() {
+        use sha2::Digest;
+        let folder = root().join("licenses/gitleaks-go-notices");
+        let index: serde_json::Value =
+            serde_json::from_slice(&fs::read(folder.join("index.json")).unwrap()).unwrap();
+        assert_eq!(index["redistribution_approved"], false);
+        assert_eq!(index["embedded_go_modules"], 62);
+        assert_eq!(index["modules_with_named_notice_files"], 62);
+        assert_eq!(
+            index["modules_without_named_notice_files"],
+            serde_json::json!([])
+        );
+        let mut names = BTreeSet::new();
+        let mut modules = BTreeSet::new();
+        let mut total = 0u64;
+        for record in index["files"].as_array().unwrap() {
+            let file = record["file"].as_str().unwrap();
+            assert!(
+                file.starts_with("files/")
+                    && file.ends_with(".txt")
+                    && !file.contains("..")
+                    && file.matches('/').count() == 1
+            );
+            let path = folder.join(file);
+            let metadata = fs::symlink_metadata(&path).unwrap();
+            assert!(metadata.is_file() && metadata.len() > 0 && metadata.len() <= 1024 * 1024);
+            let bytes = fs::read(&path).unwrap();
+            let hash = sha2::Sha256::digest(&bytes)
+                .iter()
+                .map(|b| format!("{b:02x}"))
+                .collect::<String>();
+            assert_eq!(record["sha256"], hash);
+            assert_eq!(record["bytes"], bytes.len());
+            total += bytes.len() as u64;
+            assert!(names.insert(file.to_owned()));
+            if let Some(module) = record["module"].as_str() {
+                assert!(record["go_source_sum"].as_str().unwrap().starts_with("h1:"));
+                modules.insert(module.to_owned());
+            }
+        }
+        let actual: BTreeSet<_> = fs::read_dir(folder.join("files"))
+            .unwrap()
+            .map(|entry| format!("files/{}", entry.unwrap().file_name().to_str().unwrap()))
+            .collect();
+        assert_eq!(names, actual);
+        assert_eq!(names.len(), 95);
+        assert_eq!(modules.len(), 62);
+        assert_eq!(total, 294214);
+        assert_eq!(index["total_bytes"], total);
+    }
+    #[test]
+    fn candidate_identity_evidence_cannot_claim_scan_or_release_acceptance() {
+        let evidence: serde_json::Value = serde_json::from_slice(
+            &fs::read(root().join("inventory/gitleaks-candidate-evidence.json")).unwrap(),
+        )
+        .unwrap();
+        assert_eq!(evidence["release_accepted"], false);
+        assert_eq!(evidence["vulnerability_scan"], "not-run");
+        assert_eq!(evidence["architectures"].as_object().unwrap().len(), 2);
+        for arch in ["amd64", "arm64"] {
+            let entry = &evidence["architectures"][arch];
+            assert_eq!(entry["exact_named_tuples"], 74);
+            assert_eq!(entry["unknown_versions"], 0);
+            for field in ["summary_sha256", "sbom_sha256", "reported_archive_sha256"] {
+                assert!(sha256(entry[field].as_str().unwrap()));
+            }
+        }
+    }
+    #[test]
     fn rust_is_the_only_glue_layer() {
         for relative in eligible_files(root()) {
             assert!(

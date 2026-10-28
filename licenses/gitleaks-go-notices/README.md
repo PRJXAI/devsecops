@@ -1,0 +1,9 @@
+# Collected Gitleaks candidate Go notices
+
+These are **95 verbatim named license/notice/copyright files (294,214 bytes)** collected on 2026-10-28 from the fixed dependency candidate's checksum-verified source cache and pinned Go 1.27.3 distribution. All **62 embedded non-main/non-stdlib Go modules** have at least one named notice file. Main Gitleaks and compiler/stdlib/vendor notices are also included; source trees can contain optional components not compiled into this executable.
+
+[index.json](index.json) maps each numbered text file to its source path, module/version where applicable, Go source checksum, SHA-256 and byte size. The files are deliberately non-executable data. The private Rust collector used the existing sealed resolver image, no network/socket/host configuration during inspection, bounded captures and unconditional container removal. Each staged file's bytes were rehashed against the collection index.
+
+This closes **collection of those named files**, not all legal compliance. It does not establish every file-level license/NOTICE obligation, exact native Git/glibc source/patch/relinking arrangements, source-to-binary reproducibility, third-party approval or complete redistribution review. It is not yet packaged into a published image. `redistribution_approved` remains false. See the [release blockers](../../docs/release-blockers.md), [supplier evidence](../supplier-evidence.md) and [dependency experiment](../../docs/gitleaks-dependency-experiment.md).
+
+An initial `go mod download -json all` metadata query attempted to inspect unrelated, uncached lazy-graph modules and failed offline. That failed capture is retained privately. The corrected collector requests exactly every module observed in the unchanged native candidate inventory; no embedded module is omitted, and no online fallback or finding filter is used.

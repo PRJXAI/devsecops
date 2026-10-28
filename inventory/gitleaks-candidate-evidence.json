@@ -1,0 +1,32 @@
+{
+  "architectures": {
+    "amd64": {
+      "config_image": "sha256:3fa26c7f6b32bd0b16f520dc6cdd92d80e17aafcf3193d0f59bd141e98c4ead6",
+      "engine_image": "sha256:3fa26c7f6b32bd0b16f520dc6cdd92d80e17aafcf3193d0f59bd141e98c4ead6",
+      "exact_named_tuples": 74,
+      "filesystem_functional_contract": "passed",
+      "reported_archive_sha256": "1b0c6cf9ad293d4fa59dc8634dcf1c429aa0be8924047682ab106a3692f0ab33",
+      "sbom_sha256": "dd031406c9b3733af1d68ab4d556051274455876fdaa44610465bef67a0cb572",
+      "summary_sha256": "b7e7efb68e166b3444d40093f52fb4bdc3151fc367a117c80c31cdf07acda630",
+      "unknown_versions": 0,
+      "upstream_race_tests": "passed"
+    },
+    "arm64": {
+      "config_image": "sha256:63f5724d014adb11156b82e1c5e6cec85d7fcf819ace9f5c729e99ec110e5b44",
+      "engine_image": "sha256:63f5724d014adb11156b82e1c5e6cec85d7fcf819ace9f5c729e99ec110e5b44",
+      "exact_named_tuples": 74,
+      "filesystem_functional_contract": "passed",
+      "reported_archive_sha256": "6a8a52e4700e0c3028f6fed11f59ffae2eeb0d89582583c644e3e5292835fa18",
+      "sbom_sha256": "040394f5d49cbe88e50e000d57fe06eb254a2717eef3b8141f99deee93b58219",
+      "summary_sha256": "337f65a78e4fe7ed704ef05c0358702aa457c10c95a855a90d7f349fbcaec264",
+      "unknown_versions": 0,
+      "upstream_race_tests": "passed"
+    }
+  },
+  "release_accepted": false,
+  "run": 40683447538,
+  "schema": 1,
+  "scope": "Hosted native functional/inventory capture consistency against unchanged locally measured candidate. Producer/runner attribution uses trusted GitHub artifact delivery; no saved archives were supplied for independent rehash. Not publication evidence or a production profile update.",
+  "source_sha": "bce05d54de2fabd70a8ac009d4cdbd814db3eca9",
+  "vulnerability_scan": "not-run"
+}
