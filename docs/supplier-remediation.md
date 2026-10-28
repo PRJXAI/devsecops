@@ -1,5 +1,7 @@
 # Supplier vulnerability remediation — step 3
 
+**Later follow-ups (2026-10-28):** the owner authorized an isolated [Gitleaks compiler experiment](gitleaks-compiler-experiment.md), measuring 69 → 26 matches, then a [dependency-upgrade experiment](gitleaks-dependency-experiment.md), measuring 26 → 1. Both are native arm64 observations with strict diagnostic rejection; the last Unknown x/crypto/OpenPGP record remains blocking. Neither image was adopted or published. The investigation below remains the historical 2026-10-27 released-artifact/source-metadata assessment; its “no source build” statements concern that earlier scope.
+
 ## Decision and evidence boundary
 
 **Blocked: no complete released-binary remediation identified as of 2026-10-27 UTC.** The latest public upstream releases are still Syft **1.55.0**, Grype **0.121.0** and Gitleaks **8.30.1**, already packaged here. Both `/releases/latest` and the five most recent release records were checked. No image, configuration, contract, readiness flag or consumer pin was changed by this investigation.

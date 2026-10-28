@@ -1,5 +1,27 @@
 # Measured results and limitations
 
+## Release unblock execution — 2026-10-28
+
+The [concrete blocker plan](release-blockers.md) distinguishes the one upgraded Gitleaks candidate from the existing atomic nine-tool/eighteen-handoff publisher. No release scope or acceptance policy was reduced. A persistent Rust opt-in candidate test now independently rebuilds the fixed source/manifest patch, runs the full upstream race suite and native functional/filesystem contracts, and captures unchanged native inventories. CI is configured to run it on both native architectures and retain separately named evidence, even while original preparation fails; this is not a new release route.
+
+Local arm64 execution initially failed at artifact transfer after race tests/compilation passed: Docker copy could not see the build tmpfs output. The corrected path retains that failure and transfers 4 MiB capped chunks with exact total-length/digest checks and unconditional container removal, without increasing the 8 MiB stream cap. The explicit corrected arm64 native test passes. **96 ordinary tests** (13 policy + 83 binary), formatting and strict all-target Clippy pass; 17 fixture/opt-in entrypoints remain distinct. Hosted amd64 and current-source CI results are not yet established. The retained 26 → 1 scan comparison below concerns earlier candidate identities/database, not a new scan of this test output. No readiness approval or finding/diagnostic exception changed; no publication occurred.
+
+## Gitleaks dependency experiment — 2026-10-28
+
+The owner-authorized six dependency upgrades in a second local **linux/arm64** Go 1.27.3/Gitleaks 8.30.1-based candidate measured **26 → 1 match** against the compiler-only inventory, using the same freshness-validated DB. Critical/High/Medium/Low counts are all **0**; **one Unknown** x/crypto/OpenPGP module-level record remains. Native inventories retain 62 dependency names, with six explicit version upgrades plus resolved x/sync 0.24.0; Go minimum becomes 1.26.0. No module additions/removals or replacements/exclusions were used.
+
+The full upstream-style race suite, native filesystem/version/Git/source/history/redaction contracts, two negative helper tests and explicit paired-report/archive/graph replay pass. Both analyses still reject nonempty stderr; the Unknown record also still blocks. Source imports do not show OpenPGP, but that is not binary exploitability/absence proof or a waiver. [Exact results and boundaries](gitleaks-dependency-experiment.md) include identities and the [manifest-only patch](../patches/gitleaks-8.30.1-dependencies.patch.txt), whose application to synthetic originals reproduces the tested bytes. This is an experimental patch, not production adoption. No production image/profile/policy/approval/consumer pin changed, native amd64 was not tested, Syft/Grype were not rebuilt, and no publication occurred.
+
+Final local validation after the dependency experiment: **94 ordinary repository tests pass**, formatting and strict all-target Clippy pass. The private helper separately passes formatting/all-target Clippy, two negative module-policy tests and its explicitly executed native-pair replay. Initial patch-extension policy/private-launcher formatting failures were corrected without relaxing policy. No new hosted preparation/publication run was requested; the production pipeline remains unremediated by this unadopted candidate.
+
+## Gitleaks compiler experiment — 2026-10-28
+
+The owner-authorized, local native **linux/arm64** rebuild of the unchanged Gitleaks 8.30.1 source with **Go 1.27.3** measured **69 → 26 matches** against the same freshness-validated advisory database: **43 → 0 Go stdlib matches**, with all 26 other dependency matches retained. Source manifests and 62 embedded dependency names/versions are unchanged; the final build matches the official container's default-regex flags, not GoReleaser's alternative archive flags. Native filesystem/version/Git/source/history/redaction contracts and the full upstream-style race suite pass. The [experiment report](gitleaks-compiler-experiment.md) records exact identities, failed preliminary attempts and evidence boundaries.
+
+Both paired scans still reject analysis stderr; 26 findings remain blocking. No production image/profile/policy/approval or consumer pin changed, no release receipt or publication occurred, and native amd64/complete supplier acceptance was not established. Syft/Grype compiler rebuilds were not executed; their potential reductions are not measured results.
+
+Repository validation after the documentation update: **94 ordinary tests pass** (12 policy + 82 binary; 16 fixture/opt-in entrypoints remain ignored by ordinary enumeration), formatting and strict all-target Clippy pass. The private helper separately passes formatting/all-target Clippy, two module-comparison tests and the explicitly executed native paired-report replay. No new hosted workflow run or publication was requested for this local experiment; the production pipeline's previously established failures remain.
+
 ## Pipeline failure attribution — 2026-10-28
 
 Run [40575344967](https://github.com/PRJXAI/devsecops/actions/runs/40575344967), source `89cc8f75dfaefb3fe6a0f9033d287010610c5aff`, passed structure/dependency audit and native catalog capture on both architectures, but both preparation jobs failed. Each public summary contained nine undifferentiated `error` entries; those artifacts establish no individual cause. Clean handoff upload and publication were skipped.

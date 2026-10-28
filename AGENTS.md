@@ -34,7 +34,7 @@ Redistribution requires complete third-party license/notices and corresponding s
 - checks.rs: structural/workflow/Docker/context/docs policy and mutation tests.
 - src/main.rs, src/builder.rs: checked build/process policy and opt-in pinned-CLI selection tests; build-only and build/smoke share endpoint binding.
 - src/release.rs, src/archive.rs, src/coverage.rs: handoff, distinct engine/config identity and fail-closed captured inventory coverage.
-- src/contracts.rs, src/filesystem.rs, src/grype_contract.rs, src/audit.rs: native synthetic/final-filesystem/audit contracts and unit tests. tests/fixtures/docker.rs is a Rust fake Docker executable, not a native-image fixture.
+- src/contracts.rs, src/filesystem.rs, src/grype_contract.rs, src/audit.rs: native synthetic/final-filesystem/audit contracts and unit tests. src/gitleaks_candidate.rs is a test-only fixed-source dependency candidate builder/functional inventory recorder, not a release API; tests/fixtures/gitleaks/Dockerfile is its exact hash-reviewed fixture, not a production COPY/RUN policy expansion. tests/fixtures/docker.rs is a Rust fake Docker executable, not a native-image fixture.
 - Run cargo fmt --all -- --check, cargo clippy --all-targets --locked -- -D warnings, cargo test --locked. `check TOOL`/`check-all` are version smokes; `contract TOOL` adds mandatory checks and deliberately blocks incomplete tools. Run native cases serially; ignored evidence entrypoints require their explicitly approved public inputs.
 - docs/tool-inventory.md: consumer workflow/source revision, versions, tool/runtime requirements and deliberate exceptions.
 - docs/results.md: exact executed checks, architecture, findings and blocked work, not intended outcomes.

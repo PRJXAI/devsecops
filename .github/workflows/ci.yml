@@ -74,6 +74,17 @@ jobs:
           path: .work/public-release/summary.json
           retention-days: 14
           if-no-files-found: error
+      - name: Validate experimental Gitleaks natively without release approval
+        if: always()
+        run: cargo test --locked --bin devsecops release::gitleaks_candidate::native_gitleaks_dependency_candidate -- --ignored --exact
+      - name: Preserve experimental native inventory and status only
+        if: always()
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
+        with:
+          name: gitleaks-native-candidate-${{ matrix.arch }}
+          path: .work/gitleaks-native-candidate/
+          retention-days: 14
+          if-no-files-found: error
       - name: Preserve only clean archives, inventories and bound receipts
         uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
         with:

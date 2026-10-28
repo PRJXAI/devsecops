@@ -16,6 +16,10 @@ use std::{
     sync::atomic::Ordering,
 };
 
+#[cfg(test)]
+#[path = "gitleaks_candidate.rs"]
+mod gitleaks_candidate;
+
 const SYFT: &str = "anchore/syft:v1.55.0-nonroot@sha256:ec5bdbc745485920c6f444239f0c09ed87b3c4c165ff9433f95bc66b3500fbf9";
 const GRYPE: &str = "anchore/grype:v0.121.0@sha256:621d56d1d68106b787022c81546f7e0a36202a25d1239f0c20195fab8c16f7ea";
 const JSON_LIMIT: u64 = 64 * 1024 * 1024;

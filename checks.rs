@@ -387,6 +387,7 @@ mod tests {
             "cargo fmt --all -- --check"
                 | "cargo clippy --all-targets --locked -- -D warnings"
                 | "cargo test --locked"
+                | "cargo test --locked --bin devsecops release::gitleaks_candidate::native_gitleaks_dependency_candidate -- --ignored --exact"
                 | "cargo run --locked --bin devsecops -- audit-dependencies"
                 | "cargo run --locked --bin devsecops -- catalog-candidates"
                 | "cargo run --locked --bin devsecops -- prepare-release"
@@ -528,6 +529,9 @@ mod tests {
         if bytes.starts_with(b"#!") && !bytes.starts_with(b"#![") {
             return false;
         }
+        if relative == Path::new("tests/fixtures/gitleaks/Dockerfile") {
+            return candidate_dockerfile(&bytes);
+        }
         if name == "Dockerfile" {
             let Some(tool) = relative
                 .parent()
@@ -541,6 +545,32 @@ mod tests {
         true
     }
 
+    fn candidate_dockerfile(bytes: &[u8]) -> bool {
+        use sha2::Digest;
+        // One reviewed non-publishing fixture, not a new supplier/COPY/RUN policy.
+        sha2::Sha256::digest(bytes)
+            .iter()
+            .map(|b| format!("{b:02x}"))
+            .collect::<String>()
+            == "b38eb1e0a20e9334e6e95d63eb357a42d25759bc80afaa14208129cb669d27de"
+    }
+    #[test]
+    fn candidate_fixture_cannot_expand_the_production_build_policy() {
+        let fixture = fs::read(root().join("tests/fixtures/gitleaks/Dockerfile")).unwrap();
+        assert!(candidate_dockerfile(&fixture));
+        let text = std::str::from_utf8(&fixture).unwrap();
+        for (old, new) in [
+            ("65532:65532", "0"),
+            ("COPY --chmod=0555 candidate", "COPY --chmod=0555 ."),
+            ("WORKDIR /tmp", "RUN [\"sh\",\"-c\",\"true\"]\nWORKDIR /tmp"),
+        ] {
+            assert!(!candidate_dockerfile(text.replace(old, new).as_bytes()));
+        }
+        assert!(!docker_policy(text, "gitleaks"));
+        assert!(!cargo_launcher(
+            "cargo test --locked --bin devsecops arbitrary -- --ignored --exact"
+        ));
+    }
     #[test]
     fn rust_is_the_only_glue_layer() {
         for relative in eligible_files(root()) {
@@ -975,6 +1005,17 @@ jobs:";
         with:
           name: security-status-${{ matrix.arch }}
           path: .work/public-release/summary.json
+          retention-days: 14
+          if-no-files-found: error
+      - name: Validate experimental Gitleaks natively without release approval
+        if: always()
+        run: cargo test --locked --bin devsecops release::gitleaks_candidate::native_gitleaks_dependency_candidate -- --ignored --exact
+      - name: Preserve experimental native inventory and status only
+        if: always()
+        uses: actions/upload-artifact@PIN
+        with:
+          name: gitleaks-native-candidate-${{ matrix.arch }}
+          path: .work/gitleaks-native-candidate/
           retention-days: 14
           if-no-files-found: error
       - name: Preserve only clean archives, inventories and bound receipts
