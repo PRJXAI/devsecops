@@ -1,13 +1,6 @@
 {
-  "schema": 1,
-  "redistribution_complete": false,
-  "supplier_provenance_reviewed": false,
-  "native_functional_contracts_complete": false,
-  "blockers": [
-    "Complete dependency notices and exact Git corresponding-source arrangements are not yet supplied.",
-    "Official RustSec GNU cargo-audit archives and their copied native runtime still require complete build provenance and redistribution review.",
-    "All native functional contracts, including full cargo-deny graph/cache completeness and consumer integration, are not yet verified.",
-    "Embedded supplier vulnerabilities must pass the unchanged all-findings scan gate.",
-    "Rust payload inventories, kind's provider and Docker/Kustomize/Kubectl components remain incomplete; three scanner profiles reviewed on native amd64/arm64 do not complete release acceptance."
-  ]
+  "schema": 0,
+  "retired": true,
+  "replacement": ".github/publication-readiness/TOOL.json",
+  "reason": "Releases are independently approved per tool. This marker contains no approvals and must fail closed in the retired aggregate publisher."
 }

@@ -102,6 +102,17 @@ mod tests {
     }
 
     fn narrow_copy(args: &str, stages: &BTreeSet<String>, tool: &str) -> bool {
+        // These two files exist only in Rust's private, verified fixed-source
+        // context. The complete Gitleaks recipe is additionally hash-bound below.
+        if tool == "gitleaks"
+            && matches!(
+                args,
+                "--chmod=0555 candidate /usr/local/bin/gitleaks"
+                    | "--chmod=0444 go-notices.txt /usr/share/licenses/gitleaks/GO-NOTICES.txt"
+            )
+        {
+            return true;
+        }
         let fields: Vec<_> = args.split_whitespace().collect();
         let mut flags = BTreeSet::new();
         let mut index = 0;
@@ -352,6 +363,7 @@ mod tests {
         }
         pending.is_empty()
             && TOOLS.contains(&tool)
+            && (tool != "gitleaks" || production_gitleaks_dockerfile(text.as_bytes()))
             && (if tool == "cargo-audit" {
                 final_image == "runtime-${TARGETARCH}" && official_audit_supplier(text)
             } else {
@@ -389,9 +401,9 @@ mod tests {
                 | "cargo test --locked"
                 | "cargo test --locked --bin devsecops release::gitleaks_candidate::native_gitleaks_dependency_candidate -- --ignored --exact"
                 | "cargo run --locked --bin devsecops -- audit-dependencies"
-                | "cargo run --locked --bin devsecops -- catalog-candidates"
-                | "cargo run --locked --bin devsecops -- prepare-release"
-                | "cargo run --locked --bin devsecops -- publish-all"
+                | "cargo run --locked --bin devsecops -- catalog-tool"
+                | "cargo run --locked --bin devsecops -- prepare-tool"
+                | "cargo run --locked --bin devsecops -- publish-tool"
         ) || TOOLS
             .iter()
             .any(|tool| command == format!("cargo run --locked --bin devsecops -- check {tool}"))
@@ -545,6 +557,51 @@ mod tests {
         true
     }
 
+    fn production_gitleaks_dockerfile(bytes: &[u8]) -> bool {
+        use sha2::Digest;
+        let reviewed = include_bytes!("images/gitleaks/Dockerfile");
+        let instructions = |data: &[u8]| -> Option<Vec<String>> {
+            Some(
+                std::str::from_utf8(data)
+                    .ok()?
+                    .lines()
+                    .filter_map(|line| {
+                        let (op, args) = line.trim().split_once(' ')?;
+                        let op = op.to_ascii_uppercase();
+                        matches!(op.as_str(), "FROM" | "ADD" | "COPY" | "RUN" | "LABEL")
+                            .then(|| format!("{op} {args}"))
+                    })
+                    .collect(),
+            )
+        };
+        sha2::Sha256::digest(reviewed)
+            .iter()
+            .map(|b| format!("{b:02x}"))
+            .collect::<String>()
+            == "e9d5b25c3fcf828544c97885f996907289d3e4f7b8498dbca9d762943972d5df"
+            && instructions(bytes).is_some()
+            && instructions(bytes) == instructions(reviewed)
+    }
+
+    #[test]
+    fn fixed_source_production_copy_cannot_accept_arbitrary_contexts_or_payloads() {
+        let text = fs::read_to_string(root().join("images/gitleaks/Dockerfile")).unwrap();
+        assert!(docker_policy(&text, "gitleaks"));
+        for (old, new) in [
+            ("COPY --chmod=0555 candidate", "COPY --chmod=0555 ."),
+            ("COPY --chmod=0555 candidate", "COPY --chmod=0555 arbitrary"),
+            (
+                "COPY --chmod=0444 go-notices.txt",
+                "COPY --chmod=0444 licenses/",
+            ),
+            ("USER 65532:65532", "USER 0"),
+            ("WORKDIR /tmp", "RUN [\"sh\",\"-c\",\"true\"]\nWORKDIR /tmp"),
+        ] {
+            assert!(!docker_policy(&text.replace(old, new), "gitleaks"));
+        }
+        assert!(!docker_policy(&text, "syft"));
+    }
+
     fn candidate_dockerfile(bytes: &[u8]) -> bool {
         use sha2::Digest;
         // One reviewed non-publishing fixture, not a new supplier/COPY/RUN policy.
@@ -552,7 +609,7 @@ mod tests {
             .iter()
             .map(|b| format!("{b:02x}"))
             .collect::<String>()
-            == "b38eb1e0a20e9334e6e95d63eb357a42d25759bc80afaa14208129cb669d27de"
+            == "18f13c479db5b5b5308a80d887d3724138933d64f32462159ffc081124fee7a8"
     }
     #[test]
     fn candidate_fixture_cannot_expand_the_production_build_policy() {
@@ -1009,19 +1066,22 @@ on:
     - cron: '17 7 * * 1'
   workflow_dispatch:
     inputs:
+      tool:
+        description: Independent tool release (all runs isolated releases)
+        type: choice
+        required: true
+        default: all
+        options: [all, syft, grype, gitleaks, cargo-audit, cargo-deny, kind, kustomize, kubectl, docker]
       publish:
-        description: Publish clean images to GHCR from main
+        description: Publish selected policy-approved tools to GHCR from main
         type: boolean
         default: false
       redistribution_reviewed:
-        description: Confirm tool/dependency notices, Git corresponding source and supplier provenance have been reviewed
+        description: Confirm artifact-specific notices, corresponding source and provenance for the selected tools
         type: boolean
         default: false
 permissions:
   contents: read
-concurrency:
-  group: images-${{ github.ref }}
-  cancel-in-progress: false
 jobs:";
     const STRUCTURE_JOB: &str = "  structure:
     runs-on: ubuntu-24.04
@@ -1041,7 +1101,23 @@ jobs:";
           path: .work/public-audit.json
           retention-days: 14
           if-no-files-found: error";
-    const IMAGES_JOB: &str = "  images:
+    const TOOLS_JOB: &str = r#"  tools:
+    needs: structure
+    strategy:
+      fail-fast: false
+      matrix:
+        tool: ${{ fromJSON(inputs.tool != '' && inputs.tool != 'all' && format('["{0}"]', inputs.tool) || '["syft","grype","gitleaks","cargo-audit","cargo-deny","kind","kustomize","kubectl","docker"]') }}
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+      attestations: write
+    uses: ./.github/workflows/tool.yml
+    with:
+      tool: ${{ matrix.tool }}
+      publish: ${{ github.event_name == 'workflow_dispatch' && inputs.publish }}
+      redistribution_reviewed: ${{ github.event_name == 'workflow_dispatch' && inputs.redistribution_reviewed }}"#;
+    const CANDIDATE_JOB: &str = "  gitleaks-candidate:
     needs: structure
     strategy:
       fail-fast: false
@@ -1056,28 +1132,7 @@ jobs:";
     steps:
       - uses: actions/checkout@PIN
         with: {persist-credentials: false}
-      - name: Capture public native inventories for review, not release acceptance
-        run: cargo run --locked --bin devsecops -- catalog-candidates
-      - name: Preserve native inventory evidence, including blocked profiles
-        if: always()
-        uses: actions/upload-artifact@PIN
-        with:
-          name: catalog-evidence-${{ matrix.arch }}
-          path: .work/catalog-evidence/
-          retention-days: 14
-          if-no-files-found: error
-      - name: Rust builds, smokes, inventories and scans the exact native images
-        run: cargo run --locked --bin devsecops -- prepare-release
-      - name: Public count/status summary only
-        if: always()
-        uses: actions/upload-artifact@PIN
-        with:
-          name: security-status-${{ matrix.arch }}
-          path: .work/public-release/summary.json
-          retention-days: 14
-          if-no-files-found: error
       - name: Validate experimental Gitleaks natively without release approval
-        if: always()
         run: cargo test --locked --bin devsecops release::gitleaks_candidate::native_gitleaks_dependency_candidate -- --ignored --exact
       - name: Preserve experimental native inventory and status only
         if: always()
@@ -1086,19 +1141,76 @@ jobs:";
           name: gitleaks-native-candidate-${{ matrix.arch }}
           path: .work/gitleaks-native-candidate/
           retention-days: 14
-          if-no-files-found: error
-      - name: Preserve only clean archives, inventories and bound receipts
+          if-no-files-found: error";
+    const TOOL_HEADER: &str = "name: independent-tool
+on:
+  workflow_call:
+    inputs:
+      tool:
+        type: string
+        required: true
+      publish:
+        type: boolean
+        required: true
+      redistribution_reviewed:
+        type: boolean
+        required: true
+permissions:
+  contents: read
+concurrency:
+  group: tool-${{ inputs.tool }}-${{ github.ref }}
+  cancel-in-progress: false
+jobs:";
+    const IMAGES_JOB: &str = "  images:
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: ubuntu-24.04
+            arch: amd64
+          - runner: ubuntu-24.04-arm
+            arch: arm64
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 60
+    env:
+      DEVSECOPS_TOOL: ${{ inputs.tool }}
+    steps:
+      - uses: actions/checkout@PIN
+        with: {persist-credentials: false}
+      - name: Capture public native inventories for this tool, not release acceptance
+        run: cargo run --locked --bin devsecops -- catalog-tool
+      - name: Preserve native inventory evidence, including blocked profiles
+        if: always()
         uses: actions/upload-artifact@PIN
         with:
-          name: release-${{ matrix.arch }}
-          path: .work/release/
+          name: catalog-evidence-${{ inputs.tool }}-${{ matrix.arch }}
+          path: .work/catalog-evidence-${{ inputs.tool }}/
+          retention-days: 14
+          if-no-files-found: error
+      - name: Rust builds, smokes, inventories and scans this exact native tool
+        run: cargo run --locked --bin devsecops -- prepare-tool
+      - name: Public count/status summary only
+        if: always()
+        uses: actions/upload-artifact@PIN
+        with:
+          name: security-status-${{ inputs.tool }}-${{ matrix.arch }}
+          path: .work/public-release-${{ inputs.tool }}/summary.json
+          retention-days: 14
+          if-no-files-found: error
+      - name: Preserve policy-passing archives, inventories and explicit risk receipts
+        uses: actions/upload-artifact@PIN
+        with:
+          name: release-${{ inputs.tool }}-${{ matrix.arch }}
+          path: .work/release-${{ inputs.tool }}/
           retention-days: 1
           compression-level: 0
           include-hidden-files: true
           if-no-files-found: error";
     const PUBLISH_JOB: &str = "  publish:
-    needs: [structure, images]
-    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && inputs.publish && inputs.redistribution_reviewed
+    needs: images
+    if: ${{ !cancelled() && needs.images.result == 'success' && github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && inputs.publish && inputs.redistribution_reviewed }}
     runs-on: ubuntu-24.04
     timeout-minutes: 40
     permissions:
@@ -1106,13 +1218,19 @@ jobs:";
       packages: write
       id-token: write
       attestations: write
+    env:
+      DEVSECOPS_TOOL: ${{ inputs.tool }}
     steps:
       - uses: actions/checkout@PIN
         with: {persist-credentials: false}
       - uses: actions/download-artifact@PIN
         with:
-          pattern: release-*
-          path: .work/downloaded
+          name: release-${{ inputs.tool }}-amd64
+          path: .work/downloaded/release-${{ inputs.tool }}-amd64
+      - uses: actions/download-artifact@PIN
+        with:
+          name: release-${{ inputs.tool }}-arm64
+          path: .work/downloaded/release-${{ inputs.tool }}-arm64
       - uses: docker/login-action@PIN
         with:
           registry: ghcr.io
@@ -1122,15 +1240,16 @@ jobs:";
         env:
           DEVSECOPS_PUBLISH_APPROVED: 'true'
           DEVSECOPS_LICENSE_SOURCE_PROVENANCE_APPROVED_SHA: ${{ github.sha }}
-        run: cargo run --locked --bin devsecops -- publish-all
-      - name: Attest all published manifest digests through GitHub
+          DEVSECOPS_LICENSE_SOURCE_PROVENANCE_APPROVED_TOOL: ${{ inputs.tool }}
+        run: cargo run --locked --bin devsecops -- publish-tool
+      - name: Attest this tool's published manifest digest through GitHub
         uses: actions/attest-build-provenance@PIN
         with:
-          subject-checksums: .work/published/subjects.checksums
+          subject-checksums: .work/published-${{ inputs.tool }}/subjects.checksums
       - uses: actions/upload-artifact@PIN
         with:
-          name: published-digests
-          path: .work/published/
+          name: published-digests-${{ inputs.tool }}
+          path: .work/published-${{ inputs.tool }}/
           if-no-files-found: error";
 
     fn workflow_policy(text: &str) -> bool {
@@ -1154,6 +1273,10 @@ jobs:";
                 .strip_prefix("- uses: ")
                 .or_else(|| value.strip_prefix("uses: "))
             {
+                if action == "./.github/workflows/tool.yml" {
+                    lines.push(line.to_string());
+                    continue;
+                }
                 let Some((_, revision)) = action.split_once('@') else {
                     return false;
                 };
@@ -1168,9 +1291,11 @@ jobs:";
         let Some(jobs) = lines.iter().position(|line| line == "jobs:") else {
             return false;
         };
-        if lines[..=jobs].join("\n") != WORKFLOW_HEADER {
-            return false;
-        }
+        let expected: &[&str] = match lines[..=jobs].join("\n").as_str() {
+            WORKFLOW_HEADER => &[STRUCTURE_JOB, TOOLS_JOB, CANDIDATE_JOB],
+            TOOL_HEADER => &[IMAGES_JOB, PUBLISH_JOB],
+            _ => return false,
+        };
         let bodies = &lines[jobs + 1..];
         let boundaries: Vec<_> = bodies
             .iter()
@@ -1179,16 +1304,16 @@ jobs:";
             .map(|(index, _)| index)
             .chain(std::iter::once(bodies.len()))
             .collect();
-        boundaries.len() == 4
+        boundaries.len() == expected.len() + 1
             && boundaries[0] == 0
             && boundaries
                 .windows(2)
-                .zip([STRUCTURE_JOB, IMAGES_JOB, PUBLISH_JOB])
-                .all(|(range, expected)| bodies[range[0]..range[1]].join("\n") == expected)
+                .zip(expected)
+                .all(|(range, expected)| bodies[range[0]..range[1]].join("\n") == *expected)
     }
 
     fn workflow_inventory(names: &[String]) -> bool {
-        names == ["ci.yml"]
+        names == ["ci.yml", "tool.yml"]
     }
 
     #[test]
@@ -1204,13 +1329,17 @@ jobs:";
             names.push(entry.file_name().into_string().unwrap());
             assert!(workflow_policy(&fs::read_to_string(entry.path()).unwrap()));
         }
+        names.sort();
         assert!(workflow_inventory(&names), "unreviewed workflow inventory");
     }
 
     #[test]
     fn workflow_policy_rejects_adversarial_mutations() {
-        let workflow = fs::read_to_string(root().join(".github/workflows/ci.yml")).unwrap();
-        assert!(workflow_policy(&workflow));
+        let caller = fs::read_to_string(root().join(".github/workflows/ci.yml")).unwrap();
+        let callee = fs::read_to_string(root().join(".github/workflows/tool.yml")).unwrap();
+        for workflow in [&caller, &callee] {
+            assert!(workflow_policy(workflow));
+        }
         for (old, new) in [
             (
                 "  structure:\n",
@@ -1234,7 +1363,47 @@ jobs:";
             ),
             (" && inputs.publish", " || inputs.publish"),
             (" && inputs.redistribution_reviewed", ""),
-            ("    needs: [structure, images]", "    needs: structure"),
+            ("    needs: images", "    needs: []"),
+            ("!cancelled()", "always()"),
+            (
+                "needs.images.result == 'success'",
+                "needs.images.result != 'cancelled'",
+            ),
+            ("needs.images.result == 'success' && ", ""),
+            (
+                "    needs: images",
+                "    needs: [images, gitleaks-candidate]",
+            ),
+            ("    needs: structure", "    needs: [structure, tools]"),
+            ("      fail-fast: false", "      fail-fast: true"),
+            (
+                "group: tool-${{ inputs.tool }}-${{ github.ref }}",
+                "group: all-tools-${{ github.ref }}",
+            ),
+            (
+                "name: release-${{ inputs.tool }}-amd64",
+                "name: release-syft-amd64",
+            ),
+            (
+                "name: release-${{ inputs.tool }}-arm64",
+                "pattern: release-*",
+            ),
+            (
+                "name: published-digests-${{ inputs.tool }}",
+                "name: published-digests",
+            ),
+            (
+                "uses: ./.github/workflows/tool.yml",
+                "uses: ./.github/workflows/other.yml",
+            ),
+            (
+                "DEVSECOPS_LICENSE_SOURCE_PROVENANCE_APPROVED_TOOL: ${{ inputs.tool }}",
+                "DEVSECOPS_LICENSE_SOURCE_PROVENANCE_APPROVED_TOOL: syft",
+            ),
+            (
+                "        run: cargo run --locked --bin devsecops -- prepare-tool",
+                "        continue-on-error: true\n        run: cargo run --locked --bin devsecops -- prepare-tool",
+            ),
             (
                 "          DEVSECOPS_PUBLISH_APPROVED: 'true'",
                 "          # DEVSECOPS_PUBLISH_APPROVED: 'true'",
@@ -1248,12 +1417,12 @@ jobs:";
                 "APPROVED_SHA: ${{ github.event.before }}",
             ),
             (
-                "subject-checksums: .work/published/subjects.checksums",
+                "subject-checksums: .work/published-${{ inputs.tool }}/subjects.checksums",
                 "subject-checksums: .work/other",
             ),
             (
-                "        run: cargo run --locked --bin devsecops -- publish-all",
-                "        # run: cargo run --locked --bin devsecops -- publish-all",
+                "        run: cargo run --locked --bin devsecops -- publish-tool",
+                "        # run: cargo run --locked --bin devsecops -- publish-tool",
             ),
             ("cargo test --locked", "cargo test --locked & node x"),
             (
@@ -1274,49 +1443,66 @@ jobs:";
                 "    permissions: &privileged\n      contents: read",
             ),
         ] {
-            assert!(workflow.contains(old), "ineffective mutation: {old}");
             assert!(
-                !workflow_policy(&workflow.replace(old, new)),
-                "accepted: {new}"
+                [&caller, &callee]
+                    .iter()
+                    .any(|workflow| workflow.contains(old)),
+                "ineffective mutation: {old}"
             );
-        }
-        for job in ["structure", "images"] {
-            for permission in ["packages", "id-token"] {
-                let old = format!("  {job}:\n");
-                let new = format!("{old}    permissions:\n      {permission}: write\n");
-                assert!(!workflow_policy(&workflow.replace(&old, &new)));
-            }
-        }
-        for line in workflow.lines() {
-            let value = line.trim_start();
-            if let Some(action) = value
-                .strip_prefix("- uses: ")
-                .or_else(|| value.strip_prefix("uses: "))
+            for workflow in [&caller, &callee]
+                .into_iter()
+                .filter(|workflow| workflow.contains(old))
             {
-                let name = action.split_once('@').unwrap().0;
-                assert!(!workflow_policy(
-                    &workflow.replace(action, &format!("{name}@main"))
-                ));
-            }
-            if value.starts_with("if: github.event_name") || value.starts_with("subject-checksums:")
-            {
-                let commented = format!("{}# {value}", " ".repeat(line.len() - value.len()));
-                assert!(!workflow_policy(&workflow.replace(line, &commented)));
+                assert!(
+                    !workflow_policy(&workflow.replace(old, new)),
+                    "accepted: {new}"
+                );
             }
         }
-        let approval =
-            "          DEVSECOPS_LICENSE_SOURCE_PROVENANCE_APPROVED_SHA: ${{ github.sha }}";
-        let misplaced = workflow.replace(approval, "").replace(
-            "  structure:\n",
-            &format!("  structure:\n    env:\n{approval}\n"),
-        );
-        assert!(!workflow_policy(&misplaced));
-        assert!(!workflow_inventory(&["ci.yml".into(), "extra.yml".into()]));
-        assert!(!workflow_inventory(&["ci.yaml".into()]));
-        assert!(!workflow_policy(&format!(
-            "{workflow}\n  bypass:\n    uses: owner/repo@main\n"
-        )));
-        assert!(workflow_policy(&format!("# harmless comment\n{workflow}")));
+        for workflow in [&caller, &callee] {
+            for job in ["structure", "images", "gitleaks-candidate"]
+                .into_iter()
+                .filter(|job| workflow.contains(&format!("  {job}:\n")))
+            {
+                for permission in ["packages", "id-token"] {
+                    let old = format!("  {job}:\n");
+                    let new = format!("{old}    permissions:\n      {permission}: write\n");
+                    assert!(!workflow_policy(&workflow.replace(&old, &new)));
+                }
+            }
+            for line in workflow.lines() {
+                let value = line.trim_start();
+                if let Some(action) = value
+                    .strip_prefix("- uses: ")
+                    .or_else(|| value.strip_prefix("uses: "))
+                {
+                    let name = action.split_once('@').map_or(action, |(name, _)| name);
+                    assert!(!workflow_policy(
+                        &workflow.replace(action, &format!("{name}@main"))
+                    ));
+                }
+                if value.starts_with("if: ${{ !cancelled()")
+                    || value.starts_with("subject-checksums:")
+                {
+                    let commented = format!("{}# {value}", " ".repeat(line.len() - value.len()));
+                    assert!(!workflow_policy(&workflow.replace(line, &commented)));
+                }
+            }
+            let approval =
+                "          DEVSECOPS_LICENSE_SOURCE_PROVENANCE_APPROVED_SHA: ${{ github.sha }}";
+            if workflow.contains(approval) {
+                let misplaced = workflow
+                    .replace(approval, "")
+                    .replace("  images:\n", &format!("  images:\n    env:\n{approval}\n"));
+                assert!(!workflow_policy(&misplaced));
+            }
+            assert!(!workflow_inventory(&["ci.yml".into(), "extra.yml".into()]));
+            assert!(!workflow_inventory(&["ci.yaml".into()]));
+            assert!(!workflow_policy(&format!(
+                "{workflow}\n  bypass:\n    uses: owner/repo@main\n"
+            )));
+            assert!(workflow_policy(&format!("# harmless comment\n{workflow}")));
+        }
     }
     fn context_policy(text: &str) -> bool {
         // Order is security-sensitive. Do not approximate Docker's glob engine:

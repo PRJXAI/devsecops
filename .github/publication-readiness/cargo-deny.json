@@ -1,0 +1,13 @@
+{
+  "schema": 2,
+  "tool": "cargo-deny",
+  "repository": "ghcr.io/prjxai/devsecops/cargo-deny",
+  "redistribution_complete": false,
+  "supplier_provenance_reviewed": false,
+  "native_functional_contracts_complete": false,
+  "blockers": [
+    "The compiler-free supplied-graph runtime cannot prove complete Cargo/index/source/advisory coverage, even with exit zero.",
+    "Recoverable Rust payload/dependency/compiler inventories and fresh complete scans are missing on both architectures.",
+    "Complete Rust/native/base notices, supplier build provenance and accountable redistribution review are missing."
+  ]
+}

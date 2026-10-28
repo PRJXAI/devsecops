@@ -9,8 +9,10 @@
 //!
 //! Hosted native linux/amd64 and linux/arm64 evidence from run 40571222293 is
 //! reviewed in `inventory/native-evidence.json` and `docs/native-inventory-review.md`.
-//! Only Syft, Grype and Gitleaks have positive profiles on both architectures;
-//! historical arm64 captures remain supported. Other architectures fail closed.
+//! Only Syft, Grype and Gitleaks have positive profiles on both architectures.
+//! Production Gitleaks now requires inventory/gitleaks-production.json, derived
+//! from unchanged upgraded native captures; the original supplier profile is
+//! historical evidence only, never a production fallback. Others fail closed.
 //! Each Go executable retains its own compiler/stdlib and every captured dependency;
 //! Git/PCRE2/zlib and APK-attributed glibc/loader remain independent requirements.
 //! These are scanner-recoverable inventories, not proof of all static components.
@@ -44,6 +46,23 @@ fn baseline() -> Result<&'static Value> {
     .map_err(|e| *e)
 }
 
+fn profile(tool: &str) -> Result<&'static Value> {
+    if tool == "gitleaks" {
+        static PRODUCTION: OnceLock<Result<Value>> = OnceLock::new();
+        PRODUCTION
+            .get_or_init(|| {
+                serde_json::from_str(include_str!("../inventory/gitleaks-production.json"))
+                    .map_err(|_| "invalid Gitleaks production inventory profile")
+            })
+            .as_ref()
+            .map_err(|e| *e)
+    } else {
+        baseline()?["tools"]
+            .get(tool)
+            .ok_or("no captured payload coverage profile for tool")
+    }
+}
+
 fn field<'a>(value: &'a Value, key: &str) -> Result<&'a str> {
     value
         .get(key)
@@ -56,10 +75,7 @@ fn field<'a>(value: &'a Value, key: &str) -> Result<&'a str> {
 /// Success means captured catalog coverage only; see the module's explicit limits.
 /// The parent must independently enforce scanner pin, artifact identity and readiness.
 pub(super) fn check(sbom: &Value, tool: &str) -> Result<()> {
-    let data = baseline()?;
-    let profile = data["tools"]
-        .get(tool)
-        .ok_or("no captured payload coverage profile for tool")?;
+    let profile = profile(tool)?;
     if sbom.pointer("/descriptor/name").and_then(Value::as_str) != Some("syft")
         || sbom.pointer("/descriptor/version").and_then(Value::as_str) != Some("1.55.0")
         || sbom.pointer("/schema/version").and_then(Value::as_str) != Some("16.1.11")
@@ -188,8 +204,7 @@ mod tests {
     // or a replacement/native SBOM used for scanning. Fresh full native documents
     // must still pass the same production check at both parent call sites.
     fn captured(tool: &str) -> Value {
-        let data = baseline().unwrap();
-        let profile = &data["tools"][tool];
+        let profile = profile(tool).unwrap();
         let mut artifacts = Vec::new();
         for (path, rows) in profile["locations"].as_object().unwrap() {
             for row in rows.as_array().unwrap() {
@@ -242,7 +257,7 @@ mod tests {
                 evidence["config_digest"]
             );
             assert_eq!(
-                check(&document, tool).is_ok(),
+                check_profile(&document, tool, &baseline().unwrap()["tools"][tool]).is_ok(),
                 POSITIVE.contains(tool),
                 "{tool}"
             );
@@ -509,7 +524,7 @@ mod tests {
                 );
                 assert_eq!(
                     check(&document, tool).is_ok(),
-                    POSITIVE.contains(&tool),
+                    POSITIVE.contains(&tool) && tool != "gitleaks",
                     "{arch}/{tool}"
                 );
                 if POSITIVE.contains(&tool) {
@@ -522,7 +537,10 @@ mod tests {
                     assert!(check(&changed, tool).is_err());
                     changed = document.clone();
                     changed["artifacts"].as_array_mut().unwrap().remove(i);
-                    assert_eq!(check(&changed, tool), Err(MISSING));
+                    assert_eq!(
+                        check_profile(&changed, tool, &baseline().unwrap()["tools"][tool]),
+                        Err(MISSING)
+                    );
                     changed = document.clone();
                     changed["artifacts"][i]["version"] = json!("UNKNOWN");
                     assert!(check(&changed, tool).is_err());
@@ -532,6 +550,86 @@ mod tests {
                     original
                 );
             }
+        }
+    }
+
+    #[test]
+    fn production_gitleaks_requires_reviewed_upgrade_not_original_supplier_inventory() {
+        let current = profile("gitleaks").unwrap();
+        assert_eq!(current["evidence"]["release_accepted"], false);
+        assert_eq!(current["compilers"]["/usr/local/bin/gitleaks"], "go1.27.3");
+        let mut original = captured("gitleaks");
+        let old = &baseline().unwrap()["tools"]["gitleaks"];
+        for p in original["artifacts"].as_array_mut().unwrap() {
+            if p["type"] == "go-module" {
+                let row = old["locations"]["/usr/local/bin/gitleaks"]
+                    .as_array()
+                    .unwrap()
+                    .iter()
+                    .find(|row| row[1] == p["name"])
+                    .unwrap();
+                p["version"] = row[2].clone();
+                p["metadata"]["goCompiledVersion"] =
+                    old["compilers"]["/usr/local/bin/gitleaks"].clone();
+            }
+        }
+        assert!(check_profile(&original, "gitleaks", old).is_ok());
+        assert!(check(&original, "gitleaks").is_err());
+    }
+
+    #[test]
+    #[ignore = "approved run 40683447538 public native candidate captures; no Docker/network"]
+    fn upgraded_native_documents_match_production_profile_without_rewriting_reports() {
+        let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR"));
+        let profile = profile("gitleaks").unwrap();
+        for arch in ["amd64", "arm64"] {
+            let path = root.join(format!(
+                ".work/ctpo-hosted/{arch}/gitleaks-native-candidate-{arch}/gitleaks.syft.json"
+            ));
+            let original = super::super::release::bytes(&path, 8 * 1024 * 1024).unwrap();
+            let bom: Value = serde_json::from_slice(&original).unwrap();
+            let identity = &profile["evidence"]["architectures"][arch];
+            assert_eq!(sha256(&original), identity["sbom_sha256"]);
+            assert_eq!(
+                bom["source"]["metadata"]["imageID"],
+                identity["config_image"]
+            );
+            assert_eq!(bom["source"]["metadata"]["architecture"], arch);
+            super::super::release::no_scan_diagnostics(&bom).unwrap();
+            assert!(check(&bom, "gitleaks").is_ok());
+            let mut observed = BTreeSet::new();
+            for p in bom["artifacts"].as_array().unwrap() {
+                for l in p["locations"].as_array().unwrap() {
+                    observed.insert([
+                        field(p, "type").unwrap(),
+                        field(p, "name").unwrap(),
+                        field(p, "version").unwrap(),
+                        field(p, "foundBy").unwrap(),
+                        field(l, "path").unwrap(),
+                    ]);
+                }
+            }
+            let expected: BTreeSet<_> = profile["locations"]
+                .as_object()
+                .unwrap()
+                .iter()
+                .flat_map(|(path, rows)| {
+                    rows.as_array().unwrap().iter().map(move |r| {
+                        [
+                            r[0].as_str().unwrap(),
+                            r[1].as_str().unwrap(),
+                            r[2].as_str().unwrap(),
+                            r[3].as_str().unwrap(),
+                            path.as_str(),
+                        ]
+                    })
+                })
+                .collect();
+            assert_eq!(observed, expected);
+            assert_eq!(
+                super::super::release::bytes(&path, 8 * 1024 * 1024).unwrap(),
+                original
+            );
         }
     }
 

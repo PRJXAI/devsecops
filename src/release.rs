@@ -16,14 +16,16 @@ use std::{
     sync::atomic::Ordering,
 };
 
-#[cfg(test)]
+#[path = "release_risk.rs"]
+mod risk;
+
 #[path = "gitleaks_candidate.rs"]
-mod gitleaks_candidate;
+pub(super) mod gitleaks_candidate;
 
 const SYFT: &str = "anchore/syft:v1.55.0-nonroot@sha256:ec5bdbc745485920c6f444239f0c09ed87b3c4c165ff9433f95bc66b3500fbf9";
 const GRYPE: &str = "anchore/grype:v0.121.0@sha256:621d56d1d68106b787022c81546f7e0a36202a25d1239f0c20195fab8c16f7ea";
 const JSON_LIMIT: u64 = 64 * 1024 * 1024;
-const TAR_LIMIT: u64 = 16 * 1024 * 1024 * 1024;
+pub(super) const TAR_LIMIT: u64 = 16 * 1024 * 1024 * 1024;
 const SEVERITIES: [&str; 7] = [
     "Unknown",
     "Negligible",
@@ -33,6 +35,14 @@ const SEVERITIES: [&str; 7] = [
     "Critical",
     "ignoredMatches",
 ];
+
+pub(super) fn tool_identity(value: &str) -> Result<&'static str> {
+    TOOLS
+        .iter()
+        .copied()
+        .find(|tool| *tool == value)
+        .ok_or("unknown release tool")
+}
 
 fn hex(value: &str, len: usize) -> bool {
     value.len() == len && value.bytes().all(|b| b.is_ascii_hexdigit())
@@ -285,13 +295,20 @@ pub(super) fn scanner(
         (Ok(path), Ok(_)) => Ok(path),
     }?;
     if expected_exit == 0 {
-        scanner_diagnostics(&super::captured_stderr(&output)?)?;
+        let diagnostics = super::captured_stderr(&output)?;
+        // Owner-approved precision notice applies only to this pinned offline
+        // vulnerability invocation, never Syft, DB setup or functional controls.
+        if engine == GRYPE && args == ["sbom:/input/syft.json", "--output", "json"] && !refresh {
+            risk::diagnostics(&diagnostics)?;
+        } else {
+            scanner_diagnostics(&diagnostics)?;
+        }
     }
     Ok(output)
 }
 
-// Precision notices also remain blocking without separate policy approval.
-// Never enable symbol filtering or waive findings merely to silence a warning.
+// Default diagnostic policy remains strict. The only exception is classified
+// separately above; it does not change matching precision or hide findings.
 fn scanner_diagnostics(data: &[u8]) -> Result<()> {
     if data.is_empty() {
         Ok(())
@@ -454,7 +471,7 @@ enum PreparationStage {
     DatabaseRequired,
     VulnerabilityScan,
     ReportValidation,
-    CleanHandoff,
+    ReleaseHandoff,
 }
 
 impl PreparationStage {
@@ -476,7 +493,7 @@ impl PreparationStage {
             Self::DatabaseRequired => "database-required",
             Self::VulnerabilityScan => "vulnerability-scan",
             Self::ReportValidation => "report-validation",
-            Self::CleanHandoff => "clean-handoff",
+            Self::ReleaseHandoff => "release-handoff",
         }
     }
 }
@@ -571,12 +588,11 @@ fn prepare_tool(
     *stage = PreparationStage::FunctionalContract;
     super::contracts::functional(driver, tool, &image)?;
     *stage = PreparationStage::ArchiveSave;
-    let scans = driver.root.join(".work/scans");
+    let scans = driver.root.join(format!(".work/scans-{tool}"));
     let asset = scans.join(tool);
     mkdir(&asset, false)?;
     let tar = asset.join(format!("{tool}-{arch}.tar"));
-    let tar_arg = tar.to_str().ok_or("invalid archive path")?;
-    driver.docker(&["image", "save", "--output", tar_arg, &image], 600, false)?;
+    driver.docker_archive(&["image", "save", &image], &tar)?;
     regular(&tar, TAR_LIMIT)?;
     *stage = PreparationStage::ArchiveIdentity;
     let config = super::archive::config_digest(&tar, arch, revision)?;
@@ -626,39 +642,46 @@ fn prepare_tool(
     let now = Utc::now();
     let counts = report_counts(&sbom, &packages, &report, db, now)?;
     let count = total(&counts);
-    if count == 0 {
-        *stage = PreparationStage::CleanHandoff;
-        let release = driver.root.join(".work/release");
+    let decision = risk::assess(tool, &sbom, &report)?;
+    let status = risk::status(&decision);
+    let diagnostics = risk::diagnostics(&super::captured_stderr(&report_path)?)?;
+    let report_sha256 = hash(&report_path, JSON_LIMIT)?;
+    if status != "findings" {
+        *stage = PreparationStage::ReleaseHandoff;
+        let release = driver.root.join(format!(".work/release-{tool}"));
         let clean_tar = release.join(format!("{tool}-{arch}.tar"));
         let clean_sbom = release.join(format!("{tool}-{arch}.syft.json"));
         let sbom_bytes = bytes(&sbom_path, JSON_LIMIT)?;
         write_new(&clean_sbom, &sbom_bytes, 0o600)?;
         // Rename the saved archive, not a tag/rebuild. Raw scanner evidence remains private.
-        fs::rename(&tar, &clean_tar).map_err(|_| "cannot retain clean image archive")?;
+        fs::rename(&tar, &clean_tar).map_err(|_| "cannot retain release image archive")?;
         fs::set_permissions(&clean_tar, fs::Permissions::from_mode(0o600))
-            .map_err(|_| "cannot secure clean archive")?;
+            .map_err(|_| "cannot secure release archive")?;
         let receipt = json!({
-            "schema": 2, "tool": tool, "source_sha": revision, "arch": arch, "image_id": image, "config_id": config,
+            "schema": 3, "tool": tool, "source_sha": revision, "arch": arch, "image_id": image, "config_id": config,
             "tar_sha256": hash(&clean_tar, TAR_LIMIT)?, "sbom_sha256": hash(&clean_sbom, JSON_LIMIT)?,
-            "count": 0, "counts": counts, "contracts": "passed", "created": now.to_rfc3339(), "db": db,
+            "report_sha256":report_sha256, "risk":decision, "status":status, "diagnostics":diagnostics,
+            "count": count, "counts": counts, "contracts": "passed", "created": now.to_rfc3339(), "db": db,
             "syft": SYFT, "grype": GRYPE,
         });
+        risk::receipt(&receipt, tool)?;
         write_json(
             &release.join(format!("{tool}-{arch}.receipt.json")),
             &receipt,
         )?;
     }
     Ok(
-        json!({"tool": tool, "arch": arch, "status": if count == 0 { "clean" } else { "findings" }, "count": count, "counts": counts}),
+        json!({"tool": tool, "arch": arch, "status": status, "count": count, "counts": counts, "risk":decision, "diagnostics":diagnostics, "report_sha256":report_sha256}),
     )
 }
 
 /// Capture public native inventories for review, never release handoffs. This
-/// deliberately does not turn incomplete coverage into a clean receipt.
-pub(super) fn catalog(driver: &mut Driver) -> Result<()> {
+/// deliberately does not turn incomplete coverage into a release receipt.
+pub(super) fn catalog(driver: &mut Driver, tool: &str) -> Result<()> {
+    let tool = tool_identity(tool)?;
     let revision = sha(&std::env::var("GITHUB_SHA").map_err(|_| "missing GITHUB_SHA")?)?;
     let (arch, _) = driver.native()?;
-    let output = driver.root.join(".work/catalog-evidence");
+    let output = driver.root.join(format!(".work/catalog-evidence-{tool}"));
     mkdir(&output, false)?;
     write_json(
         &output.join("summary.json"),
@@ -669,68 +692,54 @@ pub(super) fn catalog(driver: &mut Driver) -> Result<()> {
         600,
         false,
     )?;
-    let mut statuses = Vec::new();
-    let mut failed = false;
-    for tool in TOOLS {
-        let result = (|| -> Result<Value> {
-            let image = driver.check(tool)?;
-            let archive = driver.logs.join(format!("catalog-{tool}-{arch}.tar"));
-            driver.docker(
-                &[
-                    "image",
-                    "save",
-                    "--output",
-                    archive.to_str().ok_or("invalid catalog archive path")?,
-                    &image,
-                ],
-                600,
-                false,
+    let result = (|| -> Result<Value> {
+        let image = driver.check(tool)?;
+        let archive = driver.logs.join(format!("catalog-{tool}-{arch}.tar"));
+        driver.docker_archive(&["image", "save", &image], &archive)?;
+        let config = super::archive::config_digest(&archive, arch, &revision)?;
+        fs::set_permissions(&archive, fs::Permissions::from_mode(0o644))
+            .map_err(|_| "cannot share public catalog archive")?;
+        let capture = scanner(
+            driver,
+            SYFT,
+            &[
+                "scan",
+                "docker-archive:/input/image.tar",
+                "--scope",
+                "all-layers",
+                "--output",
+                "syft-json",
+            ],
+            &[mount(&archive, "/input/image.tar", true)?],
+            false,
+            0,
+        )?;
+        let document = read_json(&capture)?;
+        sbom_packages(&document, &config, arch)?;
+        let covered = super::coverage::check(&document, tool).is_ok();
+        let name = format!("{tool}.syft.json");
+        let target = output.join(&name);
+        write_new(&target, &bytes(&capture, JSON_LIMIT)?, 0o600)?;
+        Ok(
+            json!({"tool":tool,"status":"captured-not-release","coverage":if covered {"captured-profile"} else {"blocked"},"engine_id":image,"config_id":config,"archive_sha256":hash(&archive,TAR_LIMIT)?,"sbom":name,"sbom_sha256":hash(&target,JSON_LIMIT)?}),
+        )
+    })();
+    let failed = result.is_err();
+    let status = match result {
+        Ok(status) => status,
+        Err(reason) => {
+            write_new(
+                &driver.logs.join(format!("catalog-{tool}-blocked.json")),
+                json!({"reason":reason}).to_string().as_bytes(),
+                0o600,
             )?;
-            let config = super::archive::config_digest(&archive, arch, &revision)?;
-            fs::set_permissions(&archive, fs::Permissions::from_mode(0o644))
-                .map_err(|_| "cannot share public catalog archive")?;
-            let capture = scanner(
-                driver,
-                SYFT,
-                &[
-                    "scan",
-                    "docker-archive:/input/image.tar",
-                    "--scope",
-                    "all-layers",
-                    "--output",
-                    "syft-json",
-                ],
-                &[mount(&archive, "/input/image.tar", true)?],
-                false,
-                0,
-            )?;
-            let document = read_json(&capture)?;
-            sbom_packages(&document, &config, arch)?;
-            let covered = super::coverage::check(&document, tool).is_ok();
-            let name = format!("{tool}.syft.json");
-            let target = output.join(&name);
-            write_new(&target, &bytes(&capture, JSON_LIMIT)?, 0o600)?;
-            Ok(
-                json!({"tool":tool,"status":"captured-not-release","coverage":if covered {"captured-profile"} else {"blocked"},"engine_id":image,"config_id":config,"archive_sha256":hash(&archive,TAR_LIMIT)?,"sbom":name,"sbom_sha256":hash(&target,JSON_LIMIT)?}),
-            )
-        })();
-        match result {
-            Ok(status) => statuses.push(status),
-            Err(reason) => {
-                failed = true;
-                write_new(
-                    &driver.logs.join(format!("catalog-{tool}-blocked.json")),
-                    json!({"reason":reason}).to_string().as_bytes(),
-                    0o600,
-                )?;
-                statuses.push(json!({"tool":tool,"status":"error"}));
-            }
+            json!({"tool":tool,"status":"error"})
         }
-    }
+    };
     let complete = output.join("summary.complete.json");
     write_json(
         &complete,
-        &json!({"schema":1,"scope":"public native inventory review only; not scan or release acceptance","source_sha":revision,"arch":arch,"syft":SYFT,"created":Utc::now().to_rfc3339(),"status":if failed {"error"} else {"captured-not-release"},"tools":statuses}),
+        &json!({"schema":1,"scope":"public native inventory review only; not scan or release acceptance","source_sha":revision,"arch":arch,"syft":SYFT,"created":Utc::now().to_rfc3339(),"status":if failed {"error"} else {"captured-not-release"},"tools":[status]}),
     )?;
     fs::rename(&complete, output.join("summary.json"))
         .map_err(|_| "cannot publish native catalog status")?;
@@ -741,15 +750,18 @@ pub(super) fn catalog(driver: &mut Driver) -> Result<()> {
     }
 }
 
-pub(super) fn prepare(driver: &mut Driver) -> Result<()> {
+pub(super) fn prepare(driver: &mut Driver, tool: &str) -> Result<()> {
+    let tool = tool_identity(tool)?;
     let revision = sha(&std::env::var("GITHUB_SHA").map_err(|_| "missing GITHUB_SHA")?)?;
     let (arch, _) = driver.native()?;
     let work = driver.root.join(".work");
     directory(&work)?;
-    mkdir(&work.join("release"), false)?;
-    mkdir(&work.join("public-release"), false)?;
-    mkdir(&work.join("scans"), false)?;
-    mkdir(&work.join("scans/cache"), true)?;
+    mkdir(&work.join(format!("release-{tool}")), false)?;
+    let public = work.join(format!("public-release-{tool}"));
+    mkdir(&public, false)?;
+    let scans = work.join(format!("scans-{tool}"));
+    mkdir(&scans, false)?;
+    mkdir(&scans.join("cache"), true)?;
     // Retrieval precedes, and is separate from, all offline catalog/analysis runs.
     let mut setup_stage = PreparationStage::SyftPull;
     let setup: Result<Value> = (|| {
@@ -764,7 +776,7 @@ pub(super) fn prepare(driver: &mut Driver) -> Result<()> {
                 false,
             )?;
         }
-        let cache = work.join("scans/cache");
+        let cache = scans.join("cache");
         setup_stage = PreparationStage::DatabaseRefresh;
         scanner(
             driver,
@@ -800,41 +812,34 @@ pub(super) fn prepare(driver: &mut Driver) -> Result<()> {
         Ok(_) => json!({"status":"ready"}),
         Err(error) => preparation_failure(setup_stage, error),
     };
-    let mut statuses = Vec::new();
-    let mut failed = setup.is_err();
-    for tool in TOOLS {
-        // Even a shared DB failure does not skip other assets' build/catalog checks.
-        let mut stage = PreparationStage::BuildSmoke;
-        let result = prepare_tool(
-            driver,
-            tool,
-            arch,
-            &revision,
-            setup.as_ref().ok(),
-            &mut stage,
-        );
-        match result {
-            Ok(status) => {
-                failed |= status["status"] != "clean";
-                statuses.push(status);
-            }
-            Err(error) => {
-                failed = true;
-                write_new(
-                    &driver.logs.join(format!("{tool}-blocked.json")),
-                    json!({"reason": error}).to_string().as_bytes(),
-                    0o600,
-                )?;
-                let mut status = preparation_failure(stage, error);
-                status["tool"] = json!(tool);
-                status["arch"] = json!(arch);
-                statuses.push(status);
-            }
+    // A scanner setup failure must not hide an earlier independent tool failure.
+    let mut stage = PreparationStage::BuildSmoke;
+    let status = match prepare_tool(
+        driver,
+        tool,
+        arch,
+        &revision,
+        setup.as_ref().ok(),
+        &mut stage,
+    ) {
+        Ok(status) => status,
+        Err(error) => {
+            write_new(
+                &driver.logs.join(format!("{tool}-blocked.json")),
+                json!({"reason": error}).to_string().as_bytes(),
+                0o600,
+            )?;
+            let mut status = preparation_failure(stage, error);
+            status["tool"] = json!(tool);
+            status["arch"] = json!(arch);
+            status
         }
-    }
+    };
+    let failed = setup.is_err()
+        || !["clean", "accepted-risk"].contains(&status["status"].as_str().unwrap_or(""));
     write_json(
-        &work.join("public-release/summary.json"),
-        &json!({"schema":1, "source_sha": revision, "arch": arch, "status": if failed { "blocked" } else { "clean" }, "setup": setup_status, "tools": statuses}),
+        &public.join("summary.json"),
+        &json!({"schema":1, "source_sha": revision, "tool":tool, "arch": arch, "status": if failed { "blocked" } else { status["status"].as_str().unwrap_or("blocked") }, "setup": setup_status, "tools": [status]}),
     )?;
     if failed {
         Err("release blocked by findings or errors; see counts-only summary and private scans")
@@ -867,9 +872,13 @@ fn publish_gate(
     Ok(revision)
 }
 
-fn publication_readiness(root: &Path) -> Result<()> {
-    let value = read_json(&root.join(".github/publication-readiness.json"))?;
-    if value.get("schema").and_then(Value::as_u64) != Some(1)
+fn publication_readiness(root: &Path, tool: &str) -> Result<()> {
+    let tool = tool_identity(tool)?;
+    let value = read_json(&root.join(format!(".github/publication-readiness/{tool}.json")))?;
+    if value.get("schema").and_then(Value::as_u64) != Some(2)
+        || value.get("tool").and_then(Value::as_str) != Some(tool)
+        || value.get("repository").and_then(Value::as_str)
+            != Some(format!("ghcr.io/prjxai/devsecops/{tool}").as_str())
         || [
             "redistribution_complete",
             "supplier_provenance_reviewed",
@@ -896,7 +905,7 @@ fn receipt(
 ) -> Result<()> {
     if !TOOLS.contains(&tool)
         || !["amd64", "arm64"].contains(&arch)
-        || value.get("schema").and_then(Value::as_u64) != Some(2)
+        || value.get("schema").and_then(Value::as_u64) != Some(3)
         || text(value, "/tool")? != tool
         || text(value, "/arch")? != arch
         || text(value, "/source_sha")? != revision
@@ -904,28 +913,17 @@ fn receipt(
         || !digest(text(value, "/config_id")?)
         || text(value, "/syft")? != SYFT
         || text(value, "/grype")? != GRYPE
-        || value.get("count").and_then(Value::as_u64) != Some(0)
         || value.get("contracts").and_then(Value::as_str) != Some("passed")
     {
-        return Err("release receipt identity, scanner pin or clean gate mismatch");
+        return Err("release receipt identity, scanner pin or contract gate mismatch");
     }
-    for key in ["tar_sha256", "sbom_sha256"] {
+    for key in ["tar_sha256", "sbom_sha256", "report_sha256"] {
         let h = text(value, &format!("/{key}"))?;
         if !hex(h, 64) || h != h.to_ascii_lowercase() {
             return Err("malformed receipt hash");
         }
     }
-    let counts = value
-        .get("counts")
-        .and_then(Value::as_object)
-        .ok_or("missing receipt counts")?;
-    if counts.len() != SEVERITIES.len()
-        || SEVERITIES
-            .iter()
-            .any(|s| counts.get(*s).and_then(Value::as_u64) != Some(0))
-    {
-        return Err("receipt has findings or missing severity coverage");
-    }
+    risk::receipt(value, tool)?;
     fresh(text(value, "/created")?, now, 24)?;
     db_status(value.get("db").ok_or("missing receipt DB evidence")?, now)
 }
@@ -937,18 +935,31 @@ struct Asset {
     config: String,
     tar: PathBuf,
     tar_hash: String,
+    assessment: Value,
 }
 
-fn preflight(root: &Path, revision: &str, now: DateTime<Utc>) -> Result<Vec<Asset>> {
+fn public_assessment(value: &Value) -> Value {
+    json!({"arch":value["arch"],"status":value["status"],"count":value["count"],
+        "counts":value["counts"],"risk":value["risk"],"diagnostics":value["diagnostics"],
+        "report_sha256":value["report_sha256"]})
+}
+
+fn preflight(
+    root: &Path,
+    tools: &[&'static str],
+    revision: &str,
+    now: DateTime<Utc>,
+) -> Result<Vec<Asset>> {
     let downloaded = root.join(".work/downloaded");
     directory(&root.join(".work"))?;
     directory(&downloaded)?;
     let mut assets = Vec::new();
     let mut coverage_error = None;
     for arch in ["amd64", "arm64"] {
-        let dir = downloaded.join(format!("release-{arch}"));
-        directory(&dir)?;
-        for tool in TOOLS {
+        for tool in tools {
+            tool_identity(tool)?;
+            let dir = downloaded.join(format!("release-{tool}-{arch}"));
+            directory(&dir)?;
             let value = read_json(&dir.join(format!("{tool}-{arch}.receipt.json")))?;
             receipt(&value, tool, arch, revision, now)?;
             let image = text(&value, "/image_id")?;
@@ -965,6 +976,7 @@ fn preflight(root: &Path, revision: &str, now: DateTime<Utc>) -> Result<Vec<Asse
             }
             let inventory = read_json(&sbom)?;
             sbom_packages(&inventory, &config, arch)?;
+            risk::inventory(&value, tool, &inventory)?;
             if let Err(error) = super::coverage::check(&inventory, tool) {
                 coverage_error.get_or_insert(error);
             }
@@ -975,6 +987,7 @@ fn preflight(root: &Path, revision: &str, now: DateTime<Utc>) -> Result<Vec<Asse
                 config,
                 tar,
                 tar_hash: text(&value, "/tar_sha256")?.to_owned(),
+                assessment: public_assessment(&value),
             });
         }
     }
@@ -1083,7 +1096,8 @@ fn index_matches(value: &Value, expected: &[(&str, String)]) -> Result<()> {
     Ok(())
 }
 
-pub(super) fn publish(driver: &mut Driver) -> Result<()> {
+pub(super) fn publish(driver: &mut Driver, tool: &str) -> Result<()> {
+    let tool = tool_identity(tool)?;
     let env = |key| std::env::var(key).unwrap_or_default();
     let revision = publish_gate(
         &env("GITHUB_REPOSITORY"),
@@ -1093,22 +1107,50 @@ pub(super) fn publish(driver: &mut Driver) -> Result<()> {
         &env("GITHUB_SHA"),
         &env("DEVSECOPS_LICENSE_SOURCE_PROVENANCE_APPROVED_SHA"),
     )?;
-    publication_readiness(&driver.root)?;
+    if env("DEVSECOPS_LICENSE_SOURCE_PROVENANCE_APPROVED_TOOL") != tool {
+        return Err("license/source/provenance owner review must approve this exact tool");
+    }
+    publication_readiness(&driver.root, tool)?;
     // No token is read: docker/login-action supplies Docker credentials externally.
-    let assets = preflight(&driver.root, &revision, Utc::now())?;
+    let assets = preflight(&driver.root, &[tool], &revision, Utc::now())?;
     driver.native()?;
-    publish_preflighted(driver, &assets, &revision)
+    publish_preflighted(driver, &[tool], &assets, &revision)
 }
 
 // One concrete post-preflight phase so regression tests exercise the SAME
 // load barrier and registry mutation sequence as the authorized entrypoint.
-fn publish_preflighted(driver: &mut Driver, assets: &[Asset], revision: &str) -> Result<()> {
+fn publish_preflighted(
+    driver: &mut Driver,
+    tools: &[&str],
+    assets: &[Asset],
+    revision: &str,
+) -> Result<()> {
+    // Defense in depth: no omitted, duplicate or cross-tool member reaches tagging.
+    if tools.is_empty()
+        || tools.iter().copied().collect::<BTreeSet<_>>().len() != tools.len()
+        || assets.len() != tools.len() * 2
+    {
+        return Err("publication asset scope mismatch");
+    }
+    for tool in tools {
+        tool_identity(tool)?;
+        for arch in ["amd64", "arm64"] {
+            if assets
+                .iter()
+                .filter(|asset| asset.tool == *tool && asset.arch == arch)
+                .count()
+                != 1
+            {
+                return Err("publication asset scope mismatch");
+            }
+        }
+    }
     load_assets(driver, assets)?;
-    let published = driver.root.join(".work/published");
-    mkdir(&published, false)?;
-    let mut subjects = String::new();
-    let mut references = String::new();
-    for tool in TOOLS {
+    for tool in tools {
+        let published = driver.root.join(format!(".work/published-{tool}"));
+        mkdir(&published, false)?;
+        let mut subjects = String::new();
+        let mut references = String::new();
         let repository = format!("ghcr.io/prjxai/devsecops/{tool}");
         let mut members = Vec::new();
         for asset in assets.iter().filter(|a| a.tool == *tool) {
@@ -1155,17 +1197,26 @@ fn publish_preflighted(driver: &mut Driver, assets: &[Asset], revision: &str) ->
             id.trim_start_matches("sha256:")
         ));
         references.push_str(&format!("{repository}@{id}\n"));
+        write_json(
+            &published.join("release-status.json"),
+            &json!({
+                "schema":1,"tool":tool,"source_sha":revision,"repository":repository,"manifest_digest":id,
+                "status":if assets.iter().filter(|asset| asset.tool == *tool).any(|asset| asset.assessment["status"] == "accepted-risk") { "accepted-risk" } else { "clean" },
+                "architectures":assets.iter().filter(|asset| asset.tool == *tool).map(|asset| &asset.assessment).collect::<Vec<_>>()
+            }),
+        )?;
+        write_new(
+            &published.join("subjects.checksums"),
+            subjects.as_bytes(),
+            0o600,
+        )?;
+        write_new(
+            &published.join("references.txt"),
+            references.as_bytes(),
+            0o600,
+        )?;
     }
-    write_new(
-        &published.join("subjects.checksums"),
-        subjects.as_bytes(),
-        0o600,
-    )?;
-    write_new(
-        &published.join("references.txt"),
-        references.as_bytes(),
-        0o600,
-    )
+    Ok(())
 }
 
 #[cfg(test)]
@@ -1207,10 +1258,113 @@ mod tests {
             "source": {"type": "image", "target": sbom()["source"]["metadata"]}, "matches": []})
     }
     fn clean_receipt() -> Value {
-        json!({"schema": 2, "tool": "syft", "arch": "amd64", "source_sha": REV, "image_id": image(), "config_id": image(),
+        json!({"schema": 3, "tool": "syft", "arch": "amd64", "source_sha": REV, "image_id": image(), "config_id": image(),
             "syft": SYFT, "grype": GRYPE, "count": 0, "contracts": "passed", "created": now().to_rfc3339(), "db": db(),
-            "tar_sha256": "b".repeat(64), "sbom_sha256": "c".repeat(64),
+            "tar_sha256": "b".repeat(64), "sbom_sha256": "c".repeat(64), "report_sha256":"d".repeat(64),
+            "risk":{"policy":risk::POLICY,"accepted":0,"blocking":0,"exceptions":[]},"status":"clean","diagnostics":"none",
             "counts": SEVERITIES.into_iter().map(|s| (s, 0u64)).collect::<BTreeMap<_, _>>()})
+    }
+
+    #[test]
+    fn tool_identities_and_readiness_are_independent_and_fail_closed() {
+        let root = Path::new(env!("CARGO_MANIFEST_DIR"));
+        let retired = read_json(&root.join(".github/publication-readiness.json")).unwrap();
+        assert_eq!(retired["schema"], 0);
+        assert_eq!(retired["retired"], true);
+        assert!(retired.get("redistribution_complete").is_none());
+        let directory = root.join(".github/publication-readiness");
+        let mut names = BTreeSet::new();
+        for entry in fs::read_dir(directory).unwrap() {
+            let entry = entry.unwrap();
+            assert!(entry.file_type().unwrap().is_file());
+            names.insert(entry.file_name().into_string().unwrap());
+        }
+        assert_eq!(
+            names,
+            TOOLS.iter().map(|tool| format!("{tool}.json")).collect()
+        );
+        for tool in TOOLS {
+            assert_eq!(tool_identity(tool).unwrap(), *tool);
+            let value = read_json(&root.join(format!(".github/publication-readiness/{tool}.json")))
+                .unwrap();
+            assert_eq!(value["schema"], 2);
+            assert_eq!(value["tool"], *tool);
+            assert_eq!(
+                value["repository"],
+                format!("ghcr.io/prjxai/devsecops/{tool}")
+            );
+            let blockers = value["blockers"].as_array().unwrap();
+            assert!(
+                blockers
+                    .iter()
+                    .all(|blocker| blocker.as_str().is_some_and(|text| !text.trim().is_empty()))
+            );
+            let mut approved = true;
+            for field in [
+                "redistribution_complete",
+                "supplier_provenance_reviewed",
+                "native_functional_contracts_complete",
+            ] {
+                approved &= value[field].as_bool().unwrap();
+            }
+            assert_eq!(
+                publication_readiness(root, tool).is_ok(),
+                approved && blockers.is_empty()
+            );
+        }
+        for unknown in [
+            "",
+            "all",
+            "Syft",
+            "../syft",
+            "syft;id",
+            "gitleaks-candidate",
+            "syft/../../docker",
+            "syft\n",
+        ] {
+            assert!(tool_identity(unknown).is_err());
+            assert!(publication_readiness(root, unknown).is_err());
+        }
+    }
+
+    #[test]
+    fn asset_scope_rejects_missing_duplicate_foreign_or_unselected_members_before_docker() {
+        let mut driver = Driver::new().unwrap();
+        let asset = |tool, arch| Asset {
+            tool,
+            arch,
+            image: image(),
+            config: image(),
+            tar: driver.logs.join("absent.tar"),
+            tar_hash: "b".repeat(64),
+            assessment: public_assessment(&clean_receipt()),
+        };
+        let bad = [
+            vec![],
+            vec![asset("syft", "amd64")],
+            vec![asset("syft", "amd64"), asset("syft", "amd64")],
+            vec![asset("syft", "amd64"), asset("grype", "arm64")],
+            vec![asset("syft", "amd64"), asset("syft", "s390x")],
+            vec![
+                asset("syft", "amd64"),
+                asset("syft", "arm64"),
+                asset("docker", "arm64"),
+            ],
+        ];
+        for assets in bad {
+            assert_eq!(
+                publish_preflighted(&mut driver, &["syft"], &assets, REV),
+                Err("publication asset scope mismatch")
+            );
+        }
+        assert_eq!(
+            publish_preflighted(&mut driver, &[], &[], REV),
+            Err("publication asset scope mismatch")
+        );
+        assert_eq!(
+            publish_preflighted(&mut driver, &["syft", "syft"], &[], REV),
+            Err("publication asset scope mismatch")
+        );
     }
 
     #[test]
@@ -1232,7 +1386,7 @@ mod tests {
             (PreparationStage::DatabaseRequired, "database-required"),
             (PreparationStage::VulnerabilityScan, "vulnerability-scan"),
             (PreparationStage::ReportValidation, "report-validation"),
-            (PreparationStage::CleanHandoff, "clean-handoff"),
+            (PreparationStage::ReleaseHandoff, "release-handoff"),
         ] {
             for error in [
                 "SYNTHETIC_PRIVATE_DIAGNOSTIC",
@@ -1295,8 +1449,10 @@ mod tests {
         mkdir(&root.join(".work"), false).unwrap();
         let mut driver = Driver::new().unwrap();
         driver.root = root.clone();
-        assert!(prepare(&mut driver).is_err());
-        let summary = read_json(&root.join(".work/public-release/summary.json")).unwrap();
+        // Stale unrelated work must not block the selected tool.
+        mkdir(&root.join(".work/release-cargo-deny"), false).unwrap();
+        assert!(prepare(&mut driver, "syft").is_err());
+        let summary = read_json(&root.join(".work/public-release-syft/summary.json")).unwrap();
         let mode = std::env::var("DEVSECOPS_FAKE_PREPARE").unwrap();
         let (stage, reason) = match mode.as_str() {
             "pull" => ("syft-pull", "command-exit"),
@@ -1312,17 +1468,32 @@ mod tests {
         assert_eq!(summary["source_sha"], REV);
         assert_eq!(summary["status"], "blocked");
         let statuses = summary["tools"].as_array().unwrap();
-        assert_eq!(statuses.len(), TOOLS.len());
-        for (status, tool) in statuses.iter().zip(TOOLS) {
+        assert_eq!(summary["tool"], "syft");
+        assert_eq!(statuses.len(), 1);
+        for (status, tool) in statuses.iter().zip(["syft"]) {
             // Shared setup failure must not overwrite an independent build failure.
             assert_eq!(
                 status,
                 &json!({"tool":tool,"arch":summary["arch"],"status":"error","stage":"build-smoke","reason":"command-exit"})
             );
         }
-        assert_eq!(fs::read_dir(root.join(".work/release")).unwrap().count(), 0);
+        assert_eq!(
+            fs::read_dir(root.join(".work/release-syft"))
+                .unwrap()
+                .count(),
+            0
+        );
         assert!(!summary.to_string().contains("SYNTHETIC_PRIVATE_DIAGNOSTIC"));
         let commands = fs::read_to_string(root.join("commands")).unwrap();
+        assert!(commands.contains("images/syft/Dockerfile"));
+        assert!(!commands.contains("images/cargo-deny/Dockerfile"));
+        assert_eq!(
+            commands
+                .lines()
+                .filter(|line| line.contains("buildx build"))
+                .count(),
+            1
+        );
         let runs = commands
             .lines()
             .filter(|line| line.starts_with("run "))
@@ -1404,7 +1575,7 @@ mod tests {
         let catalogs = work.join("catalog-evidence");
         mkdir(&catalogs, false).unwrap();
         write_json(&catalogs.join("summary.json"), &value).unwrap();
-        assert!(preflight(&fixture.0, REV, now()).is_err());
+        assert!(preflight(&fixture.0, &["syft"], REV, now()).is_err());
     }
 
     #[test]
@@ -1480,8 +1651,8 @@ mod tests {
     #[test]
     fn readiness_file_cannot_be_overridden_by_dispatch_approval() {
         let fixture = Fixture::new();
-        fs::create_dir(fixture.0.join(".github")).unwrap();
-        let path = fixture.0.join(".github/publication-readiness.json");
+        fs::create_dir_all(fixture.0.join(".github/publication-readiness")).unwrap();
+        let path = fixture.0.join(".github/publication-readiness/syft.json");
         assert!(
             publish_gate(
                 "PRJXAI/devsecops",
@@ -1493,12 +1664,26 @@ mod tests {
             )
             .is_ok()
         );
-        assert!(publication_readiness(&fixture.0).is_err());
-        let good = json!({"schema":1,"redistribution_complete":true,"supplier_provenance_reviewed":true,"native_functional_contracts_complete":true,"blockers":[]});
+        assert!(publication_readiness(&fixture.0, "syft").is_err());
+        let good = json!({"schema":2,"tool":"syft","repository":"ghcr.io/prjxai/devsecops/syft","redistribution_complete":true,"supplier_provenance_reviewed":true,"native_functional_contracts_complete":true,"blockers":[]});
         fs::write(&path, good.to_string()).unwrap();
-        assert!(publication_readiness(&fixture.0).is_ok());
+        // Missing, malformed and blocked siblings do not veto this approval.
+        let sibling = fixture
+            .0
+            .join(".github/publication-readiness/cargo-deny.json");
+        for contents in ["{truncated", "{\"blockers\":[\"coverage unproven\"]}"] {
+            fs::write(&sibling, contents).unwrap();
+            assert!(publication_readiness(&fixture.0, "syft").is_ok());
+            assert!(publication_readiness(&fixture.0, "cargo-deny").is_err());
+        }
+        // A copied approval is not transferable to another tool.
+        fs::write(&sibling, good.to_string()).unwrap();
+        assert!(publication_readiness(&fixture.0, "cargo-deny").is_err());
+        assert!(publication_readiness(&fixture.0, "gitleaks").is_err());
         for field in [
             "schema",
+            "tool",
+            "repository",
             "redistribution_complete",
             "supplier_provenance_reviewed",
             "native_functional_contracts_complete",
@@ -1507,9 +1692,18 @@ mod tests {
             let mut missing = good.clone();
             missing.as_object_mut().unwrap().remove(field);
             fs::write(&path, missing.to_string()).unwrap();
-            assert!(publication_readiness(&fixture.0).is_err(), "{field}");
+            assert!(
+                publication_readiness(&fixture.0, "syft").is_err(),
+                "{field}"
+            );
             let invalid = if field == "schema" {
-                vec![json!(2), json!("1"), Value::Null]
+                vec![json!(1), json!("2"), Value::Null]
+            } else if field == "tool" || field == "repository" {
+                vec![
+                    json!("gitleaks"),
+                    json!("ghcr.io/prjxai/devsecops/gitleaks"),
+                    Value::Null,
+                ]
             } else if field == "blockers" {
                 vec![json!(["unresolved"]), json!({}), json!(false), Value::Null]
             } else {
@@ -1519,11 +1713,14 @@ mod tests {
                 let mut bad = good.clone();
                 bad[field] = value;
                 fs::write(&path, bad.to_string()).unwrap();
-                assert!(publication_readiness(&fixture.0).is_err(), "{field}");
+                assert!(
+                    publication_readiness(&fixture.0, "syft").is_err(),
+                    "{field}"
+                );
             }
         }
         fs::write(&path, "{truncated").unwrap();
-        assert!(publication_readiness(&fixture.0).is_err());
+        assert!(publication_readiness(&fixture.0, "syft").is_err());
     }
 
     #[test]
@@ -1603,6 +1800,138 @@ mod tests {
         assert!(report_counts(&sbom(), &bad, &image(), "amd64", &db(), now()).is_err());
         assert!(sbom_packages(&sbom(), &format!("sha256:{}", "b".repeat(64)), "amd64").is_err());
         assert!(sbom_packages(&sbom(), &image(), "arm64").is_err());
+    }
+
+    #[test]
+    fn reviewed_risk_receipts_are_nonzero_visible_scoped_and_not_clean() {
+        let mut value = clean_receipt();
+        value["tool"] = json!("gitleaks");
+        value["count"] = json!(1);
+        value["counts"]["Unknown"] = json!(1);
+        value["status"] = json!("accepted-risk");
+        value["diagnostics"] = json!("go-module-granularity");
+        value["risk"] = json!({"policy":risk::POLICY,"accepted":1,"blocking":0,"exceptions":["gitleaks-openpgp-no-fix-v1"]});
+        assert!(receipt(&value, "gitleaks", "amd64", REV, now()).is_ok());
+        assert_eq!(public_assessment(&value)["count"], 1);
+        assert_eq!(public_assessment(&value)["status"], "accepted-risk");
+        for (pointer, bad) in [
+            ("/schema", json!(2)),
+            ("/status", json!("clean")),
+            ("/risk/accepted", json!(0)),
+            ("/risk/blocking", json!(1)),
+            ("/risk/exceptions", json!(["all-unfixed"])),
+            ("/report_sha256", json!("bad")),
+            ("/counts/High", json!(1)),
+        ] {
+            let mut changed = value.clone();
+            *changed.pointer_mut(pointer).unwrap() = bad;
+            assert!(
+                receipt(&changed, "gitleaks", "amd64", REV, now()).is_err(),
+                "{pointer}"
+            );
+        }
+        let mut changed = value.clone();
+        changed["risk"]["private_detail"] = json!("SYNTHETIC_PRIVATE_DIAGNOSTIC");
+        assert!(receipt(&changed, "gitleaks", "amd64", REV, now()).is_err());
+        let mut changed = value.clone();
+        changed["tool"] = json!("syft");
+        assert!(receipt(&changed, "syft", "amd64", REV, now()).is_err());
+        assert!(risk::inventory(&value, "gitleaks", &sbom()).is_err());
+    }
+
+    #[test]
+    #[ignore = "approved existing Gitleaks dependency-candidate captures only; no Docker/network/publication"]
+    fn recorded_gitleaks_candidate_is_accepted_risk_without_removing_its_match() {
+        let folder =
+            Path::new(env!("CARGO_MANIFEST_DIR")).join(".work/gitleaks-dependency-upgrade");
+        let bom_path = folder.join("candidate.syft.json");
+        let report_path = folder.join("candidate.grype.json");
+        assert_eq!(
+            hash(&bom_path, JSON_LIMIT).unwrap(),
+            "e30a9ce14a008276c5ff381df9c28af4786c37b6f0a3f21f14b0df3614d2085a"
+        );
+        assert_eq!(
+            hash(&report_path, JSON_LIMIT).unwrap(),
+            "5102e0e7cb6969b7d35d1ec883829195d74a3a6549b887143abe9023a27747c5"
+        );
+        let bom = read_json(&bom_path).unwrap();
+        let report = read_json(&report_path).unwrap();
+        // Historical replay at the recorded scan time, not a fresh scan claim.
+        let at = DateTime::parse_from_rfc3339(text(&report, "/descriptor/timestamp").unwrap())
+            .unwrap()
+            .with_timezone(&Utc);
+        let counts = report_counts(
+            &bom,
+            &report,
+            text(&bom, "/source/metadata/imageID").unwrap(),
+            "arm64",
+            &report["descriptor"]["db"]["status"],
+            at,
+        )
+        .unwrap();
+        assert_eq!(total(&counts), 1);
+        assert_eq!(counts["Unknown"], 1);
+        let decision = risk::assess("gitleaks", &bom, &report).unwrap();
+        assert_eq!(decision["accepted"], 1);
+        assert_eq!(decision["blocking"], 0);
+        assert_eq!(risk::status(&decision), "accepted-risk");
+        assert_eq!(report["matches"].as_array().unwrap().len(), 1);
+        // No production inventory/profile change or release receipt is produced.
+    }
+
+    #[test]
+    #[ignore = "approved fixed Gitleaks candidate SBOM and freshness-validated cache; native offline scan, no publication"]
+    fn native_gitleaks_candidate_rescan_retains_accepted_risk() {
+        let mut driver = Driver::new().unwrap();
+        let input = driver
+            .root
+            .join(".work/gitleaks-dependency-upgrade/candidate.syft.json");
+        assert_eq!(
+            hash(&input, JSON_LIMIT).unwrap(),
+            "e30a9ce14a008276c5ff381df9c28af4786c37b6f0a3f21f14b0df3614d2085a"
+        );
+        let bom = read_json(&input).unwrap();
+        let packages = sbom_packages(
+            &bom,
+            "sha256:8af4ca71dde2ef6c5d0254a04ead722208b071ee44c115dde64758f2a6bb338a",
+            "arm64",
+        )
+        .unwrap();
+        let cache = mount(&driver.root.join(".work/scans-syft/cache"), "/cache", true).unwrap();
+        let status = scanner(
+            &mut driver,
+            GRYPE,
+            &["db", "status", "--output", "json"],
+            std::slice::from_ref(&cache),
+            false,
+            0,
+        )
+        .unwrap();
+        let db = read_json(&status).unwrap();
+        db_status(&db, Utc::now()).unwrap();
+        let output = scanner(
+            &mut driver,
+            GRYPE,
+            &["sbom:/input/syft.json", "--output", "json"],
+            &[cache, mount(&input, "/input/syft.json", true).unwrap()],
+            false,
+            0,
+        )
+        .unwrap();
+        let report = read_json(&output).unwrap();
+        let counts = super::report_counts(&bom, &packages, &report, &db, Utc::now()).unwrap();
+        let decision = risk::assess("gitleaks", &bom, &report).unwrap();
+        assert_eq!(total(&counts), 1);
+        assert_eq!(decision["accepted"], 1);
+        assert_eq!(decision["blocking"], 0);
+        assert_eq!(risk::status(&decision), "accepted-risk");
+        let diagnostics =
+            risk::diagnostics(&super::super::captured_stderr(&output).unwrap()).unwrap();
+        write_json(&driver.root.join(".work/gitleaks-accepted-risk-rescan.json"), &json!({
+            "scope":"fresh offline scan of retained arm64 candidate inventory; not production adoption or release approval",
+            "arch":"arm64","status":"accepted-risk","count":total(&counts),"counts":counts,"risk":decision,"diagnostics":diagnostics,
+            "sbom_sha256":hash(&input, JSON_LIMIT).unwrap(),"report_sha256":hash(&output, JSON_LIMIT).unwrap(),"db_built":db["built"]
+        })).unwrap();
     }
 
     #[test]
@@ -1730,9 +2059,9 @@ mod tests {
         let downloaded = work.join("downloaded");
         mkdir(&downloaded, false).unwrap();
         for arch in ["amd64", "arm64"] {
-            let dir = downloaded.join(format!("release-{arch}"));
-            mkdir(&dir, false).unwrap();
             for tool in TOOLS {
+                let dir = downloaded.join(format!("release-{tool}-{arch}"));
+                mkdir(&dir, false).unwrap();
                 let tar = dir.join(format!("{tool}-{arch}.tar"));
                 let path = dir.join(format!("{tool}-{arch}.syft.json"));
                 let config = super::super::archive::fixture(&tar, arch, REV);
@@ -1755,37 +2084,152 @@ mod tests {
         // amd64 is now reviewed for real Syft profiles; this unrelated synthetic
         // package still lacks required payload fields and must never pass.
         let coverage = "missing or invalid payload coverage field";
-        assert_eq!(preflight(&fixture.0, REV, now()).err(), Some(coverage));
-        let last = downloaded.join("release-arm64/docker-arm64.receipt.json");
+        assert_eq!(
+            preflight(&fixture.0, TOOLS, REV, now()).err(),
+            Some(coverage)
+        );
+        let last = downloaded.join("release-docker-arm64/docker-arm64.receipt.json");
         let original = bytes(&last, JSON_LIMIT).unwrap();
         let mut bad: Value = serde_json::from_slice(&original).unwrap();
         bad["count"] = json!(1);
         fs::write(&last, serde_json::to_vec(&bad).unwrap()).unwrap();
         assert_eq!(
-            preflight(&fixture.0, REV, now()).err(),
-            Some("release receipt identity, scanner pin or clean gate mismatch")
+            preflight(&fixture.0, TOOLS, REV, now()).err(),
+            Some("receipt risk policy or accounting mismatch")
+        );
+        // A broken Docker handoff is irrelevant to Syft, which still fails its
+        // own synthetic coverage (not another tool's finding or missing input).
+        assert_eq!(
+            preflight(&fixture.0, &["syft"], REV, now()).err(),
+            Some(coverage)
         );
         fs::write(&last, &original).unwrap();
-        assert!(preflight(&fixture.0, &"f".repeat(40), now()).is_err());
-        assert!(preflight(&fixture.0, REV, now() + Duration::hours(25)).is_err());
-        let tar = downloaded.join("release-arm64/docker-arm64.tar");
+        assert!(preflight(&fixture.0, TOOLS, &"f".repeat(40), now()).is_err());
+        assert!(preflight(&fixture.0, TOOLS, REV, now() + Duration::hours(25)).is_err());
+        let tar = downloaded.join("release-docker-arm64/docker-arm64.tar");
         let original_tar = fs::read(&tar).unwrap();
         fs::write(&tar, b"changed archive").unwrap();
         assert_eq!(
-            preflight(&fixture.0, REV, now()).err(),
+            preflight(&fixture.0, TOOLS, REV, now()).err(),
             Some("downloaded release asset hash mismatch")
         );
         fs::write(&tar, &original_tar).unwrap();
         fs::remove_file(&last).unwrap();
-        let error = preflight(&fixture.0, REV, now()).err();
+        let error = preflight(&fixture.0, TOOLS, REV, now()).err();
         assert!(error.is_some());
         assert_ne!(error, Some(coverage));
+        assert_eq!(
+            preflight(&fixture.0, &["syft"], REV, now()).err(),
+            Some(coverage)
+        );
         write_new(&last, &original, 0o600).unwrap();
-        assert_eq!(preflight(&fixture.0, REV, now()).err(), Some(coverage));
+        assert_eq!(
+            preflight(&fixture.0, TOOLS, REV, now()).err(),
+            Some(coverage)
+        );
+        // All tools keep the two-architecture requirement, independently.
+        for tool in TOOLS {
+            let path = downloaded.join(format!("release-{tool}-arm64/{tool}-arm64.receipt.json"));
+            let original = bytes(&path, JSON_LIMIT).unwrap();
+            for field in ["tool", "arch", "source_sha", "tar_sha256", "sbom_sha256"] {
+                let mut bad: Value = serde_json::from_slice(&original).unwrap();
+                bad[field] = json!("wrong");
+                fs::write(&path, bad.to_string()).unwrap();
+                assert_eq!(
+                    preflight(&fixture.0, &[*tool], REV, now()).err(),
+                    Some(if field.ends_with("_sha256") {
+                        "malformed receipt hash"
+                    } else {
+                        "release receipt identity, scanner pin or contract gate mismatch"
+                    })
+                );
+            }
+            fs::remove_file(&path).unwrap();
+            assert_eq!(
+                preflight(&fixture.0, &[*tool], REV, now()).err(),
+                Some("cannot open nofollow evidence")
+            );
+            write_new(&path, &original, 0o600).unwrap();
+        }
     }
 
     #[test]
-    fn scanner_diagnostics_reject_even_the_pinned_precision_notice() {
+    #[ignore = "Rust-only subprocess fixture invoked by the diagnostic-scope regression"]
+    fn scanner_diagnostic_scope_fixture() {
+        let root = PathBuf::from(std::env::var_os("DEVSECOPS_FAKE_ROOT").unwrap());
+        let mode = std::env::var("DEVSECOPS_FAKE_CONTRACT").unwrap();
+        let mut driver = Driver::new().unwrap();
+        let scan = ["sbom:/input/syft.json", "--output", "json"];
+        let db = ["db", "status", "--output", "json"];
+        for (engine, args, refresh, approved) in [
+            (GRYPE, scan.as_slice(), false, true),
+            (SYFT, scan.as_slice(), false, false),
+            (GRYPE, db.as_slice(), false, false),
+            (GRYPE, scan.as_slice(), true, false),
+            ("sha256:unreviewed", scan.as_slice(), false, false),
+        ] {
+            let result = scanner(&mut driver, engine, args, &[], refresh, 0);
+            assert_eq!(
+                result.is_ok(),
+                mode == "empty" || (mode == "precision" && approved)
+            );
+        }
+        let commands = fs::read_to_string(root.join("commands")).unwrap();
+        assert_eq!(
+            commands
+                .lines()
+                .filter(|line| line.starts_with("run "))
+                .count(),
+            5
+        );
+        assert_eq!(
+            commands
+                .lines()
+                .filter(|line| line.starts_with("rm --force "))
+                .count(),
+            5
+        );
+    }
+
+    #[test]
+    fn precision_notice_is_scoped_to_pinned_offline_scan_and_cleanup_is_unconditional() {
+        let fixture = Fixture::new();
+        let bin = fixture.0.join("bin");
+        fs::create_dir(&bin).unwrap();
+        let mut driver = Driver::new().unwrap();
+        let mut compile = std::process::Command::new("rustc");
+        compile
+            .args(["--edition=2024", "--crate-name", "fake_docker"])
+            .arg(Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/docker.rs"))
+            .arg("-o")
+            .arg(bin.join("docker"));
+        driver.execute(compile, 60, false, 0).unwrap();
+        let path = std::env::join_paths(std::iter::once(bin).chain(std::env::split_paths(
+            &std::env::var_os("PATH").unwrap_or_default(),
+        )))
+        .unwrap();
+        for mode in ["empty", "precision", "precision-extra", "other"] {
+            let root = fixture.0.join(mode);
+            mkdir(&root, false).unwrap();
+            let mut child = std::process::Command::new(std::env::current_exe().unwrap());
+            child
+                .args([
+                    "--exact",
+                    "release::tests::scanner_diagnostic_scope_fixture",
+                    "--ignored",
+                    "--nocapture",
+                ])
+                .env("PATH", &path)
+                .env("DEVSECOPS_FAKE_ROOT", &root)
+                .env("DEVSECOPS_FAKE_CONTRACT", mode)
+                .env_remove("DOCKER_HOST")
+                .env_remove("DOCKER_CONTEXT");
+            driver.execute(child, 30, false, 0).unwrap();
+        }
+    }
+
+    #[test]
+    fn default_scanner_diagnostics_remain_strict_outside_the_reviewed_scan() {
         let warning = b"[0000]  WARN go binary packages were found but none carry function symbols; go vulnerability matching falls back to module granularity and may report false positives. if scanning an SBOM, regenerate it with symbol capture enabled for more precise results.\n";
         assert!(scanner_diagnostics(b"").is_ok());
         assert!(scanner_diagnostics(warning).is_err());
@@ -1836,12 +2280,12 @@ mod tests {
                 false,
                 0,
             );
-            assert!(
-                result.is_err(),
-                "unapproved precision notice must still block"
+            let output = result.unwrap();
+            assert_eq!(output, driver.logs.join(format!("{primary}-stdout.log")));
+            assert_eq!(
+                risk::diagnostics(&super::super::captured_stderr(&output).unwrap()),
+                Ok("go-module-granularity")
             );
-            let output = driver.logs.join(format!("{primary}-stdout.log"));
-            assert!(scanner_diagnostics(&super::super::captured_stderr(&output).unwrap()).is_err());
             let report = read_json(&output).unwrap();
             let counts = report_counts(
                 &bom,
@@ -1861,9 +2305,12 @@ mod tests {
                 .metadata()
                 .unwrap()
                 .len();
-            statuses.push(json!({"tool": tool, "status": "blocked-diagnostics-and-findings", "count": total(&counts), "counts": counts, "report_bytes": size}));
+            let decision = risk::assess(tool, &bom, &report).unwrap();
+            assert_eq!(risk::status(&decision), "findings");
+            assert_eq!(decision["blocking"].as_u64(), Some(total(&counts)));
+            statuses.push(json!({"tool": tool, "status": "blocked-findings", "count": total(&counts), "counts": counts, "risk":decision,"diagnostics":"go-module-granularity", "report_bytes": size}));
         }
-        write_json(&driver.root.join(".work/tasks-native-verified-counts.json"), &json!({"scope":"blocked offline candidate capture inspection, not scan/release acceptance", "arch": arch, "tools": statuses})).unwrap();
+        write_json(&driver.root.join(".work/tasks-native-risk-policy-counts.json"), &json!({"scope":"blocked offline candidate capture inspection under reviewed-risk policy, not release acceptance", "arch": arch, "tools": statuses})).unwrap();
     }
 
     #[test]
@@ -1929,15 +2376,27 @@ mod tests {
         let root = PathBuf::from(std::env::var_os("DEVSECOPS_FAKE_ROOT").unwrap());
         let mut driver = Driver::new().unwrap();
         driver.root = root.clone();
+        let mode = std::env::var("DEVSECOPS_FAKE_LOAD").unwrap();
+        if ["unapproved-tool", "missing-tool"].contains(&mode.as_str()) {
+            assert_eq!(
+                publish(&mut driver, "syft"),
+                Err("license/source/provenance owner review must approve this exact tool")
+            );
+            assert!(!root.join("commands").exists());
+            return;
+        }
         // Real preflight rejects incomplete catalogs. Then exercise the actual
         // post-preflight load AND mutation sequence with synthetic handoffs;
         // deleting its load barrier must make this regression fail.
-        assert!(publish(&mut driver).is_err());
+        assert_eq!(
+            publish(&mut driver, "syft"),
+            Err("missing or invalid payload coverage field")
+        );
         assert!(!root.join("commands").exists());
         let mut assets = Vec::new();
         for arch in ["amd64", "arm64"] {
-            let dir = root.join(format!(".work/downloaded/release-{arch}"));
             for tool in TOOLS {
+                let dir = root.join(format!(".work/downloaded/release-{tool}-{arch}"));
                 let value = read_json(&dir.join(format!("{tool}-{arch}.receipt.json"))).unwrap();
                 assets.push(Asset {
                     tool,
@@ -1946,44 +2405,121 @@ mod tests {
                     config: text(&value, "/config_id").unwrap().to_owned(),
                     tar: dir.join(format!("{tool}-{arch}.tar")),
                     tar_hash: text(&value, "/tar_sha256").unwrap().to_owned(),
+                    assessment: public_assessment(&value),
                 });
             }
         }
+        let single = mode.starts_with("single-");
+        let selected = if mode == "single-risk-success" {
+            "gitleaks"
+        } else {
+            "syft"
+        };
+        if single {
+            assets.retain(|asset| asset.tool == selected);
+        }
+        if mode == "single-risk-success" {
+            // A synthetic already-preflighted assessment exercises publication
+            // visibility, not scanner/profile acceptance of these fixture bytes.
+            for asset in &mut assets {
+                asset.assessment["count"] = json!(1);
+                asset.assessment["counts"]["Unknown"] = json!(1);
+                asset.assessment["status"] = json!("accepted-risk");
+                asset.assessment["risk"] = json!({"policy":risk::POLICY,"accepted":1,"blocking":0,"exceptions":["gitleaks-openpgp-no-fix-v1"]});
+                risk::receipt(&asset.assessment, selected).unwrap();
+            }
+        }
         driver.native().unwrap();
-        assert!(publish_preflighted(&mut driver, &assets, REV).is_err());
+        let result = publish_preflighted(
+            &mut driver,
+            if single {
+                std::slice::from_ref(&selected)
+            } else {
+                TOOLS
+            },
+            &assets,
+            REV,
+        );
         let commands = fs::read_to_string(root.join("commands")).unwrap();
         assert_eq!(
             commands
                 .lines()
                 .filter(|line| line.starts_with("image load "))
                 .count(),
-            18
+            if single { 2 } else { 18 }
         );
-        assert!(
-            !commands
-                .lines()
-                .any(|line| line.starts_with("image push ") || line.starts_with("image tag "))
-        );
+        if mode.ends_with("success") {
+            result.unwrap();
+            assert_eq!(
+                commands
+                    .lines()
+                    .filter(|line| line.starts_with("image push "))
+                    .count(),
+                2
+            );
+            assert_eq!(
+                commands
+                    .lines()
+                    .filter(|line| line.starts_with("image tag "))
+                    .count(),
+                2
+            );
+            assert!(!commands.contains("ghcr.io/prjxai/devsecops/docker"));
+            let published = root.join(format!(".work/published-{selected}"));
+            let subjects = fs::read_to_string(published.join("subjects.checksums")).unwrap();
+            assert_eq!(subjects.lines().count(), 1);
+            assert!(subjects.ends_with(&format!("  ghcr.io/prjxai/devsecops/{selected}\n")));
+            assert!(!root.join(".work/published-docker").exists());
+            let status = read_json(&published.join("release-status.json")).unwrap();
+            assert_eq!(status["source_sha"], REV);
+            assert_eq!(status["tool"], selected);
+            assert_eq!(
+                status["manifest_digest"],
+                fs::read_to_string(root.join("registry-index.id")).unwrap()
+            );
+            assert_eq!(
+                status["status"],
+                if selected == "gitleaks" {
+                    "accepted-risk"
+                } else {
+                    "clean"
+                }
+            );
+            let architectures = status["architectures"].as_array().unwrap();
+            assert_eq!(architectures.len(), 2);
+            for assessment in architectures {
+                assert_eq!(assessment["count"], u64::from(selected == "gitleaks"));
+                assert_eq!(assessment["status"], status["status"]);
+                risk::receipt(assessment, selected).unwrap();
+            }
+        } else {
+            assert!(result.is_err());
+            assert!(
+                !commands
+                    .lines()
+                    .any(|line| line.starts_with("image push ") || line.starts_with("image tag "))
+            );
+        }
     }
 
     #[test]
-    fn bad_eighteenth_archive_causes_zero_pushes_even_with_preloaded_expected_ids() {
+    fn independent_success_and_bad_second_or_eighteenth_loads_preserve_the_push_barrier() {
         let fixture = Fixture::new();
         let github = fixture.0.join(".github");
-        fs::create_dir(&github).unwrap();
-        write_json(&github.join("publication-readiness.json"), &json!({"schema":1,"redistribution_complete":true,"supplier_provenance_reviewed":true,"native_functional_contracts_complete":true,"blockers":[]})).unwrap();
+        fs::create_dir_all(github.join("publication-readiness")).unwrap();
+        write_json(&github.join("publication-readiness/syft.json"), &json!({"schema":2,"tool":"syft","repository":"ghcr.io/prjxai/devsecops/syft","redistribution_complete":true,"supplier_provenance_reviewed":true,"native_functional_contracts_complete":true,"blockers":[]})).unwrap();
         let work = fixture.0.join(".work");
         mkdir(&work, false).unwrap();
         let downloaded = work.join("downloaded");
         mkdir(&downloaded, false).unwrap();
         for arch in ["amd64", "arm64"] {
-            let dir = downloaded.join(format!("release-{arch}"));
-            mkdir(&dir, false).unwrap();
             let id = format!(
                 "sha256:{}",
                 if arch == "amd64" { "a" } else { "b" }.repeat(64)
             );
             for tool in TOOLS {
+                let dir = downloaded.join(format!("release-{tool}-{arch}"));
+                mkdir(&dir, false).unwrap();
                 let tar = dir.join(format!("{tool}-{arch}.tar"));
                 let sbom_path = dir.join(format!("{tool}-{arch}.syft.json"));
                 let config = super::super::archive::fixture(&tar, arch, REV);
@@ -2004,6 +2540,39 @@ mod tests {
                 write_json(&dir.join(format!("{tool}-{arch}.receipt.json")), &value).unwrap();
             }
         }
+        // Fake registry bytes are hash-bound exactly like real registry responses.
+        // This exercises only the post-preflight sequence, never scan acceptance.
+        let mut manifests = Vec::new();
+        for arch in ["amd64", "arm64"] {
+            let value = read_json(
+                &downloaded.join(format!("release-syft-{arch}/syft-{arch}.receipt.json")),
+            )
+            .unwrap();
+            let manifest = json!({"schemaVersion":2,"config":{"digest":value["config_id"]},"layers":[{"digest":image()}]});
+            let data = serde_json::to_vec(&manifest).unwrap();
+            let path = fixture.0.join(format!("registry-{arch}.json"));
+            write_new(&path, &data, 0o600).unwrap();
+            let digest = format!("sha256:{}", hash(&path, JSON_LIMIT).unwrap());
+            write_new(
+                &fixture.0.join(format!("registry-{arch}.id")),
+                digest.as_bytes(),
+                0o600,
+            )
+            .unwrap();
+            manifests.push(json!({"digest":digest,"platform":{"architecture":arch,"os":"linux"}}));
+        }
+        let data = serde_json::to_vec(&json!({"schemaVersion":2,"manifests":manifests})).unwrap();
+        write_new(&fixture.0.join("registry-index.json"), &data, 0o600).unwrap();
+        write_new(
+            &fixture.0.join("registry-index.id"),
+            format!(
+                "sha256:{}",
+                hash(&fixture.0.join("registry-index.json"), JSON_LIMIT).unwrap()
+            )
+            .as_bytes(),
+            0o600,
+        )
+        .unwrap();
         let bin = fixture.0.join("bin");
         fs::create_dir(&bin).unwrap();
         let mut driver = Driver::new().unwrap();
@@ -2018,7 +2587,18 @@ mod tests {
             &std::env::var_os("PATH").unwrap_or_default(),
         )))
         .unwrap();
-        for mode in ["wrong", "multiple", "malformed"] {
+        for mode in [
+            "unapproved-tool",
+            "missing-tool",
+            "wrong",
+            "multiple",
+            "malformed",
+            "single-wrong",
+            "single-multiple",
+            "single-malformed",
+            "single-success",
+            "single-risk-success",
+        ] {
             let _ = fs::remove_file(fixture.0.join("commands"));
             let mut child = std::process::Command::new(std::env::current_exe().unwrap());
             child
@@ -2037,6 +2617,14 @@ mod tests {
                 .env("DEVSECOPS_PUBLISH_APPROVED", "true")
                 .env("GITHUB_SHA", REV)
                 .env("DEVSECOPS_LICENSE_SOURCE_PROVENANCE_APPROVED_SHA", REV)
+                .env(
+                    "DEVSECOPS_LICENSE_SOURCE_PROVENANCE_APPROVED_TOOL",
+                    match mode {
+                        "unapproved-tool" => "grype",
+                        "missing-tool" => "",
+                        _ => "syft",
+                    },
+                )
                 .env_remove("DOCKER_HOST")
                 .env_remove("DOCKER_CONTEXT");
             driver.execute(child, 30, false, 0).unwrap();
@@ -2050,17 +2638,7 @@ mod tests {
         let image = driver.check("syft").unwrap();
         let archive = driver.logs.join("roundtrip.tar");
         driver
-            .docker(
-                &[
-                    "image",
-                    "save",
-                    "--output",
-                    archive.to_str().unwrap(),
-                    &image,
-                ],
-                120,
-                false,
-            )
+            .docker_archive(&["image", "save", &image], &archive)
             .unwrap();
         // Expected image is already present: successful load must still identify the archive.
         let output = driver

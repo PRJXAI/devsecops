@@ -1,0 +1,109 @@
+name: independent-tool
+on:
+  workflow_call:
+    inputs:
+      tool:
+        type: string
+        required: true
+      publish:
+        type: boolean
+        required: true
+      redistribution_reviewed:
+        type: boolean
+        required: true
+permissions:
+  contents: read
+concurrency:
+  group: tool-${{ inputs.tool }}-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  images:
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: ubuntu-24.04
+            arch: amd64
+          - runner: ubuntu-24.04-arm
+            arch: arm64
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 60
+    env:
+      DEVSECOPS_TOOL: ${{ inputs.tool }}
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with: {persist-credentials: false}
+      - name: Capture public native inventories for this tool, not release acceptance
+        run: cargo run --locked --bin devsecops -- catalog-tool
+      - name: Preserve native inventory evidence, including blocked profiles
+        if: always()
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
+        with:
+          name: catalog-evidence-${{ inputs.tool }}-${{ matrix.arch }}
+          path: .work/catalog-evidence-${{ inputs.tool }}/
+          retention-days: 14
+          if-no-files-found: error
+      - name: Rust builds, smokes, inventories and scans this exact native tool
+        run: cargo run --locked --bin devsecops -- prepare-tool
+      - name: Public count/status summary only
+        if: always()
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
+        with:
+          name: security-status-${{ inputs.tool }}-${{ matrix.arch }}
+          path: .work/public-release-${{ inputs.tool }}/summary.json
+          retention-days: 14
+          if-no-files-found: error
+      - name: Preserve policy-passing archives, inventories and explicit risk receipts
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
+        with:
+          name: release-${{ inputs.tool }}-${{ matrix.arch }}
+          path: .work/release-${{ inputs.tool }}/
+          retention-days: 1
+          compression-level: 0
+          include-hidden-files: true
+          if-no-files-found: error
+  publish:
+    needs: images
+    if: ${{ !cancelled() && needs.images.result == 'success' && github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && inputs.publish && inputs.redistribution_reviewed }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+      attestations: write
+    env:
+      DEVSECOPS_TOOL: ${{ inputs.tool }}
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with: {persist-credentials: false}
+      - uses: actions/download-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53
+        with:
+          name: release-${{ inputs.tool }}-amd64
+          path: .work/downloaded/release-${{ inputs.tool }}-amd64
+      - uses: actions/download-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53
+        with:
+          name: release-${{ inputs.tool }}-arm64
+          path: .work/downloaded/release-${{ inputs.tool }}-arm64
+      - uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Verify both architectures and publish exact scanned bytes, never rebuild
+        env:
+          DEVSECOPS_PUBLISH_APPROVED: 'true'
+          DEVSECOPS_LICENSE_SOURCE_PROVENANCE_APPROVED_SHA: ${{ github.sha }}
+          DEVSECOPS_LICENSE_SOURCE_PROVENANCE_APPROVED_TOOL: ${{ inputs.tool }}
+        run: cargo run --locked --bin devsecops -- publish-tool
+      - name: Attest this tool's published manifest digest through GitHub
+        uses: actions/attest-build-provenance@977bb373ede98d70efdf65b84cb5f73e068dcc2a
+        with:
+          subject-checksums: .work/published-${{ inputs.tool }}/subjects.checksums
+      - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
+        with:
+          name: published-digests-${{ inputs.tool }}
+          path: .work/published-${{ inputs.tool }}/
+          if-no-files-found: error

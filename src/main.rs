@@ -56,16 +56,22 @@ fn version_args(tool: &str) -> Result<&'static [&'static str]> {
 }
 
 // Nonblocking sockets avoid reader threads that can outlive a timed-out command.
-// Only a bounded chunk is drained per poll; files never exceed LOG_LIMIT each.
+// Only a bounded chunk is drained per poll. Ordinary streams keep LOG_LIMIT;
+// save/export stdout alone uses the explicit archive budget, enforced before writes.
 struct Log {
     reader: UnixStream,
     file: File,
     size: usize,
+    limit: usize,
     eof: bool,
 }
 
 impl Log {
     fn new(path: &Path) -> Result<(Self, Stdio)> {
+        Self::bounded(path, LOG_LIMIT)
+    }
+
+    fn bounded(path: &Path, limit: usize) -> Result<(Self, Stdio)> {
         let file = OpenOptions::new()
             .write(true)
             .create_new(true)
@@ -81,6 +87,7 @@ impl Log {
                 reader,
                 file,
                 size: 0,
+                limit,
                 eof: false,
             },
             Stdio::from(OwnedFd::from(writer)),
@@ -96,7 +103,7 @@ impl Log {
                     break;
                 }
                 Ok(n) => {
-                    let retained = n.min(LOG_LIMIT - self.size);
+                    let retained = n.min(self.limit - self.size);
                     self.file
                         .write_all(&buffer[..retained])
                         .map_err(|_| "cannot write private log")?;
@@ -235,10 +242,43 @@ impl Driver {
 
     fn execute(
         &mut self,
+        command: Command,
+        seconds: u64,
+        cleanup: bool,
+        expected_exit: i32,
+    ) -> Result<PathBuf> {
+        self.execute_to(command, seconds, cleanup, expected_exit, None)
+    }
+
+    fn docker_archive(&mut self, args: &[&str], target: &Path) -> Result<PathBuf> {
+        // No writable Docker --output path: only Rust can write the bounded file.
+        let (limit, seconds) = match args {
+            ["image", "save", _] => (release::TAR_LIMIT, 600),
+            ["export", _] => (filesystem::ARCHIVE, 120),
+            _ => return Err("unsupported archive capture command"),
+        };
+        let mut command = Command::new("docker");
+        command.args(args).current_dir(&self.root);
+        let output = self.execute_to(command, seconds, false, 0, Some((target, limit as usize)))?;
+        // Archive stdout has a distinct path, stderr remains in the ordinary logs.
+        let diagnostics = self.logs.join(format!("{}-stderr.log", self.sequence));
+        if fs::metadata(diagnostics)
+            .map_err(|_| "cannot inspect archive diagnostics")?
+            .len()
+            != 0
+        {
+            return Err("archive command emitted diagnostics; private logs retained");
+        }
+        Ok(output)
+    }
+
+    fn execute_to(
+        &mut self,
         mut command: Command,
         seconds: u64,
         cleanup: bool,
         expected_exit: i32,
+        output: Option<(&Path, usize)>,
     ) -> Result<PathBuf> {
         if !(0..=255).contains(&expected_exit) {
             return Err("invalid expected exit code");
@@ -247,8 +287,12 @@ impl Driver {
             return Err("check cancelled");
         }
         self.sequence += 1;
-        let stdout_path = self.logs.join(format!("{}-stdout.log", self.sequence));
-        let (mut stdout, out) = Log::new(&stdout_path)?;
+        let stdout_path = output.map_or_else(
+            || self.logs.join(format!("{}-stdout.log", self.sequence)),
+            |(path, _)| path.to_owned(),
+        );
+        let (mut stdout, out) =
+            Log::bounded(&stdout_path, output.map_or(LOG_LIMIT, |(_, limit)| limit))?;
         let (mut stderr, err) = Log::new(&self.logs.join(format!("{}-stderr.log", self.sequence)))?;
         let mut child = command
             .stdin(Stdio::null())
@@ -269,6 +313,7 @@ impl Driver {
                 if start.elapsed() >= Duration::from_secs(seconds) {
                     return Err("command timed out");
                 }
+                let before = (stdout.size, stderr.size);
                 stdout.drain()?;
                 stderr.drain()?;
                 if status.is_none() {
@@ -281,13 +326,23 @@ impl Driver {
                         Err("unexpected command exit; private logs retained")
                     };
                 }
-                thread::sleep(POLL);
+                // Archive backpressure must not impose a sleep after every
+                // successful bounded read. Still check time/cancellation and
+                // drain stderr each iteration; idle/ordinary captures keep POLL.
+                if output.is_none() || before == (stdout.size, stderr.size) {
+                    thread::sleep(POLL);
+                }
             }
         })();
         if result.is_err() && terminate(&mut child).is_err() {
             return Err("command failed and process cleanup was not confirmed");
         }
-        result.map(|()| stdout_path)
+        result?;
+        stdout
+            .file
+            .sync_all()
+            .map_err(|_| "cannot sync captured output")?;
+        Ok(stdout_path)
     }
 
     fn smoke(
@@ -430,7 +485,6 @@ impl Driver {
         let iidfile = self
             .logs
             .join(format!("build-{tool}-{}.iid", self.sequence));
-        let dockerfile = format!("images/{tool}/Dockerfile");
         let revision = std::env::var("GITHUB_SHA").unwrap_or_else(|_| "local".into());
         if revision != "local"
             && !(revision.len() == 40 && revision.bytes().all(|v| v.is_ascii_hexdigit()))
@@ -438,12 +492,24 @@ impl Driver {
             return Err("invalid source revision");
         }
         let revision_label = format!("org.opencontainers.image.revision={revision}");
+        // Gitleaks alone uses the fixed reviewed source builder. No caller-supplied
+        // executable/context is accepted, and test/build/cleanup must finish first.
+        let context = if tool == "gitleaks" {
+            release::gitleaks_candidate::build_context(self)?
+        } else {
+            self.root.clone()
+        };
+        let dockerfile = if tool == "gitleaks" {
+            "Dockerfile".to_owned()
+        } else {
+            format!("images/{tool}/Dockerfile")
+        };
         // Bind Buildx's builtin Docker driver to the checked local endpoint;
         // inherited builder selection must not redirect work to another daemon.
         let mut build = Command::new("docker");
         build
             .env_remove("DOCKER_CONTEXT")
-            .current_dir(&self.root)
+            .current_dir(&context)
             .args([
                 "--host",
                 &endpoint,
@@ -580,19 +646,33 @@ fn main() {
         }
         return;
     }
-    if args.as_slice() == ["prepare-release"]
-        || args.as_slice() == ["publish-all"]
-        || args.as_slice() == ["catalog-candidates"]
-    {
-        let result = Driver::new().and_then(|mut driver| {
-            if args[0] == "catalog-candidates" {
-                release::catalog(&mut driver)
-            } else if args[0] == "prepare-release" {
-                release::prepare(&mut driver)
-            } else {
-                release::publish(&mut driver)
-            }
-        });
+    if args.first().is_some_and(|command| {
+        ["catalog-tool", "prepare-tool", "publish-tool"]
+            .iter()
+            .any(|value| command == value)
+    }) {
+        // Workflow inputs travel through env, never shell interpolation. Explicit
+        // local arguments use the same allowlist before any filesystem/Docker work.
+        let selected = match args.as_slice() {
+            [_] => std::env::var("DEVSECOPS_TOOL").ok(),
+            [_, tool] => tool.to_str().map(str::to_owned),
+            _ => None,
+        };
+        let result = selected
+            .as_deref()
+            .ok_or("one release tool is required")
+            .and_then(release::tool_identity)
+            .and_then(|tool| {
+                Driver::new().and_then(|mut driver| {
+                    if args[0] == "catalog-tool" {
+                        release::catalog(&mut driver, tool)
+                    } else if args[0] == "prepare-tool" {
+                        release::prepare(&mut driver, tool)
+                    } else {
+                        release::publish(&mut driver, tool)
+                    }
+                })
+            });
         if let Err(error) = result {
             eprintln!("image task failed: {error}");
             std::process::exit(1);
@@ -612,7 +692,7 @@ fn main() {
         }
         _ => {
             eprintln!(
-                "usage: devsecops check TOOL | contract TOOL | check-all | audit-dependencies | catalog-candidates | prepare-release | publish-all"
+                "usage: devsecops check TOOL | contract TOOL | check-all | audit-dependencies | catalog-tool TOOL | prepare-tool TOOL | publish-tool TOOL"
             );
             std::process::exit(2);
         }
@@ -909,6 +989,111 @@ mod tests {
             );
             assert_private_logs(&driver);
         }
+    }
+
+    #[test]
+    fn bounded_archive_writes_accept_exact_limit_and_never_write_overflow() {
+        for length in [1023, 1024, 1025] {
+            let driver = Driver::new().unwrap();
+            let path = driver.logs.join("bounded.tar");
+            let (reader, mut writer) = UnixStream::pair().unwrap();
+            reader.set_nonblocking(true).unwrap();
+            let mut capture = Log {
+                reader,
+                file: OpenOptions::new()
+                    .write(true)
+                    .create_new(true)
+                    .mode(0o600)
+                    .open(&path)
+                    .unwrap(),
+                size: 0,
+                limit: 1024,
+                eof: false,
+            };
+            writer.write_all(&vec![0x5a; length]).unwrap();
+            drop(writer);
+            assert_eq!(capture.drain().is_ok(), length <= 1024);
+            assert_eq!(fs::read(&path).unwrap(), vec![0x5a; length.min(1024)]);
+            assert_eq!(capture.eof, length <= 1024);
+            assert_eq!(
+                fs::metadata(&path).unwrap().permissions().mode() & 0o777,
+                0o600
+            );
+            assert!(Log::bounded(&path, 1024).is_err());
+        }
+    }
+
+    #[test]
+    fn archive_capture_preserves_stream_caps_create_only_and_process_cleanup() {
+        for mode in ["stdout-overflow", "stderr-overflow", "hang", "descendant"] {
+            let mut driver = Driver::new().unwrap();
+            let target = driver.logs.join("archive.tar");
+            let pid = driver.logs.join("archive.pid");
+            let mut command = fixture(mode);
+            marker(&mut command, &pid);
+            let timed = matches!(mode, "hang" | "descendant");
+            assert_eq!(
+                driver.execute_to(
+                    command,
+                    if timed { 1 } else { 30 },
+                    false,
+                    0,
+                    Some((&target, 16384))
+                ),
+                Err(if timed {
+                    "command timed out"
+                } else {
+                    "command output limit exceeded"
+                })
+            );
+            assert!(fs::metadata(&target).unwrap().len() <= 16384);
+            if mode == "stdout-overflow" {
+                assert_eq!(fs::metadata(&target).unwrap().len(), 16384);
+            }
+            if mode == "stderr-overflow" {
+                assert_eq!(
+                    fs::metadata(driver.logs.join("1-stderr.log"))
+                        .unwrap()
+                        .len(),
+                    LOG_LIMIT as u64
+                );
+            }
+            if timed {
+                assert_stopped(fs::read_to_string(&pid).unwrap().trim());
+            }
+            let unchanged = fs::read(&target).unwrap();
+            assert_eq!(
+                driver.execute_to(fixture("exit"), 1, false, 0, Some((&target, 16384))),
+                Err("cannot create private log")
+            );
+            assert_eq!(fs::read(&target).unwrap(), unchanged);
+            let link = driver.logs.join("link.tar");
+            std::os::unix::fs::symlink(&target, &link).unwrap();
+            assert!(
+                driver
+                    .execute_to(fixture("exit"), 1, false, 0, Some((&link, 16384)))
+                    .is_err()
+            );
+            driver.cancelled.store(true, Ordering::Relaxed);
+            let absent = driver.logs.join("cancelled.tar");
+            assert_eq!(
+                driver.execute_to(fixture("exit"), 1, false, 0, Some((&absent, 16384))),
+                Err("check cancelled")
+            );
+            assert!(!absent.exists());
+            assert_private_logs(&driver);
+        }
+        let mut driver = Driver::new().unwrap();
+        let target = driver.logs.join("invalid.tar");
+        assert!(
+            driver
+                .docker_archive(
+                    &["image", "save", "--output", "unbounded", "image"],
+                    &target
+                )
+                .is_err()
+        );
+        assert!(!target.exists());
     }
 
     #[test]

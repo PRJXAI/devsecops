@@ -1,14 +1,20 @@
 # Approval evidence work
 
-The readiness booleans remain false while this sequence is implemented. Technical checks do not provide an accountable redistribution/provenance sign-off. Publication still requires the unchanged native, inventory, diagnostic and all-finding gates.
+Each tool's readiness booleans in `.github/publication-readiness/TOOL.json` remain false until its own evidence and accountable review are complete. Technical checks do not provide redistribution/provenance sign-off. Publication now operates independently per tool, still requiring both native architectures and complete inventory. The subsequent owner-approved [no-fix policy](release-risk-policy.md) permits exact reviewed findings as accepted-risk and the exact pinned precision warning as informational; all other findings/diagnostics/errors block. The [release isolation contract](threat-model.md) and [blocker map](release-blockers.md) supersede the former all-nine-tool approval scope.
+
+## Current remediation contract — Gitleaks production build
+
+The request to address remaining gaps authorizes adopting the already tested, fixed-source Gitleaks dependency upgrade into production packaging. Rust will construct a private, create-only context from the pinned source, patch and compiler; verify manifests before and after the offline upstream race tests/build; and package the checked executable plus the existing collected Go notices. No arbitrary prebuilt executable, caller-selected source/compiler, shared mutable build tag, retry or diagnostic waiver is introduced. Build failure or cleanup failure blocks packaging. The existing Git/native closure is unchanged and its source obligations remain unresolved.
+
+Production inventory must require the upgraded tuples captured on both native architectures; the former supplier profile must no longer authorize production Gitleaks. Historical documents remain unchanged evidence. Fresh production contracts/catalogs/scans are still required on both architectures. Notice collection/packaging is not accountable redistribution approval; readiness remains false until its remaining evidence is complete.
 
 ## Execution order
 
 1. Collect exact supplier artifact/source/attestation identities and license/notice coverage. Distinguish retrieved evidence, verified bindings, missing evidence and human review; never infer provenance from a version or checksum alone.
 2. Resolve runtime contracts: provide kind's pinned Docker CLI dependency without granting socket access; prove cargo-deny's full supplied graph/cache/advisory coverage; investigate the Gitleaks clean-HEAD timeout without weakening deadlines or dropping controls.
-3. Review available supplier updates against actual findings and compatibility. Re-catalog unchanged native output; do not fill UNKNOWN versions or omit findings to obtain a clean result.
-4. Run both native architectures and preserve count/status-only public results. Keep incomplete inventory, diagnostics, resource bounds and any failed functional case blocking.
-5. Request artifact-specific owner/reviewer sign-off only after its evidence is complete. Remove only resolved blockers, then use the approved manual main-branch publication workflow. No ad hoc pushes or consumer adoption.
+3. Review available supplier updates against actual findings and compatibility. If no fix or viable alternative exists, record a narrow reviewed risk under the owner's policy rather than blocking indefinitely. Re-catalog unchanged native output; never fill UNKNOWN versions or omit findings. Accepted-risk is not clean.
+4. Run both native architectures and preserve all counts/statuses, including accepted risks. Incomplete inventory, unapproved diagnostics, resource errors and failed functional cases remain blocking.
+5. Request artifact-specific owner/reviewer sign-off only after its evidence is complete. Update only that tool's readiness record and remove only resolved blockers. Manually dispatch `main`, selecting the tool and both approval inputs; the Rust publisher binds approval to that tool and exact source SHA. `all` runs independent releases, not an atomic suite. No ad hoc pushes or consumer adoption.
 
 ## Changed guarantees before runtime changes
 
@@ -23,9 +29,9 @@ Cargo-deny must reject missing Cargo/index/source/advisory coverage even if the 
 - [Hosted native inventory review](native-inventory-review.md) verifies all 18 unchanged report hashes/config subjects from source `9500de1`; three scanner profiles meet unchanged tuple/compiler criteria on both architectures. Six other tool profiles remain blocked.
 - [cargo-deny investigation](cargo-deny-coverage.md) proves why supplied metadata/exit zero is insufficient. The always-refusing prototype remains private; the existing production refusal is retained, rather than adding a duplicate runtime API.
 - [Runtime completion investigation](runtime-completion.md) retains the Gitleaks timeout as a blocker; both speculative fixes failed controls and were reverted.
-- [Supplier remediation](supplier-remediation.md) identifies compatible component targets but no current upstream tool release that clears all 104 captured matches. Source patch/dependency migrations or upstream maintenance releases need separate reviewed work; there is no finding/diagnostic waiver.
+- [Supplier remediation](supplier-remediation.md) identifies compatible component targets but no current upstream tool release that clears all 104 captured matches. Source patch/dependency migrations or upstream maintenance releases need reviewed work. The subsequent no-fix decision permits only the exact reviewed Gitleaks advisory and precision notice, not a blanket waiver of these matches.
 
-Final validation passes 92 ordinary tests, formatting, Clippy and actionlint, plus the explicit hosted-document, native notice-byte and official-audit controls. This is not release acceptance. No boolean has been set true, no image published and no consumer pin changed.
+The original approval-sequence validation passed 92 ordinary tests, formatting, Clippy and actionlint, plus the explicit hosted-document, native notice-byte and official-audit controls; the later production/archive remediation results and reproduced runtime failure are recorded in [results](results.md). This is not release acceptance. No boolean has been set true, no image published and no consumer pin changed.
 
 ## Outstanding decisions
 

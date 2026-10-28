@@ -2,6 +2,8 @@
 
 **Unresolved and blocking.** The full source/deleted/bare/all-ref/clean-HEAD/redaction contract, exact exits, stream EOF checks, 120-second deadline and unconditional bounded removal are unchanged. No retry, output-based success, longer deadline or diagnostic waiver was added.
 
+Follow-up during production adoption on 2026-10-28: two local production arm64 preparation runs passed, but the subsequent separate candidate test again failed during its clean-working-tree scan after emitting a small clean report. The 120-second bound and unconditional removal remained enforced; no candidate inventory/scan success was claimed for that run. Its failed summary and private captures are retained. Production passes therefore do not resolve the runtime blocker. Separately, a Docker filesystem-export timeout introduced by streaming was corrected by progress-aware draining; that was a different, identified capture-throughput issue, not a fix for these tool-completion stalls.
+
 The original failure emitted a complete clean report but did not complete the attached Docker command within 120 seconds. Independent bounded controls also reproduced stalls for Gitleaks version-only invocations. Docker reported the containers running while its process-list query contained no processes; a separate wait operation also blocked. These observations locate the symptom beyond merely parsing Git output or draining Rust's capture sockets, but do not identify an Engine/containerd/runc/kernel cause.
 
 The observed local runtime was native Linux arm64, Ubuntu 24.04.4/kernel 6.8.0-100-generic, Engine 29.2.1 and host CLI 29.4.0. No daemon settings, host internals, operator overrides or versions were changed. This is not evidence about every runtime or native amd64.

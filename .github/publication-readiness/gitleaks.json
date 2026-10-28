@@ -1,0 +1,14 @@
+{
+  "schema": 2,
+  "tool": "gitleaks",
+  "repository": "ghcr.io/prjxai/devsecops/gitleaks",
+  "redistribution_complete": false,
+  "supplier_provenance_reviewed": false,
+  "native_functional_contracts_complete": false,
+  "blockers": [
+    "The fixed-source upgrade is adopted into production packaging/inventory and local arm64 preparation passes with 1 accepted / 0 blocking finding. Fresh clean-source hosted production handoffs on both architectures and hosted publish/attestation validation are still missing.",
+    "Exact vendor Git/glibc source, recipes and patches plus full runtime/base notices are incomplete; the packaged and byte-verified Go notices are not full redistribution approval.",
+    "Artifact-specific build provenance and accountable redistribution review are missing.",
+    "Local runtime stalls were reproduced again by the separate candidate test during its clean-working-tree scan; successful production preparations and earlier hosted successes do not establish reliable completion or complete consumer acceptance."
+  ]
+}

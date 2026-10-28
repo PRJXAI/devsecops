@@ -1,5 +1,5 @@
-//! Native evidence only for one explicitly authorized Gitleaks dependency candidate.
-//! No release receipts, scan exceptions, publisher input or generic rebuild interface.
+//! Fixed-source Gitleaks production builder and historical candidate evidence test.
+//! No caller-selected inputs, release approvals or generic rebuild interface.
 use super::*;
 use std::process::Command;
 const COMPILER: &str =
@@ -10,6 +10,7 @@ const SOURCE_HASH: &str = "6b2638a733b85619dc80bdf28e84e4fed7e526a761ab5c148fbf6
 const PATCH_HASH: &str = "25ffa10aef86ce506a4f66f8a294014de23031b96b27fa757be7b584f13af051";
 const MOD_HASH: &str = "ba06359b7031ccdda2687fc4553291ffa7f1075b062f38a0bce4e51f7ff4d3c0";
 const SUM_HASH: &str = "9f27b112986f235ee2b771bfa5c38e3dbf7521eac1e5722b42f5b528214b3b5c";
+#[cfg(test)]
 const TARGETS: [(&str, &str); 7] = [
     ("golang.org/x/crypto", "v0.58.0"),
     ("golang.org/x/text", "v0.43.0"),
@@ -26,6 +27,76 @@ fn captured_copy(output: &Path, target: &Path, expected: &str) -> Result<()> {
     }
     write_new(target, &bytes(output, 1024 * 1024)?, 0o444)
 }
+/// Assemble only the hash-bound collected texts, preserving every original byte.
+/// This is packaging, not a completeness or redistribution approval assertion.
+pub(crate) fn go_notices(root: &Path) -> Result<Vec<u8>> {
+    let folder = root.join("licenses/gitleaks-go-notices");
+    let index = folder.join("index.json");
+    if hash(&index, 1024 * 1024)?
+        != "1a768e1f20b1e78a2655fc515da6e31dd702a75fda477f551901796788c01466"
+    {
+        return Err("Gitleaks notice index differs from reviewed collection");
+    }
+    let index = read_json(&index)?;
+    let mut bundle =
+        b"Collected Gitleaks/Go notices. Native runtime/source review remains separate.\n".to_vec();
+    for record in index["files"].as_array().ok_or("missing notice files")? {
+        let name = text(record, "/file")?;
+        if !name.starts_with("files/") || name.contains("..") || name.matches('/').count() != 1 {
+            return Err("invalid notice file path");
+        }
+        let path = folder.join(name);
+        if hash(&path, 1024 * 1024)? != text(record, "/sha256")? {
+            return Err("Gitleaks notice bytes differ from reviewed collection");
+        }
+        let data = bytes(&path, 1024 * 1024)?;
+        if record["bytes"].as_u64() != Some(data.len() as u64) {
+            return Err("Gitleaks notice size differs from reviewed collection");
+        }
+        bundle
+            .extend_from_slice(format!("\n--- {} ---\n", text(record, "/source_path")?).as_bytes());
+        bundle.extend_from_slice(&data);
+        if bundle.len() > 1024 * 1024 {
+            return Err("Gitleaks notice bundle exceeds budget");
+        }
+    }
+    Ok(bundle)
+}
+
+pub(crate) fn build_context(driver: &mut Driver) -> Result<PathBuf> {
+    let context = driver
+        .logs
+        .join(format!("gitleaks-production-context-{}", driver.sequence));
+    mkdir(&context, false)?;
+    write_new(
+        &context.join("Dockerfile"),
+        include_bytes!("../images/gitleaks/Dockerfile"),
+        0o600,
+    )?;
+    write_new(
+        &context.join(".dockerignore"),
+        b"*\n!Dockerfile\n!candidate\n!go-notices.txt\n",
+        0o600,
+    )?;
+    write_new(
+        &context.join("go-notices.txt"),
+        &go_notices(&driver.root)?,
+        0o444,
+    )?;
+    let mut phase = "startup";
+    let result = compile(driver, &context, &mut phase);
+    write_json(
+        &driver.logs.join("gitleaks-production-build.json"),
+        &json!({
+            "status":if result.is_ok() {"built"} else {"error"}, "stage":phase,
+            "compiler":COMPILER, "source_archive_sha256":SOURCE_HASH,
+            "patch_sha256":PATCH_HASH, "go_mod_sha256":MOD_HASH, "go_sum_sha256":SUM_HASH
+        }),
+    )?;
+    result?;
+    Ok(context)
+}
+
 fn compile(driver: &mut Driver, context: &Path, phase: &mut &'static str) -> Result<()> {
     *phase = "source-retrieval";
     let mut curl = Command::new("curl");
@@ -289,6 +360,7 @@ fn compile(driver: &mut Driver, context: &Path, phase: &mut &'static str) -> Res
     let cleanup = driver.docker(&["rm", "--force", &name], 15, true);
     super::super::container_output(result, cleanup).map(|_| ())
 }
+#[cfg(test)]
 fn validate(driver: &mut Driver, public: &Path, phase: &mut &'static str) -> Result<Value> {
     *phase = "native-endpoint";
     let (arch, endpoint) = driver.native()?;
@@ -305,8 +377,13 @@ fn validate(driver: &mut Driver, public: &Path, phase: &mut &'static str) -> Res
     )?;
     write_new(
         &context.join(".dockerignore"),
-        b"*\n!Dockerfile\n!candidate\n",
+        b"*\n!Dockerfile\n!candidate\n!go-notices.txt\n",
         0o600,
+    )?;
+    write_new(
+        &context.join("go-notices.txt"),
+        &go_notices(&driver.root)?,
+        0o444,
     )?;
     compile(driver, &context, phase)?;
     *phase = "candidate-image";
@@ -343,17 +420,7 @@ fn validate(driver: &mut Driver, public: &Path, phase: &mut &'static str) -> Res
     super::super::contracts::check(driver, "gitleaks", &image)?;
     *phase = "native-inventory";
     let tar = driver.logs.join("gitleaks-candidate.tar");
-    driver.docker(
-        &[
-            "image",
-            "save",
-            "--output",
-            tar.to_str().ok_or("invalid candidate archive path")?,
-            &image,
-        ],
-        300,
-        false,
-    )?;
+    driver.docker_archive(&["image", "save", &image], &tar)?;
     regular(&tar, TAR_LIMIT)?;
     fs::set_permissions(&tar, fs::Permissions::from_mode(0o444))
         .map_err(|_| "cannot share public candidate archive")?;
@@ -403,6 +470,7 @@ fn validate(driver: &mut Driver, public: &Path, phase: &mut &'static str) -> Res
         json!({"schema":1,"status":"functional-inventory-evidence-only","source_sha":revision,"arch":arch,"engine_image":image,"config_image":config,"compiler":COMPILER,"source_archive_sha256":SOURCE_HASH,"patch_sha256":PATCH_HASH,"go_mod_sha256":MOD_HASH,"go_sum_sha256":SUM_HASH,"upstream_race_tests":"passed","filesystem_functional_contract":"passed","sbom_sha256":hash(&output,JSON_LIMIT)?,"archive_sha256":hash(&tar,TAR_LIMIT)?,"vulnerability_scan":"not-run","release_accepted":false}),
     )
 }
+#[cfg(test)]
 #[test]
 fn candidate_inputs_are_hash_bound_create_only_and_nofollow() {
     let driver = Driver::new().unwrap();
@@ -419,6 +487,53 @@ fn candidate_inputs_are_hash_bound_create_only_and_nofollow() {
     std::os::unix::fs::symlink(&source, &link).unwrap();
     assert!(captured_copy(&link, &driver.logs.join("another"), &expected).is_err());
 }
+#[cfg(test)]
+#[test]
+fn production_notices_preserve_all_texts_and_reject_missing_changed_or_linked_inputs() {
+    let driver = Driver::new().unwrap();
+    let good = go_notices(&driver.root).unwrap();
+    let index = read_json(&driver.root.join("licenses/gitleaks-go-notices/index.json")).unwrap();
+    assert!(good.len() > 294214 && good.len() < 1024 * 1024);
+    let root = driver.logs.join("notice-fixture");
+    let folder = root.join("licenses/gitleaks-go-notices");
+    fs::create_dir_all(folder.join("files")).unwrap();
+    assert!(go_notices(&root).is_err());
+    for name in std::iter::once("index.json").chain(
+        index["files"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|v| v["file"].as_str().unwrap()),
+    ) {
+        let data = bytes(
+            &driver.root.join("licenses/gitleaks-go-notices").join(name),
+            1024 * 1024,
+        )
+        .unwrap();
+        write_new(&folder.join(name), &data, 0o600).unwrap();
+        if name != "index.json" {
+            assert!(good.windows(data.len()).any(|chunk| chunk == data));
+        }
+    }
+    assert_eq!(go_notices(&root).unwrap(), good);
+    let target = folder.join("files/000.txt");
+    let original = bytes(&target, 1024 * 1024).unwrap();
+    fs::remove_file(&target).unwrap();
+    assert!(go_notices(&root).is_err());
+    write_new(&target, b"changed", 0o600).unwrap();
+    assert!(go_notices(&root).is_err());
+    fs::remove_file(&target).unwrap();
+    let outside = driver.logs.join("notice-original");
+    write_new(&outside, &original, 0o600).unwrap();
+    std::os::unix::fs::symlink(&outside, &target).unwrap();
+    assert!(go_notices(&root).is_err());
+    fs::remove_file(&target).unwrap();
+    write_new(&target, &original, 0o600).unwrap();
+    fs::write(folder.join("index.json"), b"{}").unwrap();
+    assert!(go_notices(&root).is_err());
+}
+
+#[cfg(test)]
 #[test]
 #[ignore = "authorized native local Docker; public fixed source/patch only, no scans/publication"]
 fn native_gitleaks_dependency_candidate() {

@@ -1,5 +1,7 @@
 # Gitleaks dependency-upgrade experiment — 2026-10-28
 
+**Policy supersession later on 2026-10-28:** the owner authorized release with reviewed risks when no fix or viable alternative exists. The [implemented policy](release-risk-policy.md) now accepts this exact OpenPGP/module case without removing it and permits the exact pinned precision warning. The original experimental measurements and then-blocking decisions below remain historical evidence. That policy decision alone did not adopt the candidate or approve redistribution/provenance. The later gap-remediation work now adopts its fixed build/profile into production and passes local arm64 preparation with the finding retained; see [current results](results.md). Statements below about experimental-only packaging describe the original experiment.
+
 ## Measured result
 
 The owner authorized upgrading the six dependency candidates after the [compiler-only experiment](gitleaks-compiler-experiment.md). A second local **linux/arm64** Gitleaks 8.30.1-based build retains **Go 1.27.3** and the official container's default-regex/CGO-disabled executable settings. It measures **26 → 1 match** against the compiler-only candidate. This is an experimental derivative, **not an adopted/published upstream release, clean scan or native amd64 acceptance**.

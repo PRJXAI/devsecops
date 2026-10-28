@@ -1,0 +1,14 @@
+{
+  "schema": 2,
+  "tool": "cargo-audit",
+  "repository": "ghcr.io/prjxai/devsecops/cargo-audit",
+  "redistribution_complete": false,
+  "supplier_provenance_reviewed": false,
+  "native_functional_contracts_complete": false,
+  "blockers": [
+    "Official RustSec GNU binaries lack complete recoverable Rust payload/dependency/compiler inventories on both architectures; a clean image scan is not established.",
+    "Exact copied native-runtime source/build materials and complete Rust/native/base notices require review.",
+    "Official archive-to-build provenance and accountable redistribution approval remain missing.",
+    "Both native functional runs exist, but complete consumer acceptance and fresh release evidence are not approved."
+  ]
+}

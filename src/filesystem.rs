@@ -1,19 +1,18 @@
 //! Inspect a stopped container's merged files, never execute a tool or shell.
-//! Export's post-write size check is NOT a host-disk quota (D4).
+//! Export stdout is capped before host writes; this is not a runner disk quota.
 use super::{Driver, Result, release};
 use std::{
     collections::{BTreeMap, BTreeSet},
-    fs::OpenOptions,
     io::Read,
-    os::unix::fs::OpenOptionsExt,
     path::Path,
     sync::atomic::Ordering,
 };
 
-const ARCHIVE: u64 = 1024 * 1024 * 1024;
+pub(super) const ARCHIVE: u64 = 1024 * 1024 * 1024;
 const MEMBER: u64 = 512 * 1024 * 1024;
 const HEADERS: usize = 4096;
 const CA: &str = "etc/ssl/certs/ca-certificates.crt";
+const GO_NOTICES: &str = "usr/share/licenses/gitleaks/GO-NOTICES.txt";
 
 fn entrypoint(tool: &str) -> Result<Vec<String>> {
     if !super::TOOLS.contains(&tool) {
@@ -57,19 +56,11 @@ pub(super) fn check(driver: &mut Driver, tool: &str, image: &str) -> Result<()> 
     let path = driver
         .logs
         .join(format!("filesystem-{}.tar", driver.sequence));
-    // Docker truncates this precreated private file; its parent is driver-private.
-    OpenOptions::new()
-        .write(true)
-        .create_new(true)
-        .mode(0o600)
-        .open(&path)
-        .map_err(|_| "cannot create private filesystem export")?;
-    let output = path.to_str().ok_or("invalid filesystem export path")?;
     let mut create: Vec<_> = "create --pull=never --network=none --read-only --user=65532:65532 --cap-drop=ALL --security-opt=no-new-privileges --pids-limit=64 --memory=256m --memory-swap=256m --cpus=1".split_ascii_whitespace().collect();
     create.extend(["--name", &name, image]);
     let result = driver
         .docker(&create, 30, false)
-        .and_then(|_| driver.docker(&["export", "--output", output, &name], 120, false));
+        .and_then(|_| driver.docker_archive(&["export", &name], &path));
     // Unconditional and cancellation-ignoring, even after create/export failure.
     let cleanup = driver.docker(&["rm", "--force", &name], 15, true);
     super::container_output(result, cleanup)?;
@@ -125,6 +116,9 @@ fn required(tool: &str) -> Result<Vec<String>> {
         _ => "",
     };
     paths.extend(closure.split_ascii_whitespace().map(String::from));
+    if tool == "gitleaks" {
+        paths.push(GO_NOTICES.into());
+    }
     if tool == "cargo-audit" && cfg!(target_arch = "aarch64") {
         // Official arm64 GNU DT_NEEDED includes the compatibility DSOs; amd64
         // does not. These are regular files from the same pinned glibc supplier.
@@ -258,7 +252,22 @@ fn files(path: &Path, tool: &str) -> Result<()> {
                 if !kind.is_file() || size == 0 {
                     return Err("critical filesystem file must be regular");
                 }
-                if name == CA {
+                if name == GO_NOTICES {
+                    if size > 1024 * 1024 || mode != 0o444 {
+                        return Err("Gitleaks notice size or mode mismatch");
+                    }
+                    let mut data = Vec::new();
+                    entry
+                        .read_to_end(&mut data)
+                        .map_err(|_| "cannot read Gitleaks notices")?;
+                    if data
+                        != release::gitleaks_candidate::go_notices(Path::new(env!(
+                            "CARGO_MANIFEST_DIR"
+                        )))?
+                    {
+                        return Err("packaged Gitleaks notices differ from reviewed collection");
+                    }
+                } else if name == CA {
                     if size > 1024 * 1024 {
                         return Err("CA bundle budget exceeded");
                     }
@@ -334,7 +343,11 @@ fn files(path: &Path, tool: &str) -> Result<()> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::{fs, io::Write, os::unix::fs::PermissionsExt};
+    use std::{
+        fs::{self, OpenOptions},
+        io::Write,
+        os::unix::fs::{OpenOptionsExt, PermissionsExt},
+    };
     use tar::{EntryType, Header};
 
     fn payload() -> Vec<u8> {
@@ -386,14 +399,17 @@ mod tests {
         {
             let data = if name == CA {
                 b"-----BEGIN CERTIFICATE-----\nYQ==\n-----END CERTIFICATE-----\n".to_vec()
+            } else if name == GO_NOTICES {
+                release::gitleaks_candidate::go_notices(&driver.root).unwrap()
             } else {
                 payload()
             };
-            tar.append(
-                &header(name, EntryType::Regular, data.len() as u64),
-                data.as_slice(),
-            )
-            .unwrap();
+            let mut h = header(name, EntryType::Regular, data.len() as u64);
+            if name == GO_NOTICES {
+                h.set_mode(0o444);
+                h.set_cksum();
+            }
+            tar.append(&h, data.as_slice()).unwrap();
         }
         if tool == "cargo-audit" && omit != audit_loader_alias() {
             let mut h = header(audit_loader_alias(), EntryType::Symlink, 0);
@@ -485,6 +501,39 @@ mod tests {
                 assert!(files(&path, tool).is_err(), "{tool}: aliased critical file");
             }
         }
+    }
+
+    #[test]
+    fn gitleaks_requires_exact_non_executable_packaged_notices() {
+        let (driver, path) = fixture("gitleaks", "", None);
+        files(&path, "gitleaks").unwrap();
+        let good = release::gitleaks_candidate::go_notices(&driver.root).unwrap();
+        for data in [b"changed notice".as_slice(), good.as_slice(), &[]] {
+            // Fixture extras have mode 0755: even exact text must reject execution bits.
+            let (_, path) = fixture(
+                "gitleaks",
+                GO_NOTICES,
+                Some((GO_NOTICES, EntryType::Regular, data)),
+            );
+            assert!(files(&path, "gitleaks").is_err());
+        }
+        let (_, path) = fixture("gitleaks", GO_NOTICES, None);
+        let mut tar = tar::Builder::new(
+            OpenOptions::new()
+                .write(true)
+                .truncate(true)
+                .open(&path)
+                .unwrap(),
+        );
+        let mut h = header(GO_NOTICES, EntryType::Regular, 7);
+        h.set_mode(0o444);
+        h.set_cksum();
+        tar.append(&h, b"changed".as_slice()).unwrap();
+        tar.finish().unwrap();
+        assert_eq!(
+            files(&path, "gitleaks"),
+            Err("packaged Gitleaks notices differ from reviewed collection")
+        );
     }
 
     #[test]
@@ -778,10 +827,9 @@ fn main() {
             println!("synthetic-container");
         }
         "export" => {
-            assert_eq!(args[1], "--output");
-            let metadata = std::fs::metadata(&args[2]).unwrap();
-            use std::os::unix::fs::PermissionsExt;
-            assert_eq!(metadata.permissions().mode() & 0o777, 0o600);
+            assert_eq!(args.len(), 2);
+            assert!(args[1].starts_with("filesystem-"));
+            std::io::stdout().write_all(b"synthetic-partial-export").unwrap();
             if mode == "export-cancel" { cancel(&root); }
             eprintln!("synthetic-private-diagnostic");
             std::process::exit(8);

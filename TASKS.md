@@ -1,5 +1,15 @@
 # Adversarial simplification review
 
+## Release-scope update — 2026-10-28
+
+The owner requested independent tool identities/releases. The [implemented scope](docs/release-blockers.md) replaces the historical all-eighteen prerequisite with two native handoffs for the selected tool, separate readiness/artifacts/concurrency and a tool/source-bound approval. All load/hash/coverage/finding/diagnostic gates remain; ordinary regressions retain the bad-eighteenth batch test and add bad-second single-tool cases and an isolated simulated publication. B4/B5/D3/D4 remain open per affected tool; no new readiness approval or real publication is claimed. The subsequent [owner no-fix decision](docs/release-risk-policy.md) now permits exact reviewed findings as accepted-risk and the pinned precision warning as informational; historical no-exception statements below describe the earlier policy, not current enforcement. Historical task evidence below describes its original scope.
+
+## Gap-remediation update — 2026-10-28
+
+Production Gitleaks now uses the tested fixed-source dependency upgrade, offline upstream race tests, a production profile requiring all 74 upgraded tuples captured on both native architectures, and the packaged/byte-checked Go notice bundle. Two local arm64 preparation runs pass as accepted-risk (1 accepted / 0 blocking); no readiness approval or publication follows. A subsequent separate candidate test again timed out on its clean-working-tree scan and failed closed with cleanup confirmed. Fresh hosted production evidence, exact native source/legal review and reliable completion remain blockers.
+
+Docker save/export now stream through create-only private captures with pre-write archive limits, unchanged deadlines and capped stderr. All nine native arm64 filesystem checks and a real ID-only archive save/load pass. The first streaming run timed out exporting Docker because unconditional polling sleeps throttled the stream; progress-aware bounded draining fixed that regression without increasing the deadline. DB caches, Docker storage and accumulation across runs still lack a hard quota. **B4/B5/D3/D4 remain incomplete; 14/18 checked is unchanged.** Exact tests and failures are in [results](docs/results.md).
+
 ## Scope and baseline
 
 - At the initial review baseline, this was an uncommitted initialization: `main` had **no commits**, `git ls-files` was empty, and repository files were untracked. No pre-existing `TASKS.md` was present. An empty tracked diff is not evidence of an unchanged implementation.
@@ -125,7 +135,7 @@
 - `Driver::docker`, `Log::drain`, process-group termination, deadlines/cancellation, bounded cleanup, private logs and sanitized static errors: these wrappers enforce policy, not mere forwarding. Keep separate smoke/scanner resource/network policies; merging their argument vectors into a configurable runner is not simplification.
 - `regular → bytes/read_json` and `regular → hash`, JSON structural/byte budgets, streaming archive hashing, create-new writes and directory/mount validation. `text`, `hex`, `sha`, `digest`, `fresh`, `db_status`, `write_json`, and test `root` are small useful invariant/convenience helpers, not a reason to inline checks everywhere.
 - `report_counts`/`total` including Unknown, Negligible and ignored matches; suppression-coverage assertion, alert/error rejection, DB freshness/schema checks and pinned-source normalization. Preserve independent checks at producer and publisher boundaries; S3 targets only the same-object duplicate within one producer call.
-- Complete eighteen-asset preflight, post-preflight hash checking, image/source/architecture checks, registry raw-body digest verification, two-platform index checks, manual main/SHA authorization and attestation binding. Do not trade these for shorter code or a severity waiver.
+- Complete selected-tool/two-architecture preflight, post-preflight hash checking, image/source/architecture checks, registry raw-body digest verification, two-platform index checks, manual main/tool/SHA authorization and attestation binding. Preserve the historical eighteen-asset regression as well as the independent two-asset boundary. Do not trade these for shorter code or a severity waiver.
 - Explicit per-tool Dockerfiles, literal supplier/download pins, native architecture jobs, serial local checks, `check-all` versus release preparation, and review-only Dependabot updates. Separate scanner pins and independently reviewed expected-version contracts are not justification for an image/config generator.
 - No first-party SQLite authority exists in this repository or its dependency graph. Do not invent one, migrate another project's authority, or weaken existing bounded/streaming guarantees to reduce LOC.
 
