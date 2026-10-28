@@ -6,7 +6,23 @@ Run [40575344967](https://github.com/PRJXAI/devsecops/actions/runs/40575344967),
 
 Preparation now records a source-defined first-failing `stage` and exact-allowlisted `reason`, plus a separate shared scanner/DB `setup` status. A missing shared DB is attributed to `shared-setup`, not nine independent defects; independent earlier tool failures remain distinct. Later stages are not implied to have run. Unrecognized errors become `stage-failed`, never public raw text. Private capped captures, diagnostics/findings gates, immutable identities and publication approvals are unchanged.
 
-Local Darwin/arm64 validation: **94 ordinary tests pass** (12 policy + 82 binary), formatting and all-target Clippy pass. The new Rust fake-Docker regression exercises failed pull/refresh/status/DB validation, independent build failures, cleanup, private captures and absence of clean receipts. Exact-object privacy tests reject arbitrary text and known-error prefixes. This is attribution validation, not native image acceptance; hosted execution of this patch is pending. Workflow unchanged; actionlint was not rerun.
+Local Darwin/arm64 validation: **94 ordinary tests pass** (12 policy + 82 binary), formatting and all-target Clippy pass. The new Rust fake-Docker regression exercises failed pull/refresh/status/DB validation, independent build failures, cleanup, private captures and absence of clean receipts. Exact-object privacy tests reject arbitrary text and known-error prefixes. Workflow unchanged; actionlint was not rerun.
+
+The instrumented run [40657087831](https://github.com/PRJXAI/devsecops/actions/runs/40657087831), exact source `aab4c544a06091a4f236c7b09857c0799aa81f56`, **failed both native preparation jobs**. Structure/dependency audit (0 vulnerabilities/0 warnings), both native catalog captures and summary uploads passed. Shared setup was `ready` on both. Clean handoff uploads and publication were skipped. The downloaded public summaries establish these first failures:
+
+| Tools | Stage | amd64 reason | arm64 reason |
+|---|---|---|---|
+| syft, grype, gitleaks | `vulnerability-scan` | `analysis-stderr` | `analysis-stderr` |
+| cargo-audit | `inventory-coverage` | `inventory-architecture-unreviewed` | `inventory-rust-missing` |
+| kustomize, kubectl, docker | `inventory-coverage` | `inventory-architecture-unreviewed` | `inventory-unknown-version` |
+| cargo-deny | `functional-contract` | `cargo-deny-coverage-unproven` | `cargo-deny-coverage-unproven` |
+| kind | `functional-contract` | `kind-control-plane-unapproved` | `kind-control-plane-unapproved` |
+
+Thus all 18 builds/version smokes/final-filesystem checks completed, and the seven supported functional contracts completed on both architectures in this run. That does not erase the earlier local Gitleaks runtime stalls or establish clean scans. The hosted public codes do not identify the raw diagnostic content or provide finding counts after diagnostic rejection.
+
+Focused follow-up reused existing approved evidence, not another full DB download/copy or all-image rebuild. The hash-bound 18-document historical hosted-inventory test passes with the same six positive/twelve blocked profiles. The existing bounded offline native arm64 capture replay also passes its **negative acceptance assertions**: all three scanner analyses remain rejected for stderr, with **15/20/69 matches (104 total)** including Unknown and no suppressed matches. These are fresh replays of historical candidate inputs and the existing freshness-validated DB, not finding counts for the new hosted run. Previous count evidence was preserved. Public latest-release metadata still identifies Syft 1.55.0, Grype 0.121.0 and Gitleaks 8.30.1 on 2026-10-28.
+
+No additional safely scoped implementation correction is established by these observations. Remaining [supplier remediation](supplier-remediation.md), incomplete inventories, [cargo-deny runtime prerequisites](cargo-deny-coverage.md), kind control-plane authorization and accountable redistribution/provenance reviews require upstream artifacts or separately reviewed owner decisions. Findings, diagnostics and missing coverage remain blocking; approvals remain false. No supplier fork, runtime expansion, host change, image publication or consumer adoption was attempted.
 
 ## Approval evidence implementation — current work
 
