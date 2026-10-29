@@ -18,6 +18,12 @@ Archive-write remediation contract: Docker save/export stdout will be drained in
 
 This is a per-stream write bound, not a filesystem quota. Advisory-cache host mounts, Docker/BuildKit storage and accumulated outputs across runs remain outside a hard host-disk quota. Capacity/isolation work remains incomplete under TASKS D4; do not describe the whole runner as storage-bounded.
 
+## Experimental supplier replacement
+
+The Debian Gitleaks prototype is test-only and cannot enter production handoff/readiness paths. Release-key fingerprints are pinned from Debian's published HTTPS records; signature/hash verification authenticates that supplier's package/source assertions, not independently reproduced binaries. Source inspection never executes maintainer scripts or supplier build recipes. Hash-checked selected inputs enter a private create-only context; the prototype reuses existing sandbox/capture/cleanup controls and changes no host/daemon settings.
+
+Partial package attribution is conservative scan input, not complete installation, dynamic-loading closure or file-ownership approval. Reviewed advisory/package identities and counts may be retained as an allowlisted summary; raw reports/diagnostics stay private. All findings and existing production gates remain intact. No prototype pass or source archive can authorize a new exception, legal approval, host investigation or replacement of native two-architecture evidence.
+
 ## Publication
 
 Release isolation contract (2026-10-28): one tool is the publication unit, still requiring both native architectures. Each allowlisted tool has its own GHCR repository, readiness record, source-and-tool approval, artifact names, preparation workspace, concurrency group and publish/attestation job. An unrelated tool's failure or the experimental Gitleaks job must not be a prerequisite. Shared first-party source checks and the pinned scanner/DB requirements remain genuine prerequisites, not optional dependencies.

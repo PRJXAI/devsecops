@@ -12,6 +12,8 @@ The tested Gitleaks source/dependency upgrade is now wired into **production pac
 
 The 2026-10-29 [source follow-up](../licenses/gitleaks-runtime-review.md) now captures exact expanded public APK recipes and 20 selected payload bindings for both hosted architectures. Source-overlay contents and complete notices/delivery/review remain incomplete. A separate [loader-only diagnostic](runtime-completion.md) reproduces the timeout without executing Gitleaks/Git, narrowing the investigation to the loader/runtime/host boundary without identifying a fix.
 
+The separately authorized [Debian replacement evaluation](gitleaks-debian-runtime.md) now verifies public signed package/source material for Git/glibc/PCRE2/zlib on both architectures. Its arm64 prototype passes existing functional/filesystem controls but has **26 blocking findings plus the existing one accepted finding**. This candidate is not adopted or source-completeness-approved; base/source-delivery/provenance, dynamic closure/file ownership and native amd64 remain unverified. No new risk exception or host change was made.
+
 ## Work and closure criteria
 
 | Blocker | What is actually missing | Closure work / owner |
@@ -30,7 +32,7 @@ The 2026-10-29 [source follow-up](../licenses/gitleaks-runtime-review.md) now ca
 |---|---|
 | `syft` | Latest hosted scans retain **18 blocking findings per architecture**. Remediate compiler/dependencies and individually review any genuine no-fix case; rerun both native catalogs/contracts/scans |
 | `grype` | Latest hosted scans retain **23 blocking findings per architecture**. Compiler/x/crypto work plus migration away from the affected legacy Docker module remain |
-| `gitleaks` | Both hosted preparations passed. Obtain complete source overlays/notices/delivery and accountable review; authorize controlled runtime/host investigation of the loader-only reproducer, then obtain fresh preparation and approved publication/attestation/consumer verification |
+| `gitleaks` | Both hosted production preparations passed. Obtain complete source overlays/notices/delivery and accountable review, or a replacement that clears its own gates (the Debian prototype has 26 blocking findings). Authorize controlled runtime/host investigation of the loader-only reproducer, then obtain fresh preparation and approved publication/attestation/consumer verification |
 | `cargo-audit` | Recoverable Rust/compiler/native inventories, exact GNU-runtime source/provenance, then fresh native scans |
 | `cargo-deny` | Genuine complete supplied-graph/index/source/advisory runtime or separately reviewed runtime change, plus Rust inventory |
 | `kind` | Reviewed Docker-provider inventory and separately authorized disposable control-plane tests |

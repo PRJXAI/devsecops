@@ -43,7 +43,7 @@ Before approval, obtain and review:
 2. Complete artifact-specific license/NOTICE text and any required source/relinking materials for Git, glibc, PCRE2/JIT, zlib and all retained base packages. Existing Go notices are already packaged; this collection does not add native notices to the image.
 3. A concrete corresponding-source delivery arrangement for recipients and an accountable redistribution/provenance review of that bundle. Merely pointing at a plausible public patch or selecting the publication checkbox does not supply missing evidence.
 
-No vendor contact, private repository access, credential use, image supplier substitution, source-build fork or publication was performed. Requesting unavailable source from the supplier or reviewing an explicitly sourced replacement is the next source-side action; approval must follow complete evidence, not precede it.
+At this source-capture step, no vendor contact, private repository access, credential use, image supplier substitution, source-build fork or publication was performed. A subsequently authorized [Debian replacement evaluation](../docs/gitleaks-debian-runtime.md) obtains authenticated public source material and tests a separate arm64 prototype, but retains 26 blocking findings and incomplete approvals. It is not adopted and does not authenticate the old vendor's missing overlays; approval must follow complete evidence, not precede it.
 
 ## Reproduction and limits
 

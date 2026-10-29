@@ -39,6 +39,10 @@ The owner's request to ship the containers and use them in obsidian-sync authori
 
 Gitleaks's two downloaded handoffs pass the real content preflight at the original evidence time, including archive/config/SBOM hashes, captured inventory and exact risk accounting. This is not publication authorization or an actual archive-load/registry/attestation test. All approval fields remain false. Obsidian-sync's existing pins and host checks remain unchanged: no unverified GHCR digest or incomplete cargo-deny replacement is adopted. Its separate all-findings supply-chain policy is not silently relaxed to inherit a producer exception. See [results](results.md) for counts and exact remaining blockers.
 
+## Replacement evaluation — 2026-10-29
+
+The owner separately authorized evaluating a source-complete in-image replacement while preserving production and host Docker. [Debian evidence](gitleaks-debian-runtime.md) now binds both architectures' selected packages and source archives to signed release metadata. Its arm64 prototype passes the existing functional/filesystem controls but retains **26 blocking findings and one previously accepted finding**. No replacement profile/readiness approval, source-delivery sign-off, native amd64 acceptance or runtime-stall resolution follows. No manual publication dispatch or consumer change occurred.
+
 ## Gitleaks-first follow-up — 2026-10-29
 
 The [runtime source review](../licenses/gitleaks-runtime-review.md) captures exact expanded public APK recipes and verifies 20 selected payload/package bindings against both hosted architectures. Missing source-overlay bytes, full notices/source delivery and accountable review remain explicit. The [loader-only diagnostic](runtime-completion.md) reproduces the 120-second exit stall without Gitleaks/Git execution, with confirmed cleanup. This is a narrower investigation target, not a fix or permission to alter the host. No readiness field or consumer pin changed; publication remains blocked pending those concrete prerequisites.

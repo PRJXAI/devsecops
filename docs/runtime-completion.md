@@ -14,6 +14,10 @@ Private evidence: `.work/check-59309-1793264271708217000/exit-diagnostic.json`, 
 
 The captured stack is Docker client 29.4.0 / Engine 29.2.1, containerd 2.2.1, runc 1.3.4, native Linux arm64/kernel 6.8.0-100-generic. This establishes a reproducer **outside Gitleaks/Git execution**. It does not distinguish a loader, Engine, containerd, runc or kernel fault, prove that every earlier stall has the same cause, or justify changing timeout/init/exit logic. The next runtime step is a controlled disposable daemon/host comparison or scoped host-side trace, requiring explicit authorization before privileged access or host changes. Existing hosted Gitleaks successes are preserved, not substituted for diagnosis.
 
+## Separate replacement feasibility — 2026-10-29
+
+The [Debian runtime prototype](gitleaks-debian-runtime.md) passed one native arm64 functional/filesystem evaluation with the same Gitleaks executable and unchanged controls/deadlines. It retained 26 blocking vulnerability findings and was not adopted. No loader stress rerun, disposable host comparison, privileged tracing or daemon change was performed. This finite functional pass does **not** erase the loader-only failure above or establish a runtime fix.
+
 ## Earlier observations
 
 **Unresolved and blocking.** The full source/deleted/bare/all-ref/clean-HEAD/redaction contract, exact exits, stream EOF checks, 120-second deadline and unconditional bounded removal are unchanged. No retry, output-based success, longer deadline or diagnostic waiver was added.

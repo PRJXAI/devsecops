@@ -544,6 +544,9 @@ mod tests {
         if relative == Path::new("tests/fixtures/gitleaks/Dockerfile") {
             return candidate_dockerfile(&bytes);
         }
+        if relative == Path::new("tests/fixtures/gitleaks-debian-arm64/Dockerfile") {
+            return debian_candidate_dockerfile(&bytes);
+        }
         if name == "Dockerfile" {
             let Some(tool) = relative
                 .parent()
@@ -600,6 +603,32 @@ mod tests {
             assert!(!docker_policy(&text.replace(old, new), "gitleaks"));
         }
         assert!(!docker_policy(&text, "syft"));
+    }
+
+    fn debian_candidate_dockerfile(bytes: &[u8]) -> bool {
+        use sha2::Digest;
+        sha2::Sha256::digest(bytes)
+            .iter()
+            .map(|b| format!("{b:02x}"))
+            .collect::<String>()
+            == "63016ca9a58e0c34981871f436e0e0a52e8a70b1abbf095da3c2a92724941c6a"
+    }
+    #[test]
+    fn debian_fixture_is_exact_and_cannot_authorize_production() {
+        let bytes = include_bytes!("tests/fixtures/gitleaks-debian-arm64/Dockerfile");
+        assert!(debian_candidate_dockerfile(bytes));
+        let text = std::str::from_utf8(bytes).unwrap();
+        for (old, new) in [
+            ("65532:65532", "0"),
+            ("COPY --chmod=0555 candidate", "COPY --chmod=0555 ."),
+            ("WORKDIR /tmp", "RUN [\"sh\",\"-c\",\"true\"]\nWORKDIR /tmp"),
+        ] {
+            assert!(!debian_candidate_dockerfile(
+                text.replace(old, new).as_bytes()
+            ));
+        }
+        assert!(!docker_policy(text, "gitleaks"));
+        assert!(!candidate_dockerfile(bytes));
     }
 
     fn candidate_dockerfile(bytes: &[u8]) -> bool {

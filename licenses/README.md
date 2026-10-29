@@ -8,4 +8,6 @@ The upgraded candidate's [collected Go notice texts](gitleaks-go-notices/README.
 
 The [Gitleaks runtime follow-up](gitleaks-runtime-review.md) now binds 20 selected public APK payloads and their expanded recipes to both hosted image archives. Exact glibc source-overlay bytes, full native/base notices, source delivery and accountable review remain incomplete; this is not redistribution approval.
 
+The separate [Debian replacement evaluation](../docs/gitleaks-debian-runtime.md) and [retained identities](gitleaks-debian-evidence.json) verify eight selected binary packages and twelve corresponding-source objects through signed Debian metadata. This is not full image/source-delivery/provenance approval. The arm64 prototype is blocked by 26 additional findings; it does not replace the old vendor evidence or production image.
+
 Complete transitive notices and corresponding-source obligations (especially Git/GPL) require review before distributing images. The initial private source repository and local builds are not publication approval. Do not represent this page as complete legal review or relicense third-party binaries under the first-party license.

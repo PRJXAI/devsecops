@@ -14,6 +14,10 @@ Docker save/export now stream through create-only private captures with pre-writ
 
 Public APK control metadata now supplies the exact expanded recipes, with **20 selected package/architecture payload bindings** matching the two hosted Gitleaks archives; see [runtime source review](licenses/gitleaks-runtime-review.md). Complete corresponding-source overlay contents, notices/source delivery and accountable review remain incomplete. A new serial loader-only diagnostic reproduced the 120-second completion stall on invocation 931 **without executing Gitleaks or Git**, stopped immediately and confirmed cleanup. The exact loader/runtime/host cause is unresolved; privileged host investigation/changes need separate authorization. Neither finding permits a readiness approval. **14/18 checked remains unchanged.**
 
+## Source-complete replacement evaluation — 2026-10-29
+
+The authorized [Debian experiment](docs/gitleaks-debian-runtime.md) verifies signed metadata, eight binary packages, twelve corresponding-source objects and selected ELF/notices on both architectures. A separate arm64 prototype preserves the Gitleaks executable and passes the existing filesystem/history/redaction controls, but reports **26 blocking / 1 previously accepted finding**. No new exception or adoption follows. Base/source delivery/provenance, complete runtime ownership/closure, native amd64 and the historical completion failure remain unresolved. Production/host/consumer are unchanged; **B4/B5/D3/D4 remain open and 14/18 checked is unchanged**.
+
 ## Scope and baseline
 
 - At the initial review baseline, this was an uncommitted initialization: `main` had **no commits**, `git ls-files` was empty, and repository files were untracked. No pre-existing `TASKS.md` was present. An empty tracked diff is not evidence of an unchanged implementation.
