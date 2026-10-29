@@ -1,5 +1,45 @@
 # Measured results and limitations
 
+## Gitleaks-first execution — 2026-10-29
+
+Executed the owner's approved investigation plan without bypassing publication gates. **No image, supplier pin, production execution policy, host/daemon setting or consumer pin changed.**
+
+- **Source evidence:** anonymous bounded HTTPS retrieval located public APKs containing the exact expanded `.melange.yaml` and `.PKGINFO`. The Rust collector rehashed both original hosted archives and compared actual file bytes without extraction or execution. **20 selected package/architecture payload bindings pass**, covering Git, libc/loader/locales, PCRE2, zlib, libgcc/libstdc++, CA bundle and baselayout on amd64 and arm64. [Committed identities and review](../licenses/gitleaks-runtime-review.md) preserve recipe/source commits and hashes. This closes the earlier expanded-recipe access gap, not complete source/notices or independently reproduced builds. Exact glibc overlay file contents remain unauthenticated; probed exact-commit/source-companion URLs were unavailable. No private access, vendor contact or automatic substitution was attempted.
+- **Runtime isolation:** the first fixed-image batch completed **600** alternating Gitleaks/loader version invocations. A separate bounded loader-only batch then **failed at invocation 931**, at the unchanged 120-second deadline, with **no Gitleaks/Git execution**. Docker reported Running/nonzero PID but zero process rows; observed events lacked `die`; no OOM/state error was reported. All owned-container removals succeeded, and the batch stopped on that first failure. The [runtime record](runtime-completion.md) preserves identities and captures. This narrows the failure boundary but identifies neither the exact loader/runtime/host cause nor a safe fix. No retries, init workaround, deadline increase or successful-run substitution occurred.
+- **Validation:** formatting, strict all-target Clippy and **114 ordinary repository tests** pass (16 policy + 98 binary); **25** opt-in/subprocess entrypoints are separately enumerated. The new runtime-evidence integrity replay passes, checking 20 APK/recipe/PKGINFO captures, selected-file records and both original archives. The earlier hosted-handoff content replay also remains separate from publication approval. Fresh `audit-dependencies` passes with **0 vulnerabilities / 0 warnings**. Private Rust collector helpers pass Clippy and their existing **12** supplier-evidence tests. Initial helper hash-format/type and test-helper visibility errors were corrected; the first read-only layer inspection rejected special filesystem entries and was corrected to record their type without extraction. Failed captures remain retained.
+
+**Remaining decisions are concrete:** obtain supplier-authenticated complete source overlays and a recipient source-delivery/notice bundle, then accountable redistribution/provenance review; authorize a controlled disposable runtime/host comparison or scoped host trace before privileged access or host changes. All Gitleaks readiness fields remain false. No manual publication dispatch, registry push, attestation or obsidian-sync adoption occurred. Other tools' gates and the consumer's unrelated existing changes remain untouched.
+
+## Hosted release/adoption preparation — 2026-10-28
+
+The owner requested container publication and adoption in obsidian-sync. Pushed the committed implementation **`818c36229a839653a6952d8079e5952ae51650bc`** to `main`; hosted run [40712836198](https://github.com/PRJXAI/devsecops/actions/runs/40712836198) completed **failure overall**, with independent tool results:
+
+| Tool | Native amd64 | Native arm64 |
+|---|---|---|
+| Gitleaks | **Preparation passed: 1 accepted / 0 blocking** | **Preparation passed: 1 accepted / 0 blocking** |
+| Syft | 18 blocking findings | 18 blocking findings |
+| Grype | 23 blocking findings | 23 blocking findings |
+| cargo-audit | `inventory-architecture-unreviewed` | `inventory-rust-missing` |
+| Docker, kubectl, kustomize | `inventory-architecture-unreviewed` | `inventory-unknown-version` |
+| cargo-deny | `cargo-deny-coverage-unproven` | `cargo-deny-coverage-unproven` |
+| kind | `kind-control-plane-unapproved` | `kind-control-plane-unapproved` |
+
+All 18 setups report `ready`. The reported first-failure stages establish that native version/filesystem prerequisites completed; inventory failures are not vulnerability counts. Syft's per-architecture counts are **2 Critical / 10 High / 2 Medium / 4 Unknown**; Grype's are **2 Critical / 13 High / 4 Medium / 4 Unknown**. Both have zero Low/Negligible/suppressed matches and no accepted exceptions. These are fresh hosted measurements, not replacements for the historical 15/20 supplier counts or proof of why those counts differ.
+
+Gitleaks's two production jobs independently completed fixed-source builds/race tests, functional/filesystem/notice checks, unchanged inventories, fresh scans and schema-3 handoff uploads despite the 16 failed sibling architecture jobs. Both retained exactly **one Unknown accepted-risk match**, no suppressed matches, and the approved precision-warning classification. Both separate experimental candidate jobs also passed. Source checks and first-party dependency audit passed (**0 vulnerabilities / 0 warnings**). These hosted successes do not erase the reproduced local runtime-completion failure.
+
+Downloaded public summaries and the two Gitleaks handoffs under `.work/hosted-40712836198/`. The explicit Rust replay `release::tests::hosted_gitleaks_handoffs_pass_content_preflight_not_publication_approval` passes the **real read-only preflight at the original evidence time**. It rehashes receipts and actual archives/SBOMs, validates config/source/platform/coverage/risk bindings, and rejects wrong source/tool, expired evidence and a missing architecture archive. It performs no Docker load, rescan, registry write or signature verification; authenticated GitHub artifact delivery remains the producer trust boundary.
+
+| Gitleaks handoff | amd64 SHA-256 | arm64 SHA-256 |
+|---|---|---|
+| Receipt | `1b5b906dda8b2c82063d025f7ab2a46ea474f9edabfea37bfe132e7d9fede502` | `4e990dcfb7a03b08b352294c7d44a86045eff8628896feeaf5dcc34e5eb43f12` |
+| Saved archive | `6f134504ada56c0ef68b44f928426e1bee3e24f155c85c888180a5666b66ba4a` | `930023170dda24bb82934c23ad39cbd1528bd8cf300e7f8f71ab459e8bddc4f7` |
+| Native SBOM | `71b7927093ad5a408fe53403546b02cea995ced27d038b455b2a8ce2e962f6b0` | `352dfea11bae7c743241e28b449c7302aeaf86174dd49fa87412a35dbf61ef5f` |
+
+**No containers were published or adopted.** All nine publish jobs were skipped: this was a push run, not an approved manual publication dispatch. Gitleaks's exact Git/glibc source/patch/notices and accountable provenance/redistribution review remain incomplete; all readiness approvals remain false. No unsupported approval or new no-fix exception was fabricated. Obsidian-sync's `xtask/src/{security,sbom,grype}.rs` pins and existing host audit/deny/deployment checks remain unchanged. Its all-findings supply-chain gate is separate from devsecops's accepted-risk policy; consumer gates were not weakened. Existing unrelated consumer changes were preserved.
+
+The local follow-up initially exposed a flaky archive fixture assertion: one nonblocking drain need not observe a just-closed writer's EOF immediately. The test now polls to EOF/error within two seconds, preserving exact byte caps, overflow and EOF assertions; production code/deadlines are unchanged. Final local formatting/strict Clippy and **113 ordinary tests** pass; **22** opt-in/subprocess entrypoints remain separately enumerated, including the explicitly passed hosted-handoff replay. This is validation of evidence and a test correction, not release acceptance.
+
 ## Gap remediation: production Gitleaks and archive writes — 2026-10-28
 
 Implemented two scoped changes in the uncommitted tree based on `ebb326c0aff391fd5c47f6baa9147518fcb72858`. This is **partial remediation, not closure of all nine releases**. No commit, hosted run, registry push, readiness approval, host/daemon change or consumer update occurred.

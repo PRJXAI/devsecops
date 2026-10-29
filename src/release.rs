@@ -1840,6 +1840,212 @@ mod tests {
     }
 
     #[test]
+    fn runtime_source_evidence_is_two_architecture_observation_not_approval() {
+        let root = Path::new(env!("CARGO_MANIFEST_DIR"));
+        let evidence = read_json(&root.join("licenses/gitleaks-runtime-evidence.json")).unwrap();
+        assert_eq!(evidence["schema"], 1);
+        assert_eq!(evidence["tool"], "gitleaks");
+        assert_eq!(evidence["hosted_run"], 40712836198_u64);
+        assert_eq!(
+            evidence["source_sha"],
+            "818c36229a839653a6952d8079e5952ae51650bc"
+        );
+        for field in [
+            "approval",
+            "complete_corresponding_source",
+            "complete_notice_coverage",
+            "independent_reproducible_build",
+            "package_signature_verified",
+        ] {
+            assert_eq!(evidence[field], false);
+        }
+        let packages = evidence["packages"].as_array().unwrap();
+        assert_eq!(packages.len(), 20);
+        let mut identities = BTreeSet::new();
+        for record in packages {
+            let arch = record["arch"].as_str().unwrap();
+            assert!(matches!(arch, "amd64" | "arm64"));
+            let package = record["package"].as_str().unwrap();
+            assert!(identities.insert((arch, package)));
+            for field in [
+                "apk_sha256",
+                "recipe_sha256",
+                "pkginfo_sha256",
+                "payload_sha256",
+            ] {
+                assert!(hex(record[field].as_str().unwrap(), 64));
+            }
+            assert!(hex(record["recipe_commit"].as_str().unwrap(), 40));
+            let url = record["apk_url"].as_str().unwrap();
+            assert!(
+                url.starts_with("https://apk.cgr.dev/chainguard/")
+                    || url.starts_with("https://packages.wolfi.dev/os/")
+            );
+            assert!(url.ends_with(&format!(
+                "/{package}-{}.apk",
+                record["version"].as_str().unwrap()
+            )));
+            assert!(
+                record["private_capture"]
+                    .as_str()
+                    .unwrap()
+                    .bytes()
+                    .all(|b| b.is_ascii_alphanumeric() || b == b'-')
+            );
+        }
+        for arch in ["amd64", "arm64"] {
+            assert!(hex(evidence["archives"][arch].as_str().unwrap(), 64));
+            for package in [
+                "git",
+                "glibc-2.44",
+                "ld-linux-2.44",
+                "glibc-2.44-locale-posix",
+                "libpcre2-8-0",
+                "zlib",
+                "libgcc",
+                "libstdc++",
+                "ca-certificates-bundle",
+                "wolfi-baselayout",
+            ] {
+                assert!(identities.contains(&(arch, package)));
+            }
+        }
+    }
+
+    #[test]
+    #[ignore = "approved public APK/recipe captures and run 40712836198 archives; no Docker/network/publication"]
+    fn recorded_runtime_recipes_and_original_artifacts_keep_their_hashes() {
+        let root = Path::new(env!("CARGO_MANIFEST_DIR"));
+        let evidence = read_json(&root.join("licenses/gitleaks-runtime-evidence.json")).unwrap();
+        let capture = root.join(".work/approval-suppliers/gitleaks-runtime-v3");
+        for record in evidence["packages"].as_array().unwrap() {
+            let name = record["private_capture"].as_str().unwrap();
+            assert!(name.bytes().all(|b| b.is_ascii_alphanumeric() || b == b'-'));
+            let directory = capture.join(name);
+            for (file, key) in [
+                ("melange.yaml", "recipe_sha256"),
+                ("PKGINFO", "pkginfo_sha256"),
+            ] {
+                assert_eq!(
+                    hash(&directory.join(file), 1024 * 1024).unwrap(),
+                    record[key]
+                );
+            }
+            assert_eq!(
+                hash(
+                    &root.join(format!(".work/approval-suppliers/http/{name}.body")),
+                    64 * 1024 * 1024
+                )
+                .unwrap(),
+                record["apk_sha256"]
+            );
+            let files = read_json(&directory.join("files.json")).unwrap();
+            assert_eq!(
+                files[record["selected_payload"].as_str().unwrap()]["sha256"],
+                record["payload_sha256"]
+            );
+            let image = read_json(
+                &capture.join(format!("image-{}.json", record["arch"].as_str().unwrap())),
+            )
+            .unwrap();
+            assert_eq!(
+                image[record["shipped_path"].as_str().unwrap()]["sha256"],
+                record["payload_sha256"]
+            );
+        }
+        for arch in ["amd64", "arm64"] {
+            assert_eq!(
+                hash(
+                    &root.join(format!(
+                        ".work/hosted-40712836198/release-gitleaks-{arch}/gitleaks-{arch}.tar"
+                    )),
+                    TAR_LIMIT
+                )
+                .unwrap(),
+                evidence["archives"][arch]
+            );
+        }
+    }
+
+    #[test]
+    #[ignore = "approved run 40712836198 public handoffs; original-time replay only, no Docker/network/publication"]
+    fn hosted_gitleaks_handoffs_pass_content_preflight_not_publication_approval() {
+        let source = Path::new(env!("CARGO_MANIFEST_DIR")).join(".work/hosted-40712836198");
+        let revision = "818c36229a839653a6952d8079e5952ae51650bc";
+        let at = DateTime::parse_from_rfc3339("2026-10-28T15:14:00Z")
+            .unwrap()
+            .with_timezone(&Utc);
+        let fixture = Fixture::new();
+        mkdir(&fixture.0.join(".work"), false).unwrap();
+        let downloaded = fixture.0.join(".work/downloaded");
+        mkdir(&downloaded, false).unwrap();
+        for (arch, receipt_hash) in [
+            (
+                "amd64",
+                "1b5b906dda8b2c82063d025f7ab2a46ea474f9edabfea37bfe132e7d9fede502",
+            ),
+            (
+                "arm64",
+                "4e990dcfb7a03b08b352294c7d44a86045eff8628896feeaf5dcc34e5eb43f12",
+            ),
+        ] {
+            let directory = format!("release-gitleaks-{arch}");
+            let target = downloaded.join(&directory);
+            mkdir(&target, false).unwrap();
+            let name = format!("gitleaks-{arch}.receipt.json");
+            let receipt_path = source.join(&directory).join(&name);
+            assert_eq!(hash(&receipt_path, JSON_LIMIT).unwrap(), receipt_hash);
+            let receipt = read_json(&receipt_path).unwrap();
+            assert_eq!(receipt["source_sha"], revision);
+            assert_eq!(receipt["arch"], arch);
+            assert_eq!(receipt["status"], "accepted-risk");
+            assert_eq!(receipt["count"], 1);
+            assert_eq!(receipt["counts"]["Unknown"], 1);
+            assert_eq!(receipt["risk"]["accepted"], 1);
+            assert_eq!(receipt["risk"]["blocking"], 0);
+            for (suffix, key, limit) in [
+                ("tar", "tar_sha256", TAR_LIMIT),
+                ("syft.json", "sbom_sha256", JSON_LIMIT),
+            ] {
+                let name = format!("gitleaks-{arch}.{suffix}");
+                let path = source.join(&directory).join(&name);
+                assert_eq!(hash(&path, limit).unwrap(), receipt[key]);
+                fs::copy(path, target.join(name)).unwrap();
+            }
+            fs::copy(receipt_path, target.join(name)).unwrap();
+        }
+        let assets = preflight(&fixture.0, &["gitleaks"], revision, at).unwrap();
+        assert_eq!(assets.len(), 2);
+        assert!(
+            assets
+                .iter()
+                .all(|asset| asset.tool == "gitleaks"
+                    && asset.assessment["status"] == "accepted-risk")
+        );
+        assert_eq!(
+            assets
+                .iter()
+                .map(|asset| asset.arch)
+                .collect::<BTreeSet<_>>(),
+            BTreeSet::from(["amd64", "arm64"])
+        );
+        assert!(publication_readiness(&fixture.0, "gitleaks").is_err());
+        assert!(preflight(&fixture.0, &["syft"], revision, at).is_err());
+        assert!(preflight(&fixture.0, &["gitleaks"], &"f".repeat(40), at).is_err());
+        assert!(
+            preflight(
+                &fixture.0,
+                &["gitleaks"],
+                revision,
+                at + Duration::hours(25)
+            )
+            .is_err()
+        );
+        fs::remove_file(downloaded.join("release-gitleaks-arm64/gitleaks-arm64.tar")).unwrap();
+        assert!(preflight(&fixture.0, &["gitleaks"], revision, at).is_err());
+    }
+
+    #[test]
     #[ignore = "approved existing Gitleaks dependency-candidate captures only; no Docker/network/publication"]
     fn recorded_gitleaks_candidate_is_accepted_risk_without_removing_its_match() {
         let folder =

@@ -9,6 +9,8 @@ mod coverage;
 mod filesystem;
 mod grype_contract;
 mod release;
+#[cfg(test)]
+mod runtime_probe;
 
 use std::{
     fs::{self, DirBuilder, File, OpenOptions},
@@ -1012,7 +1014,22 @@ mod tests {
             };
             writer.write_all(&vec![0x5a; length]).unwrap();
             drop(writer);
-            assert_eq!(capture.drain().is_ok(), length <= 1024);
+            // A nonblocking socket can report WouldBlock before the closed
+            // writer's EOF becomes visible. Test eventual EOF/overflow with the
+            // same bounded polling semantics, not readiness after a single poll.
+            let start = Instant::now();
+            let result = loop {
+                let result = capture.drain();
+                if result.is_err() || capture.eof {
+                    break result;
+                }
+                assert!(
+                    start.elapsed() < Duration::from_secs(2),
+                    "fixture EOF not observed"
+                );
+                thread::sleep(POLL);
+            };
+            assert_eq!(result.is_ok(), length <= 1024);
             assert_eq!(fs::read(&path).unwrap(), vec![0x5a; length.min(1024)]);
             assert_eq!(capture.eof, length <= 1024);
             assert_eq!(

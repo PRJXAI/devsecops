@@ -6,4 +6,6 @@ Packaged tool binaries and base images retain their upstream licenses. Source UR
 
 The upgraded candidate's [collected Go notice texts](gitleaks-go-notices/README.md) now cover named legal files for all 62 embedded Go modules, plus main/compiler/stdlib/vendor files. This is source-text collection, not complete artifact-specific legal approval or native-runtime corresponding-source compliance.
 
+The [Gitleaks runtime follow-up](gitleaks-runtime-review.md) now binds 20 selected public APK payloads and their expanded recipes to both hosted image archives. Exact glibc source-overlay bytes, full native/base notices, source delivery and accountable review remain incomplete; this is not redistribution approval.
+
 Complete transitive notices and corresponding-source obligations (especially Git/GPL) require review before distributing images. The initial private source repository and local builds are not publication approval. Do not represent this page as complete legal review or relicense third-party binaries under the first-party license.

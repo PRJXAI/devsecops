@@ -6,7 +6,7 @@ Each tool's readiness booleans in `.github/publication-readiness/TOOL.json` rema
 
 The request to address remaining gaps authorizes adopting the already tested, fixed-source Gitleaks dependency upgrade into production packaging. Rust will construct a private, create-only context from the pinned source, patch and compiler; verify manifests before and after the offline upstream race tests/build; and package the checked executable plus the existing collected Go notices. No arbitrary prebuilt executable, caller-selected source/compiler, shared mutable build tag, retry or diagnostic waiver is introduced. Build failure or cleanup failure blocks packaging. The existing Git/native closure is unchanged and its source obligations remain unresolved.
 
-Production inventory must require the upgraded tuples captured on both native architectures; the former supplier profile must no longer authorize production Gitleaks. Historical documents remain unchanged evidence. Fresh production contracts/catalogs/scans are still required on both architectures. Notice collection/packaging is not accountable redistribution approval; readiness remains false until its remaining evidence is complete.
+Production inventory must require the upgraded tuples captured on both native architectures; the former supplier profile must no longer authorize production Gitleaks. Historical documents remain unchanged evidence. Fresh production contracts/catalogs/scans passed on both architectures at `818c362` in run 40712836198; later publication attempts still require new, source-bound, unexpired handoffs. Notice collection/packaging is not accountable redistribution approval; readiness remains false until its remaining evidence is complete.
 
 ## Execution order
 
@@ -32,6 +32,16 @@ Cargo-deny must reject missing Cargo/index/source/advisory coverage even if the 
 - [Supplier remediation](supplier-remediation.md) identifies compatible component targets but no current upstream tool release that clears all 104 captured matches. Source patch/dependency migrations or upstream maintenance releases need reviewed work. The subsequent no-fix decision permits only the exact reviewed Gitleaks advisory and precision notice, not a blanket waiver of these matches.
 
 The original approval-sequence validation passed 92 ordinary tests, formatting, Clippy and actionlint, plus the explicit hosted-document, native notice-byte and official-audit controls; the later production/archive remediation results and reproduced runtime failure are recorded in [results](results.md). This is not release acceptance. No boolean has been set true, no image published and no consumer pin changed.
+
+## Hosted release/adoption attempt — 2026-10-28
+
+The owner's request to ship the containers and use them in obsidian-sync authorizes publication/adoption work, not assertions that missing source/legal or runtime evidence exists. Commit `818c362` was pushed and run 40712836198 completed: both Gitleaks production preparations passed with one accepted risk each; the other eight tools failed their own gates. Both experimental candidate jobs passed too, without resolving the recorded local completion failure. Publication jobs were skipped because this was a push, not an approved manual dispatch; no registry image or attestation was created.
+
+Gitleaks's two downloaded handoffs pass the real content preflight at the original evidence time, including archive/config/SBOM hashes, captured inventory and exact risk accounting. This is not publication authorization or an actual archive-load/registry/attestation test. All approval fields remain false. Obsidian-sync's existing pins and host checks remain unchanged: no unverified GHCR digest or incomplete cargo-deny replacement is adopted. Its separate all-findings supply-chain policy is not silently relaxed to inherit a producer exception. See [results](results.md) for counts and exact remaining blockers.
+
+## Gitleaks-first follow-up — 2026-10-29
+
+The [runtime source review](../licenses/gitleaks-runtime-review.md) captures exact expanded public APK recipes and verifies 20 selected payload/package bindings against both hosted architectures. Missing source-overlay bytes, full notices/source delivery and accountable review remain explicit. The [loader-only diagnostic](runtime-completion.md) reproduces the 120-second exit stall without Gitleaks/Git execution, with confirmed cleanup. This is a narrower investigation target, not a fix or permission to alter the host. No readiness field or consumer pin changed; publication remains blocked pending those concrete prerequisites.
 
 ## Outstanding decisions
 

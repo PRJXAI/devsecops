@@ -6,9 +6,9 @@
   "supplier_provenance_reviewed": false,
   "native_functional_contracts_complete": false,
   "blockers": [
-    "The fixed-source upgrade is adopted into production packaging/inventory and local arm64 preparation passes with 1 accepted / 0 blocking finding. Fresh clean-source hosted production handoffs on both architectures and hosted publish/attestation validation are still missing.",
-    "Exact vendor Git/glibc source, recipes and patches plus full runtime/base notices are incomplete; the packaged and byte-verified Go notices are not full redistribution approval.",
+    "Hosted production preparation and handoffs passed on amd64 and arm64 in run 40712836198 at source 818c36229a839653a6952d8079e5952ae51650bc, each retaining 1 accepted / 0 blocking finding. End-to-end approved publication, attestation and package-visibility validation are still missing.",
+    "Exact expanded APK recipes and 20 selected runtime/package bindings are now captured on both architectures. Complete corresponding-source overlays (especially authenticated glibc patch bytes), runtime/base notices and source-delivery arrangements remain incomplete; packaged Go notices do not approve redistribution.",
     "Artifact-specific build provenance and accountable redistribution review are missing.",
-    "Local runtime stalls were reproduced again by the separate candidate test during its clean-working-tree scan; successful production preparations and earlier hosted successes do not establish reliable completion or complete consumer acceptance."
+    "A loader-only invocation reproduced the 120-second exit stall without executing Gitleaks or Git: Docker reported Running with no listed processes and no observed exit event; cleanup succeeded. Root cause and supported-runtime acceptance remain unresolved; no retry/deadline or host-change waiver is approved."
   ]
 }

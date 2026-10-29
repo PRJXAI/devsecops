@@ -4,6 +4,8 @@ Collected **2026-10-27**, Darwin/arm64 host, native Linux/arm64 Docker daemon. *
 
 [Artifact evidence](artifact-evidence.json) records exact public URLs, response SHA-256s, registry descriptor/config identities, source claims, archive notice inventories and verification criteria. Its `approval`, `source_reproducibility_established` and `complete_transitive_notices_established` fields are false. A measured hash identifies retrieved bytes; it does not authenticate a source-to-binary relationship.
 
+**2026-10-29 follow-up:** [Gitleaks runtime evidence](gitleaks-runtime-review.md) retrieves the exact expanded recipes from public APK control sections and matches 20 selected payload/package pairs against both hosted production archives. This supersedes the recipe-access gap below, not missing source-overlay contents, notice completeness or accountable approval.
+
 ## Snapshot and supersession
 
 The recorded Docker/cargo-audit recipe hashes match source **`9500de1196b51e2a27143b8188fe08908d4b1f13`**. This collection predates the new Docker/plugin/provider top-level notice layers and the [official GNU cargo-audit replacement](../docs/cargo-audit-supplier.md). Statements about missing packaged notices, musl/Quickinstall pins and runtime contents below describe that snapshot, not current recipes. Historical hashes/measurements are preserved; they do not authenticate the new GNU artifacts. [Current sequence](../docs/release-readiness.md) records what remains blocked.
