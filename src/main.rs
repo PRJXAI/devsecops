@@ -9,6 +9,7 @@ mod coverage;
 mod filesystem;
 mod grype_contract;
 mod notices;
+mod public_access;
 mod release;
 #[cfg(test)]
 mod runtime_probe;
@@ -657,9 +658,14 @@ fn main() {
         return;
     }
     if args.first().is_some_and(|command| {
-        ["catalog-tool", "prepare-tool", "publish-tool"]
-            .iter()
-            .any(|value| command == value)
+        [
+            "catalog-tool",
+            "prepare-tool",
+            "publish-tool",
+            "verify-public-tool",
+        ]
+        .iter()
+        .any(|value| command == value)
     }) {
         // Workflow inputs travel through env, never shell interpolation. Explicit
         // local arguments use the same allowlist before any filesystem/Docker work.
@@ -678,8 +684,10 @@ fn main() {
                         release::catalog(&mut driver, tool)
                     } else if args[0] == "prepare-tool" {
                         release::prepare(&mut driver, tool)
-                    } else {
+                    } else if args[0] == "publish-tool" {
                         release::publish(&mut driver, tool)
+                    } else {
+                        public_access::verify(&mut driver, tool)
                     }
                 })
             });
@@ -702,7 +710,7 @@ fn main() {
         }
         _ => {
             eprintln!(
-                "usage: devsecops check TOOL | contract TOOL | check-all | audit-dependencies | catalog-tool TOOL | prepare-tool TOOL | publish-tool TOOL"
+                "usage: devsecops check TOOL | contract TOOL | check-all | audit-dependencies | catalog-tool TOOL | prepare-tool TOOL | publish-tool TOOL | verify-public-tool TOOL"
             );
             std::process::exit(2);
         }

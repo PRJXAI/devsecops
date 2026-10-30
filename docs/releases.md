@@ -15,7 +15,7 @@ Syft and Grype are the first published deliveries with refreshed captured native
 5. Fresh tool/source/platform/archive/config/SBOM/report bindings and tool-specific readiness in `.github/publication-readiness/TOOL.json`.
 6. Manual owner approval of the exact tool and source SHA, including artifact-specific source/notices/provenance review.
 7. Both archive loads/identities checked before registry mutation; publish those bytes without rebuilding; verify native manifest configs and the two-platform index.
-8. Successful provenance job, registry digest verification and package access/visibility verification before consumption.
+8. Successful provenance and `verify-public-tool`: anonymous index, both native manifests and config access must verify before a delivery artifact is uploaded. Public source and public packages are required; private-reader access is not a substitute.
 
 A readiness field records an accountable review; it does not manufacture the evidence required by runtime gates. No advisory exception bypasses a missing contract or license obligation.
 
@@ -39,13 +39,15 @@ Only the publish job receives package-write/OIDC/attestation authority. Native j
 
 Output repository: `ghcr.io/prjxai/devsecops/TOOL`. Release tag: `sha-FULL_COMMIT`. No `latest`. Preserve `subjects.checksums`, `release-status.json` and the final manifest/platform identities from `published-digests-TOOL`. Status remains accepted-risk when findings are accepted.
 
-A failed or incomplete push is not a release. Successful push without the attestation step is not a completed verified handoff. GHCR package visibility is separate from repository visibility; verify anonymous access before advertising a public pull. If package settings require owner action, report that explicitly rather than claiming public availability.
+A failed or incomplete push is not a release. After attestation, `cargo run --locked --bin devsecops -- verify-public-tool` checks the exact published index, both native members and their configurations through a credential-free Docker configuration/private HOME (only an empty GHCR auth entry and fixed system buildx paths are configured, preventing native keychain auto-discovery), with credential/proxy environment removed. It writes only an allowlisted `public-access.json` on success. Private/missing/substituted/foreign-platform/config/source metadata blocks `published-digests-TOOL` upload; no private-login fallback exists.
+
+`PRJXAI/devsecops` is public. GHCR visibility is separate and new packages may initially be private. An owner must set each package's **Package settings → Change visibility → Public** once; subsequent versions retain that package visibility. The available operator OAuth token cannot administer those settings; the publisher does not claim to change GHCR visibility. Until anonymous access actually passes, report the package as unavailable publicly, even when push and provenance succeeded. Do not broaden token scopes, claim public delivery, publish dummy packages or change org defaults silently.
 
 ## Consumer adoption
 
 1. Select the tool's successful publish/provenance job, even if a sibling made the overall run red.
 2. Verify the immutable registry manifest and native config digests against its release artifact; verify GitHub provenance for the source/repository/workflow and subject digest.
-3. Verify public anonymous pulls or explicitly authorized private package access.
+3. Require successful anonymous access and the producer's public-access gate. No consumer package-reader token should be necessary.
 4. Change one consumer pin at a time, preserving CLI flags, entrypoints, mounts, resource limits, output schemas and error behavior.
 5. Run real inventories/detection controls and the full relevant consumer suite. Retain host gates where a container replacement is incomplete, especially cargo-deny.
 

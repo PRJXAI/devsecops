@@ -102,6 +102,8 @@ jobs:
         uses: actions/attest-build-provenance@977bb373ede98d70efdf65b84cb5f73e068dcc2a
         with:
           subject-checksums: .work/published-${{ inputs.tool }}/subjects.checksums
+      - name: Require anonymous public access to the exact delivered images
+        run: cargo run --locked --bin devsecops -- verify-public-tool
       - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
         with:
           name: published-digests-${{ inputs.tool }}

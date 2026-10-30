@@ -419,6 +419,7 @@ mod tests {
                 | "cargo run --locked --bin devsecops -- catalog-tool"
                 | "cargo run --locked --bin devsecops -- prepare-tool"
                 | "cargo run --locked --bin devsecops -- publish-tool"
+                | "cargo run --locked --bin devsecops -- verify-public-tool"
         ) || TOOLS
             .iter()
             .any(|tool| command == format!("cargo run --locked --bin devsecops -- check {tool}"))
@@ -1347,6 +1348,8 @@ jobs:";
         uses: actions/attest-build-provenance@PIN
         with:
           subject-checksums: .work/published-${{ inputs.tool }}/subjects.checksums
+      - name: Require anonymous public access to the exact delivered images
+        run: cargo run --locked --bin devsecops -- verify-public-tool
       - uses: actions/upload-artifact@PIN
         with:
           name: published-digests-${{ inputs.tool }}
@@ -1524,6 +1527,10 @@ jobs:";
             (
                 "        run: cargo run --locked --bin devsecops -- publish-tool",
                 "        # run: cargo run --locked --bin devsecops -- publish-tool",
+            ),
+            (
+                "        run: cargo run --locked --bin devsecops -- verify-public-tool",
+                "        # run: cargo run --locked --bin devsecops -- verify-public-tool",
             ),
             ("cargo test --locked", "cargo test --locked & node x"),
             (

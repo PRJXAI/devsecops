@@ -4,6 +4,8 @@
 
 Each image has an exec-form tool entrypoint, UID/GID 65532, CA roots and a digest-pinned distroless base. Pass tool arguments directly. There is no shell or package installer. These images cannot serve as whole Actions jobs that require shell/Node or as application build environments.
 
+Released images must be public: no consumer package-reader token is required or an acceptable availability workaround. Source-repository visibility is separate; owners must set each GHCR package to Public once. The post-provenance anonymous-access gate must pass before a delivery artifact is uploaded. See [release access instructions](releases.md#authorized-publication).
+
 Use immutable manifest digests from a completed [release](releases.md). Pin Actions by commit and retain your own input, configuration and output ownership policy. CLI and Docker/Kubernetes **server** versions are separate dependencies.
 
 ## Mount and resource policy

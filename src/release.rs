@@ -1213,6 +1213,7 @@ fn publish_preflighted(
             &published.join("release-status.json"),
             &json!({
                 "schema":1,"tool":tool,"source_sha":revision,"repository":repository,"manifest_digest":id,
+                "manifests":members.iter().map(|(arch,digest)| json!({"arch":arch,"manifest_digest":digest,"config_digest":assets.iter().find(|a| a.tool == *tool && a.arch == *arch).map(|a| &a.config)})).collect::<Vec<_>>(),
                 "status":if assets.iter().filter(|asset| asset.tool == *tool).any(|asset| asset.assessment["status"] == "accepted-risk") { "accepted-risk" } else { "clean" },
                 "architectures":assets.iter().filter(|asset| asset.tool == *tool).map(|asset| &asset.assessment).collect::<Vec<_>>()
             }),
