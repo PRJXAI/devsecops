@@ -1,0 +1,39 @@
+{
+  "schema": 1,
+  "date": "2026-10-30",
+  "authorization": "Repository owner requested current-stack risk acceptance, image delivery and consumer adoption. This record documents the reviewed material basis; it is not legal certification or an independent supplier rebuild.",
+  "tools": ["syft", "grype"],
+  "supplier_scope": "Unmodified executables copied from the literal supplier digests in the two Dockerfiles; existing source labels and native module/compiler inventories reviewed. Supplier build authenticity is trusted, not established by unsigned hashes alone.",
+  "source_reproducibility_established": false,
+  "go_source_version": "go1.26.8",
+  "go_source_commit": "c293dd49cbe25e1fe8d97d94a5cb618e7b6d831e",
+  "syft": {
+    "embedded_source_modules": 295,
+    "bundle_sha256": "5d56eacef92c66e40d44034914d53dc599f68542388aa91542e71cef8b88ac15",
+    "index_sha256": "dfdf399a8c2e6fb54c3a951897a3a50f250c9382592f56efa11a9eb6c1402457"
+  },
+  "grype": {
+    "embedded_source_modules": 319,
+    "bundle_sha256": "2a1096158a1f761a9366ddd7b99dfb01bd50aa1eea1299d7d8f0e8e4397e86a2",
+    "index_sha256": "108158255404d532ee4616879680fd7b75a45ad643671c10f0d7c4f73f9517fd"
+  },
+  "static_base": {
+    "image": "cgr.dev/chainguard/static:latest@sha256:fc42af33e643f20d08baf03cddcc1c02ba57052dfb02edb0d79f3fc47bcea8d9",
+    "notice_sha256": "378fef9d3e685a2ad1168283453781a01a66bd8ccc7e261e490340712bf18af4",
+    "baselayout_source_package_sha256": "902fc22a76f11e1a5a0cf9960196c91137fa5ece6d1bafca8126f3ff2b1bbabe",
+    "baselayout_source_commit": "ed415005c84750f03c4a9252137813734a224ae7",
+    "ca_source_form": "Unmodified editable PEM certificate source data delivered with the image; MPL-2.0 text and upstream source route included.",
+    "timezone_license": "Original IANA public-domain notice included; no source-offer obligation is inferred for public-domain data.",
+    "vendor_reproducible_build_verified": false
+  },
+  "review": {
+    "source_attributed_legal_texts_packaged": true,
+    "source_availability_instructions_packaged": true,
+    "base_data_terms_and_source_arrangements_reviewed": true,
+    "upstream_terms_not_relicensed": true,
+    "exact_runtime_notice_bytes_required": true,
+    "fresh_both_native_handoffs_required": true,
+    "other_tools_approved": false,
+    "regulatory_certification_claimed": false
+  }
+}

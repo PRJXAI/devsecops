@@ -1,0 +1,1708 @@
+{
+  "authorization": "Repository owner explicitly accepts the investigated current stack risks and requests delivery; includes findings with published fixes. No inventory/runtime/legal proof is inferred.",
+  "decision": "owner-selected-stack-2026-10-30",
+  "schema": 1,
+  "tools": {
+    "grype": {
+      "acceptance_id": "grype-stack-2026-10-30",
+      "platforms": [
+        "linux/amd64",
+        "linux/arm64"
+      ],
+      "recipe_sha256": "48ee7f971e6a9aec93ca3d825ee0d1fa7ce24365cde649bbfef1b34e692b466e",
+      "reference_image": "anchore/grype:v0.121.0@sha256:621d56d1d68106b787022c81546f7e0a36202a25d1239f0c20195fab8c16f7ea",
+      "reference_report_sha256": "9dcfc4dc232957d90400d0ea722f02e7ca4d4e0e5656fad7095e4d8c8010b2d2",
+      "rules": [
+        {
+          "id": "c365377b49425221c6c417ee5e00c5010811398fbb1b85e45ac94737e670dde4",
+          "identity": {
+            "package": {
+              "locations": [
+                "/usr/local/bin/grype"
+              ],
+              "name": "github.com/docker/docker",
+              "type": "go-module",
+              "version": "v28.5.2+incompatible"
+            },
+            "related": [
+              {
+                "fix": null,
+                "id": "CVE-2026-33997",
+                "namespace": "nvd:cpe",
+                "severity": "High"
+              }
+            ],
+            "vulnerability": {
+              "fix": {
+                "state": "not-fixed",
+                "versions": []
+              },
+              "id": "GHSA-pxq6-2prw-chj9",
+              "namespace": "github:language:go",
+              "severity": "Medium"
+            }
+          },
+          "maximum_occurrences": 1
+        },
+        {
+          "id": "a10a80833c7070b6e6bfab50bce47b2b2a1246d3729f865a330880e4d40fa64c",
+          "identity": {
+            "package": {
+              "locations": [
+                "/usr/local/bin/grype"
+              ],
+              "name": "github.com/docker/docker",
+              "type": "go-module",
+              "version": "v28.5.2+incompatible"
+            },
+            "related": [
+              {
+                "fix": null,
+                "id": "CVE-2026-34040",
+                "namespace": "nvd:cpe",
+                "severity": "High"
+              },
+              {
+                "fix": null,
+                "id": "GHSA-x744-4wpc-v9h2",
+                "namespace": "github:language:go",
+                "severity": "High"
+              }
+            ],
+            "vulnerability": {
+              "fix": {
+                "state": "",
+                "versions": []
+              },
+              "id": "GO-2026-4887",
+              "namespace": "govulndb:language:go",
+              "severity": "High"
+            }
+          },
+          "maximum_occurrences": 1
+        },
+        {
+          "id": "d6d3e7aaca689fa70b8869f48fc5473a7cb5b567c896940bcddd100191d831d2",
+          "identity": {
+            "package": {
+              "locations": [
+                "/usr/local/bin/grype"
+              ],
+              "name": "github.com/docker/docker",
+              "type": "go-module",
+              "version": "v28.5.2+incompatible"
+            },
+            "related": [
+              {
+                "fix": null,
+                "id": "CVE-2026-41567",
+                "namespace": "nvd:cpe",
+                "severity": "High"
+              }
+            ],
+            "vulnerability": {
+              "fix": {
+                "state": "not-fixed",
+                "versions": []
+              },
+              "id": "GHSA-x86f-5xw2-fm2r",
+              "namespace": "github:language:go",
+              "severity": "High"
+            }
+          },
+          "maximum_occurrences": 1
+        },
+        {
+          "id": "04ed98ffe09a213c0ab44c274374efbf0f5b7fd0a455e1dadef09c9b08936ed6",
+          "identity": {
+            "package": {
+              "locations": [
+                "/usr/local/bin/grype"
+              ],
+              "name": "github.com/docker/docker",
+              "type": "go-module",
+              "version": "v28.5.2+incompatible"
+            },
+            "related": [
+              {
+                "fix": null,
+                "id": "CVE-2026-41568",
+                "namespace": "nvd:cpe",
+                "severity": "Medium"
+              }
+            ],
+            "vulnerability": {
+              "fix": {
+                "state": "not-fixed",
+                "versions": []
+              },
+              "id": "GHSA-vp62-88p7-qqf5",
+              "namespace": "github:language:go",
+              "severity": "Medium"
+            }
+          },
+          "maximum_occurrences": 1
+        },
+        {
+          "id": "bde331db1e080ee95248911eef179c607c1e9c2e60c1cea0d2c17d52d0efc2a4",
+          "identity": {
+            "package": {
+              "locations": [
+                "/usr/local/bin/grype"
+              ],
+              "name": "github.com/docker/docker",
+              "type": "go-module",
+              "version": "v28.5.2+incompatible"
+            },
+            "related": [
+              {
+                "fix": null,
+                "id": "CVE-2026-42306",
+                "namespace": "nvd:cpe",
+                "severity": "High"
+              }
+            ],
+            "vulnerability": {
+              "fix": {
+                "state": "not-fixed",
+                "versions": []
+              },
+              "id": "GHSA-rg2x-37c3-w2rh",
+              "namespace": "github:language:go",
+              "severity": "High"
+            }
+          },
+          "maximum_occurrences": 1
+        },
+        {
+          "id": "58003bfb32defbbbb5129db56f8a6f4c1f2082afdb356159d15573ca88cabaea",
+          "identity": {
+            "package": {
+              "locations": [
+                "/usr/local/bin/grype"
+              ],
+              "name": "github.com/go-jose/go-jose/v4",
+              "type": "go-module",
+              "version": "v4.1.5"
+            },
+            "related": [
+              {
+                "fix": null,
+                "id": "CVE-2026-116587",
+                "namespace": "nvd:cpe",
+                "severity": "High"
+              }
+            ],
+            "vulnerability": {
+              "fix": {
+                "available": [
+                  {
+                    "date": "2026-10-28",
+                    "kind": "first-observed",
+                    "version": "4.1.6"
+                  }
+                ],
+                "state": "fixed",
+                "versions": [
+                  "4.1.6"
+                ]
+              },
+              "id": "GHSA-mgcc-cww5-fp2q",
+              "namespace": "github:language:go",
+              "severity": "High"
+            }
+          },
+          "maximum_occurrences": 1
+        },
+        {
+          "id": "f4bc222b778f5846900b0b3ffb0389d1bfd0d20b0ca426a0a9813ba28c1bfb02",
+          "identity": {
+            "package": {
+              "locations": [
+                "/usr/local/bin/grype"
+              ],
+              "name": "golang.org/x/crypto",
+              "type": "go-module",
+              "version": "v0.58.0"
+            },
+            "related": [],
+            "vulnerability": {
+              "fix": {
+                "state": "",
+                "versions": []
+              },
+              "id": "GO-2026-5932",
+              "namespace": "govulndb:language:go",
+              "severity": "Unknown"
+            }
+          },
+          "maximum_occurrences": 1
+        },
+        {
+          "id": "de5e52fd0cdda2ca6f53c6f60664f611363dfa67b14fe0488e0c68e200c620cb",
+          "identity": {
+            "package": {
+              "locations": [
+                "/usr/local/bin/grype"
+              ],
+              "name": "golang.org/x/net",
+              "type": "go-module",
+              "version": "v0.61.0"
+            },
+            "related": [
+              {
+                "fix": null,
+                "id": "CVE-2026-78661",
+                "namespace": "nvd:cpe",
+                "severity": "Unknown"
+              }
+            ],
+            "vulnerability": {
+              "fix": {
+                "available": [
+                  {
+                    "date": "2026-10-27",
+                    "kind": "release",
+                    "version": "0.62.0"
+                  }
+                ],
+                "state": "fixed",
+                "versions": [
+                  "0.62.0"
+                ]
+              },
+              "id": "GO-2026-6860",
+              "namespace": "govulndb:language:go",
+              "severity": "Unknown"
+            }
+          },
+          "maximum_occurrences": 1
+        },
+        {
+          "id": "12200277de7b977da4c21963c229aa98a247e2f141082cfb96e35a92afa27d4a",
+          "identity": {
+            "package": {
+              "locations": [
+                "/usr/local/bin/grype"
+              ],
+              "name": "golang.org/x/net",
+              "type": "go-module",
+              "version": "v0.61.0"
+            },
+            "related": [
+              {
+                "fix": null,
+                "id": "CVE-2026-97045",
+                "namespace": "nvd:cpe",
+                "severity": "Unknown"
+              }
+            ],
+            "vulnerability": {
+              "fix": {
+                "available": [
+                  {
+                    "date": "2026-10-27",
+                    "kind": "release",
+                    "version": "0.62.0"
+                  }
+                ],
+                "state": "fixed",
+                "versions": [
+                  "0.62.0"
+                ]
+              },
+              "id": "GO-2026-6866",
+              "namespace": "govulndb:language:go",
+              "severity": "Unknown"
+            }
+          },
+          "maximum_occurrences": 1
+        },
+        {
+          "id": "81a5fff3ff0a3f8ce9c4366986987779a5dd10fffd0dc11df06a7a6aeb45628b",
+          "identity": {
+            "package": {
+              "locations": [
+                "/usr/local/bin/grype"
+              ],
+              "name": "stdlib",
+              "type": "go-module",
+              "version": "go1.26.8"
+            },
+            "related": [
+              {
+                "fix": null,
+                "id": "CVE-2026-111943",
+                "namespace": "nvd:cpe",
+                "severity": "Unknown"
+              }
+            ],
+            "vulnerability": {
+              "fix": {
+                "available": [
+                  {
+                    "date": "2026-10-20",
+                    "kind": "release",
+                    "version": "1.26.10"
+                  },
+                  {
+                    "date": "2026-10-20",
+                    "kind": "release",
+                    "version": "1.27.3"
+                  }
+                ],
+                "state": "fixed",
+                "versions": [
+                  "1.26.10",
+                  "1.27.3"
+                ]
+              },
+              "id": "GO-2026-6809",
+              "namespace": "govulndb:language:go",
+              "severity": "Unknown"
+            }
+          },
+          "maximum_occurrences": 1
+        },
+        {
+          "id": "21d989e7926fcb5144cf366aa67ed3f63a2b72362aa463f6261ca8052b71ce1f",
+          "identity": {
+            "package": {
+              "locations": [
+                "/usr/local/bin/grype"
+              ],
+              "name": "stdlib",
+              "type": "go-module",
+              "version": "go1.26.8"
+            },
+            "related": [
+              {
+                "fix": null,
+                "id": "CVE-2026-56857",
+                "namespace": "nvd:cpe",
+                "severity": "Critical"
+              }
+            ],
+            "vulnerability": {
+              "fix": {
+                "available": [
+                  {
+                    "date": "2026-10-08",
+                    "kind": "release",
+                    "version": "1.26.9"
+                  },
+                  {
+                    "date": "2026-10-08",
+                    "kind": "release",
+                    "version": "1.27.2"
+                  }
+                ],
+                "state": "fixed",
+                "versions": [
+                  "1.26.9",
+                  "1.27.2"
+                ]
+              },
+              "id": "GO-2026-6604",
+              "namespace": "govulndb:language:go",
+              "severity": "Critical"
+            }
+          },
+          "maximum_occurrences": 1
+        },
+        {
+          "id": "87ad2d2e401be9d5d4f5d81ed01f9f6e9771ff7250c4fadc00200329378f7514",
+          "identity": {
+            "package": {
+              "locations": [
+                "/usr/local/bin/grype"
+              ],
+              "name": "stdlib",
+              "type": "go-module",
+              "version": "go1.26.8"
+            },
+            "related": [
+              {
+                "fix": null,
+                "id": "CVE-2026-56866",
+                "namespace": "nvd:cpe",
+                "severity": "High"
+              }
+            ],
+            "vulnerability": {
+              "fix": {
+                "available": [
+                  {
+                    "date": "2026-10-08",
+                    "kind": "release",
+                    "version": "1.26.9"
+                  },
+                  {
+                    "date": "2026-10-08",
+                    "kind": "release",
+                    "version": "1.27.2"
+                  }
+                ],
+                "state": "fixed",
+                "versions": [
+                  "1.26.9",
+                  "1.27.2"
+                ]
+              },
+              "id": "GO-2026-6605",
+              "namespace": "govulndb:language:go",
+              "severity": "High"
+            }
+          },
+          "maximum_occurrences": 1
+        },
+        {
+          "id": "ccd86d2a5d68963cf208b9bf3ba5c123205ad2728e10ecfd70d669beb4daba5d",
+          "identity": {
+            "package": {
+              "locations": [
+                "/usr/local/bin/grype"
+              ],
+              "name": "stdlib",
+              "type": "go-module",
+              "version": "go1.26.8"
+            },
+            "related": [
+              {
+                "fix": null,
+                "id": "CVE-2026-78659",
+                "namespace": "nvd:cpe",
+                "severity": "High"
+              }
+            ],
+            "vulnerability": {
+              "fix": {
+                "available": [
+                  {
+                    "date": "2026-10-08",
+                    "kind": "release",
+                    "version": "1.26.9"
+                  }
+                ],
+                "state": "fixed",
+                "versions": [
+                  "1.26.9"
+                ]
+              },
+              "id": "GO-2026-6603",
+              "namespace": "govulndb:language:go",
+              "severity": "High"
+            }
+          },
+          "maximum_occurrences": 1
+        },
+        {
+          "id": "172ccbd885993195d3fd780a752deca0fa65feedd23a67e31529c6e015ac5af6",
+          "identity": {
+            "package": {
+              "locations": [
+                "/usr/local/bin/grype"
+              ],
+              "name": "stdlib",
+              "type": "go-module",
+              "version": "go1.26.8"
+            },
+            "related": [
+              {
+                "fix": null,
+                "id": "CVE-2026-78660",
+                "namespace": "nvd:cpe",
+                "severity": "High"
+              }
+            ],
+            "vulnerability": {
+              "fix": {
+                "available": [
+                  {
+                    "date": "2026-10-08",
+                    "kind": "release",
+                    "version": "1.26.9"
+                  }
+                ],
+                "state": "fixed",
+                "versions": [
+                  "1.26.9"
+                ]
+              },
+              "id": "GO-2026-6610",
+              "namespace": "govulndb:language:go",
+              "severity": "High"
+            }
+          },
+          "maximum_occurrences": 1
+        },
+        {
+          "id": "5160c43a12b15334010daed4da20b51a2f8caca084e6a3f8f658aab3b2a9c25d",
+          "identity": {
+            "package": {
+              "locations": [
+                "/usr/local/bin/grype"
+              ],
+              "name": "stdlib",
+              "type": "go-module",
+              "version": "go1.26.8"
+            },
+            "related": [
+              {
+                "fix": null,
+                "id": "CVE-2026-78663",
+                "namespace": "nvd:cpe",
+                "severity": "Critical"
+              }
+            ],
+            "vulnerability": {
+              "fix": {
+                "available": [
+                  {
+                    "date": "2026-10-08",
+                    "kind": "release",
+                    "version": "1.26.9"
+                  }
+                ],
+                "state": "fixed",
+                "versions": [
+                  "1.26.9"
+                ]
+              },
+              "id": "GO-2026-6612",
+              "namespace": "govulndb:language:go",
+              "severity": "Critical"
+            }
+          },
+          "maximum_occurrences": 1
+        },
+        {
+          "id": "c3b2a558576254fe87556a048eb46293b48c617c1c0585d9b0d6c9c01293808c",
+          "identity": {
+            "package": {
+              "locations": [
+                "/usr/local/bin/grype"
+              ],
+              "name": "stdlib",
+              "type": "go-module",
+              "version": "go1.26.8"
+            },
+            "related": [
+              {
+                "fix": null,
+                "id": "CVE-2026-78667",
+                "namespace": "nvd:cpe",
+                "severity": "High"
+              }
+            ],
+            "vulnerability": {
+              "fix": {
+                "available": [
+                  {
+                    "date": "2026-10-08",
+                    "kind": "release",
+                    "version": "1.26.9"
+                  },
+                  {
+                    "date": "2026-10-08",
+                    "kind": "release",
+                    "version": "1.27.2"
+                  }
+                ],
+                "state": "fixed",
+                "versions": [
+                  "1.26.9",
+                  "1.27.2"
+                ]
+              },
+              "id": "GO-2026-6609",
+              "namespace": "govulndb:language:go",
+              "severity": "High"
+            }
+          },
+          "maximum_occurrences": 1
+        },
+        {
+          "id": "958ed39f4552496aedd76c585aeffdda94f4605b0b69a756b67109fbbdf990ac",
+          "identity": {
+            "package": {
+              "locations": [
+                "/usr/local/bin/grype"
+              ],
+              "name": "stdlib",
+              "type": "go-module",
+              "version": "go1.26.8"
+            },
+            "related": [
+              {
+                "fix": null,
+                "id": "CVE-2026-78669",
+                "namespace": "nvd:cpe",
+                "severity": "High"
+              }
+            ],
+            "vulnerability": {
+              "fix": {
+                "available": [
+                  {
+                    "date": "2026-10-08",
+                    "kind": "release",
+                    "version": "1.26.9"
+                  }
+                ],
+                "state": "fixed",
+                "versions": [
+                  "1.26.9"
+                ]
+              },
+              "id": "GO-2026-6611",
+              "namespace": "govulndb:language:go",
+              "severity": "High"
+            }
+          },
+          "maximum_occurrences": 1
+        },
+        {
+          "id": "3692fc123792525fa08a1a32d4660b16ee582cfa9880744bea786ee3d78eabee",
+          "identity": {
+            "package": {
+              "locations": [
+                "/usr/local/bin/grype"
+              ],
+              "name": "stdlib",
+              "type": "go-module",
+              "version": "go1.26.8"
+            },
+            "related": [
+              {
+                "fix": null,
+                "id": "CVE-2026-94439",
+                "namespace": "nvd:cpe",
+                "severity": "High"
+              }
+            ],
+            "vulnerability": {
+              "fix": {
+                "available": [
+                  {
+                    "date": "2026-10-08",
+                    "kind": "release",
+                    "version": "1.26.9"
+                  },
+                  {
+                    "date": "2026-10-08",
+                    "kind": "release",
+                    "version": "1.27.2"
+                  }
+                ],
+                "state": "fixed",
+                "versions": [
+                  "1.26.9",
+                  "1.27.2"
+                ]
+              },
+              "id": "GO-2026-6613",
+              "namespace": "govulndb:language:go",
+              "severity": "High"
+            }
+          },
+          "maximum_occurrences": 1
+        },
+        {
+          "id": "1e913ce9b87edbe71a217c1dbe91481e72de0b45503fd5a231d00194403d59d0",
+          "identity": {
+            "package": {
+              "locations": [
+                "/usr/local/bin/grype"
+              ],
+              "name": "stdlib",
+              "type": "go-module",
+              "version": "go1.26.8"
+            },
+            "related": [
+              {
+                "fix": null,
+                "id": "CVE-2026-94440",
+                "namespace": "nvd:cpe",
+                "severity": "High"
+              }
+            ],
+            "vulnerability": {
+              "fix": {
+                "available": [
+                  {
+                    "date": "2026-10-08",
+                    "kind": "release",
+                    "version": "1.26.9"
+                  },
+                  {
+                    "date": "2026-10-08",
+                    "kind": "release",
+                    "version": "1.27.2"
+                  }
+                ],
+                "state": "fixed",
+                "versions": [
+                  "1.26.9",
+                  "1.27.2"
+                ]
+              },
+              "id": "GO-2026-6608",
+              "namespace": "govulndb:language:go",
+              "severity": "High"
+            }
+          },
+          "maximum_occurrences": 1
+        },
+        {
+          "id": "2204521ce316a5d1cce34c1cec7344897b48a920110b8d769ba678821aa3b7b9",
+          "identity": {
+            "package": {
+              "locations": [
+                "/usr/local/bin/grype"
+              ],
+              "name": "stdlib",
+              "type": "go-module",
+              "version": "go1.26.8"
+            },
+            "related": [
+              {
+                "fix": null,
+                "id": "CVE-2026-94448",
+                "namespace": "nvd:cpe",
+                "severity": "Medium"
+              }
+            ],
+            "vulnerability": {
+              "fix": {
+                "available": [
+                  {
+                    "date": "2026-10-08",
+                    "kind": "release",
+                    "version": "1.26.9"
+                  },
+                  {
+                    "date": "2026-10-08",
+                    "kind": "release",
+                    "version": "1.27.2"
+                  }
+                ],
+                "state": "fixed",
+                "versions": [
+                  "1.26.9",
+                  "1.27.2"
+                ]
+              },
+              "id": "GO-2026-6599",
+              "namespace": "govulndb:language:go",
+              "severity": "Medium"
+            }
+          },
+          "maximum_occurrences": 1
+        },
+        {
+          "id": "fd8dd28116488f986586bcc93a0ca5c660a1deb6bb980fe5cdfc026641a18772",
+          "identity": {
+            "package": {
+              "locations": [
+                "/usr/local/bin/grype"
+              ],
+              "name": "stdlib",
+              "type": "go-module",
+              "version": "go1.26.8"
+            },
+            "related": [
+              {
+                "fix": null,
+                "id": "CVE-2026-97030",
+                "namespace": "nvd:cpe",
+                "severity": "Medium"
+              }
+            ],
+            "vulnerability": {
+              "fix": {
+                "available": [
+                  {
+                    "date": "2026-10-08",
+                    "kind": "release",
+                    "version": "1.26.9"
+                  },
+                  {
+                    "date": "2026-10-08",
+                    "kind": "release",
+                    "version": "1.27.2"
+                  }
+                ],
+                "state": "fixed",
+                "versions": [
+                  "1.26.9",
+                  "1.27.2"
+                ]
+              },
+              "id": "GO-2026-6600",
+              "namespace": "govulndb:language:go",
+              "severity": "Medium"
+            }
+          },
+          "maximum_occurrences": 1
+        },
+        {
+          "id": "0ea5b6c8c04e744a01167348bef9bfc117574f9126f9772373d9a92dbc059d2f",
+          "identity": {
+            "package": {
+              "locations": [
+                "/usr/local/bin/grype"
+              ],
+              "name": "stdlib",
+              "type": "go-module",
+              "version": "go1.26.8"
+            },
+            "related": [
+              {
+                "fix": null,
+                "id": "CVE-2026-97031",
+                "namespace": "nvd:cpe",
+                "severity": "High"
+              }
+            ],
+            "vulnerability": {
+              "fix": {
+                "available": [
+                  {
+                    "date": "2026-10-08",
+                    "kind": "release",
+                    "version": "1.26.9"
+                  },
+                  {
+                    "date": "2026-10-08",
+                    "kind": "release",
+                    "version": "1.27.2"
+                  }
+                ],
+                "state": "fixed",
+                "versions": [
+                  "1.26.9",
+                  "1.27.2"
+                ]
+              },
+              "id": "GO-2026-6607",
+              "namespace": "govulndb:language:go",
+              "severity": "High"
+            }
+          },
+          "maximum_occurrences": 1
+        },
+        {
+          "id": "b7c48f6e974c1f26300aa8eb06a370130eabd8a13ac1fd645e2b5bcb6bce8679",
+          "identity": {
+            "package": {
+              "locations": [
+                "/usr/local/bin/grype"
+              ],
+              "name": "stdlib",
+              "type": "go-module",
+              "version": "go1.26.8"
+            },
+            "related": [
+              {
+                "fix": null,
+                "id": "CVE-2026-97032",
+                "namespace": "nvd:cpe",
+                "severity": "High"
+              }
+            ],
+            "vulnerability": {
+              "fix": {
+                "available": [
+                  {
+                    "date": "2026-10-08",
+                    "kind": "release",
+                    "version": "1.26.9"
+                  }
+                ],
+                "state": "fixed",
+                "versions": [
+                  "1.26.9"
+                ]
+              },
+              "id": "GO-2026-6617",
+              "namespace": "govulndb:language:go",
+              "severity": "High"
+            }
+          },
+          "maximum_occurrences": 1
+        }
+      ]
+    },
+    "syft": {
+      "acceptance_id": "syft-stack-2026-10-30",
+      "platforms": [
+        "linux/amd64",
+        "linux/arm64"
+      ],
+      "recipe_sha256": "dbaa3830ce0bd226dcb232af187b11d2e6233bdff0218a4a59f42ec3d6cd26be",
+      "reference_image": "anchore/syft:v1.55.0-nonroot@sha256:ec5bdbc745485920c6f444239f0c09ed87b3c4c165ff9433f95bc66b3500fbf9",
+      "reference_report_sha256": "c8921efa3e4c6b574ced4202f146fb8f334f4446e04d50dfc04b88ea454ebda4",
+      "rules": [
+        {
+          "id": "1c93b8b1dc8f6fcf3403d91dbc0f46f470ab604e77fc7afe7caac574238a0ed8",
+          "identity": {
+            "package": {
+              "locations": [
+                "/usr/local/bin/syft"
+              ],
+              "name": "github.com/go-jose/go-jose/v4",
+              "type": "go-module",
+              "version": "v4.1.5"
+            },
+            "related": [
+              {
+                "fix": null,
+                "id": "CVE-2026-116587",
+                "namespace": "nvd:cpe",
+                "severity": "High"
+              }
+            ],
+            "vulnerability": {
+              "fix": {
+                "available": [
+                  {
+                    "date": "2026-10-28",
+                    "kind": "first-observed",
+                    "version": "4.1.6"
+                  }
+                ],
+                "state": "fixed",
+                "versions": [
+                  "4.1.6"
+                ]
+              },
+              "id": "GHSA-mgcc-cww5-fp2q",
+              "namespace": "github:language:go",
+              "severity": "High"
+            }
+          },
+          "maximum_occurrences": 1
+        },
+        {
+          "id": "972220aedc5068bd877b1f8a4aff33e653ddaae60586e40761192b901db7115d",
+          "identity": {
+            "package": {
+              "locations": [
+                "/usr/local/bin/syft"
+              ],
+              "name": "golang.org/x/crypto",
+              "type": "go-module",
+              "version": "v0.58.0"
+            },
+            "related": [],
+            "vulnerability": {
+              "fix": {
+                "state": "",
+                "versions": []
+              },
+              "id": "GO-2026-5932",
+              "namespace": "govulndb:language:go",
+              "severity": "Unknown"
+            }
+          },
+          "maximum_occurrences": 1
+        },
+        {
+          "id": "f7e28a37d3792c0445b3d24fbeb0377777ed163a6be54ae9c55ea298dbf49a28",
+          "identity": {
+            "package": {
+              "locations": [
+                "/usr/local/bin/syft"
+              ],
+              "name": "golang.org/x/net",
+              "type": "go-module",
+              "version": "v0.61.0"
+            },
+            "related": [
+              {
+                "fix": null,
+                "id": "CVE-2026-78661",
+                "namespace": "nvd:cpe",
+                "severity": "Unknown"
+              }
+            ],
+            "vulnerability": {
+              "fix": {
+                "available": [
+                  {
+                    "date": "2026-10-27",
+                    "kind": "release",
+                    "version": "0.62.0"
+                  }
+                ],
+                "state": "fixed",
+                "versions": [
+                  "0.62.0"
+                ]
+              },
+              "id": "GO-2026-6860",
+              "namespace": "govulndb:language:go",
+              "severity": "Unknown"
+            }
+          },
+          "maximum_occurrences": 1
+        },
+        {
+          "id": "2037ee021b9ede45631b53facd99ae977b0aa8df30e7756bdf9d1e66f8994882",
+          "identity": {
+            "package": {
+              "locations": [
+                "/usr/local/bin/syft"
+              ],
+              "name": "golang.org/x/net",
+              "type": "go-module",
+              "version": "v0.61.0"
+            },
+            "related": [
+              {
+                "fix": null,
+                "id": "CVE-2026-97045",
+                "namespace": "nvd:cpe",
+                "severity": "Unknown"
+              }
+            ],
+            "vulnerability": {
+              "fix": {
+                "available": [
+                  {
+                    "date": "2026-10-27",
+                    "kind": "release",
+                    "version": "0.62.0"
+                  }
+                ],
+                "state": "fixed",
+                "versions": [
+                  "0.62.0"
+                ]
+              },
+              "id": "GO-2026-6866",
+              "namespace": "govulndb:language:go",
+              "severity": "Unknown"
+            }
+          },
+          "maximum_occurrences": 1
+        },
+        {
+          "id": "083bebca48127df609640ef0ae3bba40dcc5e1cb948215375b576d770d2555d8",
+          "identity": {
+            "package": {
+              "locations": [
+                "/usr/local/bin/syft"
+              ],
+              "name": "stdlib",
+              "type": "go-module",
+              "version": "go1.26.8"
+            },
+            "related": [
+              {
+                "fix": null,
+                "id": "CVE-2026-111943",
+                "namespace": "nvd:cpe",
+                "severity": "Unknown"
+              }
+            ],
+            "vulnerability": {
+              "fix": {
+                "available": [
+                  {
+                    "date": "2026-10-20",
+                    "kind": "release",
+                    "version": "1.26.10"
+                  },
+                  {
+                    "date": "2026-10-20",
+                    "kind": "release",
+                    "version": "1.27.3"
+                  }
+                ],
+                "state": "fixed",
+                "versions": [
+                  "1.26.10",
+                  "1.27.3"
+                ]
+              },
+              "id": "GO-2026-6809",
+              "namespace": "govulndb:language:go",
+              "severity": "Unknown"
+            }
+          },
+          "maximum_occurrences": 1
+        },
+        {
+          "id": "24e65a9267725487729874ed457b4ef749ccacfe9dd6fd60c19334840551b315",
+          "identity": {
+            "package": {
+              "locations": [
+                "/usr/local/bin/syft"
+              ],
+              "name": "stdlib",
+              "type": "go-module",
+              "version": "go1.26.8"
+            },
+            "related": [
+              {
+                "fix": null,
+                "id": "CVE-2026-56857",
+                "namespace": "nvd:cpe",
+                "severity": "Critical"
+              }
+            ],
+            "vulnerability": {
+              "fix": {
+                "available": [
+                  {
+                    "date": "2026-10-08",
+                    "kind": "release",
+                    "version": "1.26.9"
+                  },
+                  {
+                    "date": "2026-10-08",
+                    "kind": "release",
+                    "version": "1.27.2"
+                  }
+                ],
+                "state": "fixed",
+                "versions": [
+                  "1.26.9",
+                  "1.27.2"
+                ]
+              },
+              "id": "GO-2026-6604",
+              "namespace": "govulndb:language:go",
+              "severity": "Critical"
+            }
+          },
+          "maximum_occurrences": 1
+        },
+        {
+          "id": "8bf370cdbb5883b25bd149c5d9fd410cbe847c8c304eaa228244ac393e9749ae",
+          "identity": {
+            "package": {
+              "locations": [
+                "/usr/local/bin/syft"
+              ],
+              "name": "stdlib",
+              "type": "go-module",
+              "version": "go1.26.8"
+            },
+            "related": [
+              {
+                "fix": null,
+                "id": "CVE-2026-56866",
+                "namespace": "nvd:cpe",
+                "severity": "High"
+              }
+            ],
+            "vulnerability": {
+              "fix": {
+                "available": [
+                  {
+                    "date": "2026-10-08",
+                    "kind": "release",
+                    "version": "1.26.9"
+                  },
+                  {
+                    "date": "2026-10-08",
+                    "kind": "release",
+                    "version": "1.27.2"
+                  }
+                ],
+                "state": "fixed",
+                "versions": [
+                  "1.26.9",
+                  "1.27.2"
+                ]
+              },
+              "id": "GO-2026-6605",
+              "namespace": "govulndb:language:go",
+              "severity": "High"
+            }
+          },
+          "maximum_occurrences": 1
+        },
+        {
+          "id": "f33f139ab84727427d80942057b0f524208f3248448ba73d0e55822fab2041dd",
+          "identity": {
+            "package": {
+              "locations": [
+                "/usr/local/bin/syft"
+              ],
+              "name": "stdlib",
+              "type": "go-module",
+              "version": "go1.26.8"
+            },
+            "related": [
+              {
+                "fix": null,
+                "id": "CVE-2026-78659",
+                "namespace": "nvd:cpe",
+                "severity": "High"
+              }
+            ],
+            "vulnerability": {
+              "fix": {
+                "available": [
+                  {
+                    "date": "2026-10-08",
+                    "kind": "release",
+                    "version": "1.26.9"
+                  }
+                ],
+                "state": "fixed",
+                "versions": [
+                  "1.26.9"
+                ]
+              },
+              "id": "GO-2026-6603",
+              "namespace": "govulndb:language:go",
+              "severity": "High"
+            }
+          },
+          "maximum_occurrences": 1
+        },
+        {
+          "id": "1e9b412ad09ab3400d28efcd16f84d7a1504841d7861a2d37f3b702fa95b6e45",
+          "identity": {
+            "package": {
+              "locations": [
+                "/usr/local/bin/syft"
+              ],
+              "name": "stdlib",
+              "type": "go-module",
+              "version": "go1.26.8"
+            },
+            "related": [
+              {
+                "fix": null,
+                "id": "CVE-2026-78660",
+                "namespace": "nvd:cpe",
+                "severity": "High"
+              }
+            ],
+            "vulnerability": {
+              "fix": {
+                "available": [
+                  {
+                    "date": "2026-10-08",
+                    "kind": "release",
+                    "version": "1.26.9"
+                  }
+                ],
+                "state": "fixed",
+                "versions": [
+                  "1.26.9"
+                ]
+              },
+              "id": "GO-2026-6610",
+              "namespace": "govulndb:language:go",
+              "severity": "High"
+            }
+          },
+          "maximum_occurrences": 1
+        },
+        {
+          "id": "f690ee723da4089ccd61ca0b2eaf0b55fa788b0635cc4a10fc713e4bf916352b",
+          "identity": {
+            "package": {
+              "locations": [
+                "/usr/local/bin/syft"
+              ],
+              "name": "stdlib",
+              "type": "go-module",
+              "version": "go1.26.8"
+            },
+            "related": [
+              {
+                "fix": null,
+                "id": "CVE-2026-78663",
+                "namespace": "nvd:cpe",
+                "severity": "Critical"
+              }
+            ],
+            "vulnerability": {
+              "fix": {
+                "available": [
+                  {
+                    "date": "2026-10-08",
+                    "kind": "release",
+                    "version": "1.26.9"
+                  }
+                ],
+                "state": "fixed",
+                "versions": [
+                  "1.26.9"
+                ]
+              },
+              "id": "GO-2026-6612",
+              "namespace": "govulndb:language:go",
+              "severity": "Critical"
+            }
+          },
+          "maximum_occurrences": 1
+        },
+        {
+          "id": "77e2e03b01649a432afbf4be9398c43f1e2bc9bc0b4375b31ed0af24fb705e50",
+          "identity": {
+            "package": {
+              "locations": [
+                "/usr/local/bin/syft"
+              ],
+              "name": "stdlib",
+              "type": "go-module",
+              "version": "go1.26.8"
+            },
+            "related": [
+              {
+                "fix": null,
+                "id": "CVE-2026-78667",
+                "namespace": "nvd:cpe",
+                "severity": "High"
+              }
+            ],
+            "vulnerability": {
+              "fix": {
+                "available": [
+                  {
+                    "date": "2026-10-08",
+                    "kind": "release",
+                    "version": "1.26.9"
+                  },
+                  {
+                    "date": "2026-10-08",
+                    "kind": "release",
+                    "version": "1.27.2"
+                  }
+                ],
+                "state": "fixed",
+                "versions": [
+                  "1.26.9",
+                  "1.27.2"
+                ]
+              },
+              "id": "GO-2026-6609",
+              "namespace": "govulndb:language:go",
+              "severity": "High"
+            }
+          },
+          "maximum_occurrences": 1
+        },
+        {
+          "id": "1440c382b01e8a674c336656070af2a5f43f215f1a03d2bfe58a0ab136a7649a",
+          "identity": {
+            "package": {
+              "locations": [
+                "/usr/local/bin/syft"
+              ],
+              "name": "stdlib",
+              "type": "go-module",
+              "version": "go1.26.8"
+            },
+            "related": [
+              {
+                "fix": null,
+                "id": "CVE-2026-78669",
+                "namespace": "nvd:cpe",
+                "severity": "High"
+              }
+            ],
+            "vulnerability": {
+              "fix": {
+                "available": [
+                  {
+                    "date": "2026-10-08",
+                    "kind": "release",
+                    "version": "1.26.9"
+                  }
+                ],
+                "state": "fixed",
+                "versions": [
+                  "1.26.9"
+                ]
+              },
+              "id": "GO-2026-6611",
+              "namespace": "govulndb:language:go",
+              "severity": "High"
+            }
+          },
+          "maximum_occurrences": 1
+        },
+        {
+          "id": "a5cc9fb351bba0dee27bdb1d4e55ea619987ed318b594f9d7b494fe360eeb046",
+          "identity": {
+            "package": {
+              "locations": [
+                "/usr/local/bin/syft"
+              ],
+              "name": "stdlib",
+              "type": "go-module",
+              "version": "go1.26.8"
+            },
+            "related": [
+              {
+                "fix": null,
+                "id": "CVE-2026-94439",
+                "namespace": "nvd:cpe",
+                "severity": "High"
+              }
+            ],
+            "vulnerability": {
+              "fix": {
+                "available": [
+                  {
+                    "date": "2026-10-08",
+                    "kind": "release",
+                    "version": "1.26.9"
+                  },
+                  {
+                    "date": "2026-10-08",
+                    "kind": "release",
+                    "version": "1.27.2"
+                  }
+                ],
+                "state": "fixed",
+                "versions": [
+                  "1.26.9",
+                  "1.27.2"
+                ]
+              },
+              "id": "GO-2026-6613",
+              "namespace": "govulndb:language:go",
+              "severity": "High"
+            }
+          },
+          "maximum_occurrences": 1
+        },
+        {
+          "id": "636ecc835fc41b786eeb914d6685d3900814a3ab59529f9f6c9ca179938f2ea0",
+          "identity": {
+            "package": {
+              "locations": [
+                "/usr/local/bin/syft"
+              ],
+              "name": "stdlib",
+              "type": "go-module",
+              "version": "go1.26.8"
+            },
+            "related": [
+              {
+                "fix": null,
+                "id": "CVE-2026-94440",
+                "namespace": "nvd:cpe",
+                "severity": "High"
+              }
+            ],
+            "vulnerability": {
+              "fix": {
+                "available": [
+                  {
+                    "date": "2026-10-08",
+                    "kind": "release",
+                    "version": "1.26.9"
+                  },
+                  {
+                    "date": "2026-10-08",
+                    "kind": "release",
+                    "version": "1.27.2"
+                  }
+                ],
+                "state": "fixed",
+                "versions": [
+                  "1.26.9",
+                  "1.27.2"
+                ]
+              },
+              "id": "GO-2026-6608",
+              "namespace": "govulndb:language:go",
+              "severity": "High"
+            }
+          },
+          "maximum_occurrences": 1
+        },
+        {
+          "id": "aa08020177f56e1d82df8f4f54871529a6ca839d553cfee47f21fea79b4f5aca",
+          "identity": {
+            "package": {
+              "locations": [
+                "/usr/local/bin/syft"
+              ],
+              "name": "stdlib",
+              "type": "go-module",
+              "version": "go1.26.8"
+            },
+            "related": [
+              {
+                "fix": null,
+                "id": "CVE-2026-94448",
+                "namespace": "nvd:cpe",
+                "severity": "Medium"
+              }
+            ],
+            "vulnerability": {
+              "fix": {
+                "available": [
+                  {
+                    "date": "2026-10-08",
+                    "kind": "release",
+                    "version": "1.26.9"
+                  },
+                  {
+                    "date": "2026-10-08",
+                    "kind": "release",
+                    "version": "1.27.2"
+                  }
+                ],
+                "state": "fixed",
+                "versions": [
+                  "1.26.9",
+                  "1.27.2"
+                ]
+              },
+              "id": "GO-2026-6599",
+              "namespace": "govulndb:language:go",
+              "severity": "Medium"
+            }
+          },
+          "maximum_occurrences": 1
+        },
+        {
+          "id": "90f54ad7f917c3d1809b93b37be64c0b8b69a001c7e61f34533f2252a102067d",
+          "identity": {
+            "package": {
+              "locations": [
+                "/usr/local/bin/syft"
+              ],
+              "name": "stdlib",
+              "type": "go-module",
+              "version": "go1.26.8"
+            },
+            "related": [
+              {
+                "fix": null,
+                "id": "CVE-2026-97030",
+                "namespace": "nvd:cpe",
+                "severity": "Medium"
+              }
+            ],
+            "vulnerability": {
+              "fix": {
+                "available": [
+                  {
+                    "date": "2026-10-08",
+                    "kind": "release",
+                    "version": "1.26.9"
+                  },
+                  {
+                    "date": "2026-10-08",
+                    "kind": "release",
+                    "version": "1.27.2"
+                  }
+                ],
+                "state": "fixed",
+                "versions": [
+                  "1.26.9",
+                  "1.27.2"
+                ]
+              },
+              "id": "GO-2026-6600",
+              "namespace": "govulndb:language:go",
+              "severity": "Medium"
+            }
+          },
+          "maximum_occurrences": 1
+        },
+        {
+          "id": "d9031d10ce63f7af255758a80eef8a9072f5bf021944e045997c3821211b7c6c",
+          "identity": {
+            "package": {
+              "locations": [
+                "/usr/local/bin/syft"
+              ],
+              "name": "stdlib",
+              "type": "go-module",
+              "version": "go1.26.8"
+            },
+            "related": [
+              {
+                "fix": null,
+                "id": "CVE-2026-97031",
+                "namespace": "nvd:cpe",
+                "severity": "High"
+              }
+            ],
+            "vulnerability": {
+              "fix": {
+                "available": [
+                  {
+                    "date": "2026-10-08",
+                    "kind": "release",
+                    "version": "1.26.9"
+                  },
+                  {
+                    "date": "2026-10-08",
+                    "kind": "release",
+                    "version": "1.27.2"
+                  }
+                ],
+                "state": "fixed",
+                "versions": [
+                  "1.26.9",
+                  "1.27.2"
+                ]
+              },
+              "id": "GO-2026-6607",
+              "namespace": "govulndb:language:go",
+              "severity": "High"
+            }
+          },
+          "maximum_occurrences": 1
+        },
+        {
+          "id": "4338436ab075ac1d3828ce4b56d9039e442fcf553e1564c052d577bbc7e775b5",
+          "identity": {
+            "package": {
+              "locations": [
+                "/usr/local/bin/syft"
+              ],
+              "name": "stdlib",
+              "type": "go-module",
+              "version": "go1.26.8"
+            },
+            "related": [
+              {
+                "fix": null,
+                "id": "CVE-2026-97032",
+                "namespace": "nvd:cpe",
+                "severity": "High"
+              }
+            ],
+            "vulnerability": {
+              "fix": {
+                "available": [
+                  {
+                    "date": "2026-10-08",
+                    "kind": "release",
+                    "version": "1.26.9"
+                  }
+                ],
+                "state": "fixed",
+                "versions": [
+                  "1.26.9"
+                ]
+              },
+              "id": "GO-2026-6617",
+              "namespace": "govulndb:language:go",
+              "severity": "High"
+            }
+          },
+          "maximum_occurrences": 1
+        }
+      ]
+    }
+  }
+}

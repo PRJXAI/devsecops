@@ -1,13 +1,19 @@
 # Third-party redistribution
 
-Packaged tool binaries and base images retain their upstream licenses. Source URLs, versions and immutable artifact hashes must remain in Dockerfiles/inventory. Include supplier LICENSE/NOTICE files where provided.
+Every packaged tool and base retains its original licenses. First-party code does not relicense supplier binaries. Keep literal artifact/source identities, required notices and corresponding-source arrangements with each release.
 
-[Supplier evidence](supplier-evidence.md) and its [artifact identities](artifact-evidence.json) record retrieved/verified facts and missing evidence, not approval. Docker CLI/Compose/Buildx and kind's provider now package their retrieved pinned top-level LICENSE/NOTICE files; full transitive coverage remains incomplete. [Official cargo-audit replacement](../docs/cargo-audit-supplier.md) supersedes the evidence snapshot's Quickinstall packaging, not its historical measurements.
+## Syft and Grype
 
-The upgraded candidate's [collected Go notice texts](gitleaks-go-notices/README.md) now cover named legal files for all 62 embedded Go modules, plus main/compiler/stdlib/vendor files. This is source-text collection, not complete artifact-specific legal approval or native-runtime corresponding-source compliance.
+The [scanner legal bundle](scanners/README.md) supplies source-attributed module/Go legal texts, base-data terms/source and explicit source retrieval instructions. Exact bundle bytes/modes are required by stopped-container checks. Collection records, supplier identity review and release approval are distinct; an index's collection-time false approval is not silently rewritten.
 
-The [Gitleaks runtime follow-up](gitleaks-runtime-review.md) now binds 20 selected public APK payloads and their expanded recipes to both hosted image archives. Exact glibc source-overlay bytes, full native/base notices, source delivery and accountable review remain incomplete; this is not redistribution approval.
+Source identity comes from digest-pinned unmodified suppliers, captured native module/compiler inventories and checksum-verified public module sources. No independent reproducible-build or supplier-signature claim is inferred. Fresh native contracts, scans, handoffs, owner approval and final publication provenance remain mandatory.
 
-The separate [Debian replacement evaluation](../docs/gitleaks-debian-runtime.md) and [retained identities](gitleaks-debian-evidence.json) verify eight selected binary packages and twelve corresponding-source objects through signed Debian metadata. This is not full image/source-delivery/provenance approval. The arm64 prototype is blocked by 26 additional findings; it does not replace the old vendor evidence or production image.
+## Other tools
 
-Complete transitive notices and corresponding-source obligations (especially Git/GPL) require review before distributing images. The initial private source repository and local builds are not publication approval. Do not represent this page as complete legal review or relicense third-party binaries under the first-party license.
+- Gitleaks includes its [collected Go notices](gitleaks-go-notices/README.md), but exact Git/glibc overlays, native notices/source delivery and the retained runtime-completion issue remain unresolved. [Runtime source records](gitleaks-runtime-review.md) and immutable [package identities](gitleaks-runtime-evidence.json) do not approve a release.
+- Official cargo-audit replaces historical Quickinstall packaging; complete compiled Rust/native inventory and artifact-specific review still matter.
+- Docker/Compose/Buildx and deployment clients retain pinned top-level notices; these alone do not establish complete transitive redistribution or runtime qualification.
+
+Historical [supplier evidence](supplier-evidence.md), [artifact records](artifact-evidence.json) and [Debian evaluation identities](gitleaks-debian-evidence.json) remain evidence of their original subjects, not current approval. Do not replace a false completeness assertion with a claim derived from a version command or owner vulnerability-risk acceptance.
+
+Publication authority and immutable consumption rules are in [release engineering](../docs/releases.md). Regulated-use/legal requirements remain deployment-specific; this repository makes no general compliance certification.

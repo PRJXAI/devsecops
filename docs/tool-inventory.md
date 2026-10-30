@@ -1,56 +1,35 @@
-# Consumer workflow tool inventory
+# Tool integration reference
 
-Source: PRJXAI/obsidian-sync `.github/workflows/ci.yml` plus its Dockerfile and Rust xtask calls, inspected at commit `f6fcd95` on 2026-10-26. The consumer has unrelated uncommitted simplification work; it is not imported here.
+| Tool | Version | Required contract | Current qualification boundary |
+|---|---|---|---|
+| Syft | 1.55.0 | JSON/SPDX/CycloneDX, Rust workspace/npm development locks, offline directory/archive input | Fresh native profiles and notice bundles prepared; release still requires both new native handoffs |
+| Grype | 0.121.0 | Separate DB retrieval; offline clean/vulnerable/missing-data controls; all-match accounting | Fresh native profiles and notice bundles prepared; release still requires both new native handoffs |
+| Gitleaks | 8.30.1 derivative / Go 1.27.3 | Source/deleted/bare/all-ref/redaction/clean-HEAD; minimal offline Git | Go notices packaged; exact Git/glibc corresponding-source and retained loader completion issue remain separate gaps |
+| cargo-audit | 0.22.2 | Clean/vulnerable/missing-RustSec controls | Official GNU native closure tested; compiled Rust/native inventory and supplier review incomplete |
+| cargo-deny | 0.20.2 | Complete advisories/bans/licenses/sources graph, index/cache inputs | Full compiler-free replacement is not proven; retain consumer host gate |
+| k3d | 5.9.0 | Packaged native disposable control-plane lifecycle and inventory | Host-CLI consumer smoke is not packaged-image qualification |
+| Kustomize | 5.8.3 | Offline rendering | Functional evidence exists; UNKNOWN component inventory remains unresolved |
+| kubectl | 1.37.2 | Offline client/config operations; authorized compatible server usage | Functional evidence exists; UNKNOWN component inventory remains unresolved |
+| Docker | 29.9.2 / Compose 5.6.1 / Buildx 0.38.1 | Client/plugins and offline Compose normalization | Main CLI/dependency inventory remains incomplete; daemon is external |
 
-## Tool images
+Every release targets native Linux amd64/arm64 independently of sibling tools. Version and top-level license checks alone do not complete qualification. See [releases](releases.md) and [results](results.md).
 
-| Tool | Consumer version | Required behavior |
-|---|---|---|
-| Syft | 1.55.0 | Native Syft JSON, CycloneDX and SPDX; development/workspace lock coverage; offline directory/archive scans and controlled registry retrieval |
-| Grype | 0.121.0 | Separate fresh advisory DB retrieval; offline SBOM scan; all severities and suppressed matches remain counted |
-| Gitleaks | 8.30.1 | Source and all-ref bare Git history, redaction, offline operation; requires Git at runtime |
-| cargo-audit | 0.22.2 | Cargo.lock/RustSec audit with separately provided advisory data |
-| cargo-deny | 0.20.2 | Advisories, bans, licenses and sources; a compiler-free image requires externally generated Cargo metadata and source/cache mounts |
-| k3d | 5.9.0 | Local disposable K3s clusters; private HOME/kubeconfig and default-context updates disabled; Docker SDK control-plane access is privileged |
-| kustomize | 5.8.3 | Render all consumer overlays without a cluster |
-| kubectl | Consumer inherits runner; this repo pins 1.37.2 | New image must choose a version compatible with the pinned K3s node (Kubernetes 1.37); offline client tests first |
-| Docker CLI + Compose | Consumer inherits runner; this repo pins 29.9.2 + 5.6.1, Buildx 0.38.1 | Build/save/load/inspect/exec and Compose config/services; Docker engine remains external |
-| Git | Consumer inherits runner; Gitleaks image includes vendor build 2.56.0.1.g02cd7dbd28 | Local source/history operations; preserve detached/all-ref history and ignore isolation |
+## Image layout
 
-The 2026-10-30 live release refresh supersedes those historical inspected versions where listed above. Native version/functional checks run against the refreshed recipes; previous base/native/source evidence is historical, not transferable approval. The owner subsequently replaced kind with k3d 5.9.0 / K3s 1.37.1. The consumer explicitly pins/inventories K3s, k3d-tools and pause; no RC node image or default unpinned helper is substituted.
+Entrypoints are `/usr/local/bin/TOOL`; cargo-audit additionally includes `audit` in its entrypoint. Final UID/GID is 65532. Gitleaks includes only the verified offline Git/native closure; cargo-audit includes its individually checked GNU loader/library closure. Docker packages Compose/Buildx plugins. K3d uses the embedded Docker SDK and includes no Docker CLI or daemon.
 
-## Release identities
+Scanners keep CA roots and explicit HOME/cache behavior. Database/configuration/credentials are mounts, not layers. Scanner containers receive no Docker socket. Minimal native closures are not permission to copy a whole supplier rootfs.
 
-Every row above except Git has its own `ghcr.io/prjxai/devsecops/<tool>` repository, `.github/publication-readiness/<tool>.json` and independent two-architecture publish/attestation job. Git is part of Gitleaks's runtime closure, not a separately released tool; Compose/Buildx similarly belong to Docker. Experimental Gitleaks evidence retains its separate candidate identity and cannot be used as production handoffs. See [release blockers](release-blockers.md) for each tool's remaining work; none is currently release-approved. The [reviewed-risk policy](release-risk-policy.md) now permits the exact unfixable Gitleaks advisory as accepted-risk, without waiving inventory, native tests or redistribution.
+## Keep outside these images
 
-## Packaging and adoption limits
+- Rust/Cargo/rustfmt/Clippy and C/C++/CMake/Perl/linker dependencies belong to the application build/test environment.
+- Node/npm belong only to the pinned Commonlib/PouchDB test bridge, not orchestration or the application runtime.
+- Engine/BuildKit, Dockerfile frontend, K3s nodes, k3d-tools, pause and RustFS are distinct infrastructure/service assets.
+- Actions need their supported shell/Node runner environment; these images are explicit tool invocations, not job containers.
+- The retired kind, external CouchDB, Trivy and standalone Alpine helper are not quietly reintroduced. Historical captures remain bound to their original source/subjects.
 
-Production Gitleaks is now the fixed-source 8.30.1 derivative built with Go 1.27.3 and the reviewed dependency patch. `inventory/gitleaks-production.json` contains all 74 tuples from the unchanged, hash-verified amd64/arm64 candidate reports; it replaces the old Gitleaks profile at both release boundaries. The collected Go notice bundle is packaged and checked byte-for-byte. Hosted production preparation now passes on amd64 and arm64 in run 40712836198, with one accepted-risk finding per architecture. This is not publication/attestation acceptance, resolution of local runtime stalls or source/legal approval.
+## Maintenance
 
-- Released archives/raw downloads use literal per-architecture SHA-256; supplier/base images use digest pins. Existing explicit Dockerfile frontend directives are digest-pinned; Syft/Grype/Gitleaks have no explicit directive and inherit the external builder's frontend. Do not claim a repository-wide explicit frontend pin. Native stages select architecture; extraction is exec-form/network-disabled. Rust owns orchestration/validation/publication.
-- cargo-audit uses official RustSec GNU releases on both architectures, with only their verified architecture-specific loader/library files copied from the already pinned glibc supplier. [Runtime/source evidence](cargo-audit-supplier.md) records native arm64 controls and amd64 static ABI checks; complete archive build provenance, inventories and legal review remain blocked.
-- cargo-deny without Cargo supports the tested external-metadata licensing/bans subset only. Real registry/source/advisory completeness is not established, and missing Cargo/index diagnostics can be nonfatal. Keep the consumer's host gate until a complete replacement is verified.
-- Gitleaks uses Git plus glibc loader/libc, PCRE2 and zlib from pinned suppliers. Native arm64 source/bare/deleted/all-ref/redaction controls have passed, but a later clean-HEAD invocation timed out and failed closed; see results. Remote helpers/hooks/LFS are absent. This is not full runtime acceptance or a general runner-Git replacement.
-- Docker includes both Compose and Buildx plugins. Its daemon stays external; no socket is present or mounted during image tests. K3d uses its embedded Docker SDK and packages no Docker CLI/socket/daemon/configuration. Host-CLI consumer lifecycle checks do not qualify the packaged tool on both architectures; its functional/inventory gates remain blocked.
-- Literal release URL/hash updates and expected-version contracts require human review; dependency bots do not approve supplier/provenance/license changes or trigger publication.
+Update literal release URLs/checksums, source/version metadata, base digests, notice bundles, captured coverage and expected contracts together. Dependabot proposals do not auto-merge, approve redistribution or publish. Do not rewrite a native report, infer UNKNOWN versions from a CLI string or carry an old compiler/base profile to different bytes.
 
-The separate [Debian runtime prototype](gitleaks-debian-runtime.md) uses Git `2.47.3`, glibc `2.41-12+deb13u4`, PCRE2 `10.46-1~deb13u3` and zlib `1:1.3.dfsg+really1.3.1-1+b1`. Both architectures have authenticated package/source and selected-file observations, but only arm64 ran. Its 74 observed packages include the unchanged 64 Go tuples plus ten Debian package records; this is not the production 74-tuple profile or complete replacement inventory approval. The 26 blocking findings prevent adoption. Partial-package metadata does not prove dynamic-loading closure or full file ownership; production versions above remain current.
-
-The separate [Syft compiler/dependency experiment](syft-compiler-candidate.md) retains native arm64 measurements of 18 → 4 → 1 blocking match. Its manifest patch and unchanged native captures are evidence only; the production Syft supplier, engine pins and accepted profiles remain unchanged. Failed/incomplete upstream suites, compiler-input output overflow, native amd64 and complete source/notices/provenance remain blockers. The [candidate record](../inventory/syft-source-candidate-evidence.json) explicitly denies production inventory/release/adoption approval.
-
-## Current inventory acceptance boundary
-
-`inventory/payloads.json` records 1,168 observed native arm64 package/location tuples and compiler metadata from independent pinned Syft output. Producer and publisher require those tuples without rewriting native reports. The Syft/Grype profiles and the historical Gitleaks supplier profile passed exact tuple/compiler criteria on actual hosted native amd64 and arm64 reports; [review](native-inventory-review.md) and hash-bound evidence retain those source/run subjects. Production Gitleaks now requires the separately reviewed upgraded profile above, never the historical supplier profile. This is not clean-scan or functional acceptance. Retired kind's historical profiles stay immutable evidence. K3d has no captured acceptance profile and cannot borrow kind's tuples/compiler/native approval. Rust tool payload inventories are missing, Docker CLI version/dependencies are incomplete, and Kustomize/Kubectl include UNKNOWN components. Those five tools and the new k3d payload fail closed on both architectures; unreviewed architectures and profiles also fail closed. This is captured regression coverage, not complete static-component attestation or native consumer acceptance. [Results](results.md) distinguishes source checks, native experiments and blocked release work.
-
-## Keep outside the distroless CLI images
-
-- Rust 1.99.1, Cargo, rustfmt and Clippy plus musl/C/C++/CMake/Perl/linker build dependencies: build/test host or builder image, not a shell-free CLI replacement.
-- Node 26.13.0 LTS/npm: genuine pinned Commonlib/PouchDB fixtures and npm audit only; not repository orchestration or runtime.
-- Go on the runner: currently installs k3d/kustomize. Released CLI images can eventually avoid these installs, but consumer invocation/mount changes require separate verified integration.
-- Docker daemon/BuildKit and Dockerfile frontend 1.28.0: preserve the external build engine/frontend contract; a Docker CLI image is not a daemon.
-- K3s 1.37.1, k3d-tools 5.9.0 and pause 3.10.1: separately pinned/inventoried disposable node/tool/sandbox dependencies, not distroless CLI replacements. The kindest/node fixture is retired; its old findings remain historical.
-- RustFS: an S3-compatible test service, not a scanner/tool CLI; retain its separately validated service image.
-- The standalone Alpine helper is retired under the 2026-10-30 owner instruction. Consumer build/test source proofs, context canaries and synthetic-data cleanup reuse the already required pinned Rust builder base; utilities are not added to any distroless runtime. Producer extraction alone uses Alpine 3.24.3.
-- GitHub Actions checkout/upload/download/setup-node and the hosted runner: Actions need their supported shell/Node environment. These tool images are explicit invocations, not whole-job containers.
-
-No Apache CouchDB or Trivy replacement is needed: the consumer already retired them. Actionlint is a local maintenance aid, not a step in the inspected consumer workflow.
+`inventory/payloads.json` and historical evidence remain immutable regression inputs. Current Syft/Grype use `inventory/scanner-production.json`; Gitleaks uses its separate upgraded production profile. Experiments cannot approve production handoffs.

@@ -8,7 +8,7 @@
 //! Never insert these tuples into a scanner report: this module only reads evidence.
 //!
 //! Hosted native linux/amd64 and linux/arm64 evidence from run 40571222293 is
-//! reviewed in `inventory/native-evidence.json` and `docs/native-inventory-review.md`.
+//! reviewed in `inventory/native-evidence.json` and `docs/tool-inventory.md`.
 //! Only Syft, Grype and Gitleaks have positive profiles on both architectures.
 //! Production Gitleaks now requires inventory/gitleaks-production.json, derived
 //! from unchanged upgraded native captures; the original supplier profile is
@@ -47,7 +47,19 @@ fn baseline() -> Result<&'static Value> {
 }
 
 fn profile(tool: &str) -> Result<&'static Value> {
-    if tool == "gitleaks" {
+    if matches!(tool, "syft" | "grype") {
+        static SCANNERS: OnceLock<Result<Value>> = OnceLock::new();
+        let data = SCANNERS
+            .get_or_init(|| {
+                serde_json::from_str(include_str!("../inventory/scanner-production.json"))
+                    .map_err(|_| "invalid scanner production inventory profile")
+            })
+            .as_ref()
+            .map_err(|e| *e)?;
+        data["tools"]
+            .get(tool)
+            .ok_or("missing scanner production profile")
+    } else if tool == "gitleaks" {
         static PRODUCTION: OnceLock<Result<Value>> = OnceLock::new();
         PRODUCTION
             .get_or_init(|| {
@@ -544,11 +556,8 @@ mod tests {
                         _ => json!("UNKNOWN payload/dependency versions block catalog coverage"),
                     }
                 );
-                assert_eq!(
-                    check(&document, tool).is_ok(),
-                    POSITIVE.contains(&tool) && tool != "gitleaks",
-                    "{arch}/{tool}"
-                );
+                // Old base/supplier captures cannot approve current production profiles.
+                assert!(check(&document, tool).is_err(), "{arch}/{tool}");
                 if POSITIVE.contains(&tool) {
                     // Mutations are disposable negative controls only, never saved
                     // or scanned as substituted/supplemented authentic documents.

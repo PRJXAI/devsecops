@@ -69,7 +69,7 @@ fn digest(value: &str) -> bool {
         .is_some_and(|h| hex(h, 64) && h.bytes().all(|b| !b.is_ascii_uppercase()))
 }
 
-fn text<'a>(value: &'a Value, pointer: &str) -> Result<&'a str> {
+pub(super) fn text<'a>(value: &'a Value, pointer: &str) -> Result<&'a str> {
     value
         .pointer(pointer)
         .and_then(Value::as_str)
@@ -150,7 +150,7 @@ pub(super) fn read_json(path: &Path) -> Result<Value> {
     serde_json::from_slice(&data).map_err(|_| "malformed JSON evidence")
 }
 
-fn hash(path: &Path, limit: u64) -> Result<String> {
+pub(super) fn hash(path: &Path, limit: u64) -> Result<String> {
     let mut file = regular(path, limit)?;
     let mut hasher = Sha256::new();
     let mut buffer = [0; 64 * 1024];
@@ -173,7 +173,7 @@ fn hash(path: &Path, limit: u64) -> Result<String> {
         .collect())
 }
 
-fn write_new(path: &Path, data: &[u8], mode: u32) -> Result<()> {
+pub(super) fn write_new(path: &Path, data: &[u8], mode: u32) -> Result<()> {
     let mut file = OpenOptions::new()
         .write(true)
         .create_new(true)
@@ -186,7 +186,7 @@ fn write_new(path: &Path, data: &[u8], mode: u32) -> Result<()> {
         .map_err(|_| "cannot write evidence")
 }
 
-fn write_json(path: &Path, value: &Value) -> Result<()> {
+pub(super) fn write_json(path: &Path, value: &Value) -> Result<()> {
     write_new(
         path,
         &serde_json::to_vec_pretty(value).map_err(|_| "cannot encode evidence")?,
@@ -204,7 +204,7 @@ fn directory(path: &Path) -> Result<()> {
     Ok(())
 }
 
-fn mkdir(path: &Path, shared: bool) -> Result<()> {
+pub(super) fn mkdir(path: &Path, shared: bool) -> Result<()> {
     DirBuilder::new()
         .mode(0o700)
         .create(path)

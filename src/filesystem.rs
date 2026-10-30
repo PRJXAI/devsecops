@@ -118,6 +118,10 @@ fn required(tool: &str) -> Result<Vec<String>> {
     if tool == "gitleaks" {
         paths.push(GO_NOTICES.into());
     }
+    if matches!(tool, "syft" | "grype") {
+        paths.push(format!("usr/share/licenses/{tool}/THIRD-PARTY-NOTICES.txt"));
+        paths.push("usr/share/licenses/static-base/NOTICES.txt".into());
+    }
     if tool == "cargo-audit" && cfg!(target_arch = "aarch64") {
         // Official arm64 GNU DT_NEEDED includes the compatibility DSOs; amd64
         // does not. These are regular files from the same pinned glibc supplier.
@@ -291,6 +295,38 @@ fn files(path: &Path, tool: &str) -> Result<()> {
                     {
                         return Err("packaged Gitleaks notices differ from reviewed collection");
                     }
+                } else if name == "usr/share/licenses/static-base/NOTICES.txt"
+                    && matches!(tool, "syft" | "grype")
+                {
+                    if size > 1024 * 1024 || mode != 0o444 {
+                        return Err("static-base notice size or mode mismatch");
+                    }
+                    let mut data = Vec::new();
+                    entry
+                        .read_to_end(&mut data)
+                        .map_err(|_| "cannot read static-base notices")?;
+                    if data
+                        != super::notices::bundle(
+                            Path::new(env!("CARGO_MANIFEST_DIR")),
+                            "static-base",
+                        )?
+                    {
+                        return Err("packaged static-base notices differ from reviewed collection");
+                    }
+                } else if name.ends_with("/THIRD-PARTY-NOTICES.txt")
+                    && matches!(tool, "syft" | "grype")
+                {
+                    if size > 8 * 1024 * 1024 || mode != 0o444 {
+                        return Err("scanner notice size or mode mismatch");
+                    }
+                    let mut data = Vec::new();
+                    entry
+                        .read_to_end(&mut data)
+                        .map_err(|_| "cannot read scanner notices")?;
+                    if data != super::notices::bundle(Path::new(env!("CARGO_MANIFEST_DIR")), tool)?
+                    {
+                        return Err("packaged scanner notices differ from reviewed collection");
+                    }
                 } else if name == CA {
                     if size > 1024 * 1024 {
                         return Err("CA bundle budget exceeded");
@@ -432,11 +468,18 @@ mod tests {
                 b"-----BEGIN CERTIFICATE-----\nYQ==\n-----END CERTIFICATE-----\n".to_vec()
             } else if name == GO_NOTICES {
                 release::gitleaks_candidate::go_notices(&driver.root).unwrap()
+            } else if name == "usr/share/licenses/static-base/NOTICES.txt" {
+                super::super::notices::bundle(&driver.root, "static-base").unwrap()
+            } else if name.ends_with("/THIRD-PARTY-NOTICES.txt") {
+                super::super::notices::bundle(&driver.root, tool).unwrap()
             } else {
                 payload()
             };
             let mut h = header(name, EntryType::Regular, data.len() as u64);
-            if name == GO_NOTICES {
+            if name == GO_NOTICES
+                || name.ends_with("/THIRD-PARTY-NOTICES.txt")
+                || name == "usr/share/licenses/static-base/NOTICES.txt"
+            {
                 h.set_mode(0o444);
                 h.set_cksum();
             }
@@ -813,6 +856,7 @@ mod tests {
     #[test]
     fn only_observed_base_devices_are_permitted() {
         let (_driver, path) = fixture("syft", "", None);
+        let trailer = fs::metadata(&path).unwrap().len() - 1024;
         for (name, major, minor, accepted) in [
             ("dev/null", 1, 3, true),
             ("dev/zero", 1, 5, true),
@@ -823,7 +867,7 @@ mod tests {
         ] {
             let mut file = OpenOptions::new().write(true).open(&path).unwrap();
             use std::io::{Seek, SeekFrom};
-            file.seek(SeekFrom::Start(2048)).unwrap();
+            file.seek(SeekFrom::Start(trailer)).unwrap();
             let mut h = header(name, EntryType::Char, 0);
             h.set_device_major(major).unwrap();
             h.set_device_minor(minor).unwrap();

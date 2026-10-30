@@ -43,7 +43,7 @@ Before approval, obtain and review:
 2. Complete artifact-specific license/NOTICE text and any required source/relinking materials for Git, glibc, PCRE2/JIT, zlib and all retained base packages. Existing Go notices are already packaged; this collection does not add native notices to the image.
 3. A concrete corresponding-source delivery arrangement for recipients and an accountable redistribution/provenance review of that bundle. Merely pointing at a plausible public patch or selecting the publication checkbox does not supply missing evidence.
 
-At this source-capture step, no vendor contact, private repository access, credential use, image supplier substitution, source-build fork or publication was performed. A subsequently authorized [Debian replacement evaluation](../docs/gitleaks-debian-runtime.md) obtains authenticated public source material and tests a separate arm64 prototype, but retains 26 blocking findings and incomplete approvals. It is not adopted and does not authenticate the old vendor's missing overlays; approval must follow complete evidence, not precede it.
+At this source-capture step, no vendor contact, private repository access, credential use, image supplier substitution, source-build fork or publication was performed. A subsequently authorized [Debian replacement evaluation](../docs/results.md) obtains authenticated public source material and tests a separate arm64 prototype, but retains 26 blocking findings and incomplete approvals. It is not adopted and does not authenticate the old vendor's missing overlays; approval must follow complete evidence, not precede it.
 
 ## Reproduction and limits
 
@@ -51,4 +51,4 @@ Private captures are under `.work/approval-suppliers/gitleaks-runtime-v3/`; publ
 
 The ordinary `runtime_source_evidence_is_two_architecture_observation_not_approval` test checks the exact two-architecture/package coverage and false approval/completeness claims. The opt-in `release::tests::recorded_runtime_recipes_and_original_artifacts_keep_their_hashes` rehashes all original APKs, expanded recipes, PKGINFO and both image archives, and checks retained selected-file identities. It does not independently rebuild packages or turn metadata into legal approval. The real initial payload comparison was performed by the private Rust collector; the replay is an integrity check on those observations.
 
-The [loader-only diagnostic](../docs/runtime-completion.md) independently reproduces the completion failure without Gitleaks/Git execution. Publication and consumer adoption remain blocked; no readiness approval changes follow from this review.
+The [loader-only diagnostic](../docs/results.md) independently reproduces the completion failure without Gitleaks/Git execution. Publication and consumer adoption remain blocked; no readiness approval changes follow from this review.

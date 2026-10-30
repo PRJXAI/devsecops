@@ -8,7 +8,7 @@ Collected **2026-10-27**, Darwin/arm64 host, native Linux/arm64 Docker daemon. *
 
 ## Snapshot and supersession
 
-The recorded Docker/cargo-audit recipe hashes match source **`9500de1196b51e2a27143b8188fe08908d4b1f13`**. This collection predates the new Docker/plugin/provider top-level notice layers and the [official GNU cargo-audit replacement](../docs/cargo-audit-supplier.md). Statements about missing packaged notices, musl/Quickinstall pins and runtime contents below describe that snapshot, not current recipes. Historical hashes/measurements are preserved; they do not authenticate the new GNU artifacts. [Current sequence](../docs/release-readiness.md) records what remains blocked.
+The recorded Docker/cargo-audit recipe hashes match source **`9500de1196b51e2a27143b8188fe08908d4b1f13`**. This collection predates the new Docker/plugin/provider top-level notice layers and the [official GNU cargo-audit replacement](../docs/tool-inventory.md). Statements about missing packaged notices, musl/Quickinstall pins and runtime contents below describe that snapshot, not current recipes. Historical hashes/measurements are preserved; they do not authenticate the new GNU artifacts. [Current release requirements](../docs/releases.md) records what remains blocked.
 
 ## Collection boundary
 
@@ -17,7 +17,7 @@ The recorded Docker/cargo-audit recipe hashes match source **`9500de1196b51e2a27
 - Rust helpers, lockfile, raw responses, private process output and derived inventories are in `.work/approval-suppliers/` (0700 parent; downloaded evidence 0600). HTTP transfers had 90-second deadlines, streaming byte caps and SHA-256 receipts: at most 64 MiB per response. Largest retrieved response: **42,952,513 bytes**. No image archives or advisory DB copies were created.
 - Four already-cached, exact pinned public supplier images were inspected with an empty Docker config and explicit local Unix endpoint. Stopped native arm64 containers were created with `--pull=never`, exported through a 512 MiB capped stream, never started, then removed. No socket was mounted into a tool container. The second export pass added actual library symlink targets and package SBOMs; both passes are retained. This relies on the trusted local daemon, not independently verified compressed layer contents.
 - Only approved `.work/tasks-catalog-evidence` historical evidence was reused: three unchanged report hashes were rechecked against its `SHA256SUMS`. Historical payload digests agree with current supplier exports; they are not clean-source build provenance. No unrelated operator/private directories, real clusters, registry writes, staging, commits or pushes were used. No native amd64 execution or vulnerability scan was performed.
-- These per-transfer/export limits are not a hard host-disk quota. The repository's [trust/resource limits](../docs/threat-model.md) and [readiness sequence](../docs/release-readiness.md) remain unchanged.
+- These per-transfer/export limits are not a hard host-disk quota. The repository's [trust/resource limits](../docs/threat-model.md) and [release requirements](../docs/releases.md) remain unchanged.
 
 ## Verified supplier index identities
 

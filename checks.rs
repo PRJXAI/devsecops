@@ -113,6 +113,21 @@ mod tests {
         {
             return true;
         }
+        if matches!(tool, "syft" | "grype")
+            && args
+                == "--chmod=0444 licenses/scanners/STATIC-BASE-NOTICES.txt /usr/share/licenses/static-base/NOTICES.txt"
+        {
+            return true;
+        }
+        if (tool == "syft"
+            && args
+                == "--chmod=0444 licenses/scanners/syft-NOTICES.txt /usr/share/licenses/syft/THIRD-PARTY-NOTICES.txt")
+            || (tool == "grype"
+                && args
+                    == "--chmod=0444 licenses/scanners/grype-NOTICES.txt /usr/share/licenses/grype/THIRD-PARTY-NOTICES.txt")
+        {
+            return true;
+        }
         let fields: Vec<_> = args.split_whitespace().collect();
         let mut flags = BTreeSet::new();
         let mut index = 0;
@@ -478,6 +493,10 @@ mod tests {
             .collect()
     }
 
+    fn notice_attributes(bytes: &[u8]) -> bool {
+        bytes == b"# Preserve original upstream legal bytes, including CRLF and whitespace.\n# The packaged bundles remain subject to exact byte/hash/mode validation.\nlicenses/scanners/syft-NOTICES.txt -text -whitespace\nlicenses/scanners/grype-NOTICES.txt -text -whitespace\nlicenses/scanners/STATIC-BASE-NOTICES.txt -text -whitespace\n"
+    }
+
     fn rust_glue_file(folder: &Path, relative: &Path) -> bool {
         let mut path = folder.to_path_buf();
         for component in relative.components() {
@@ -513,6 +532,7 @@ mod tests {
                 "Dockerfile",
                 ".dockerignore",
                 ".gitignore",
+                ".gitattributes",
                 "LICENSE",
                 "COPYING",
                 "NOTICE",
@@ -540,6 +560,9 @@ mod tests {
         // Also catch extension-disguised interpreter launchers, not Rust attributes.
         if bytes.starts_with(b"#!") && !bytes.starts_with(b"#![") {
             return false;
+        }
+        if name == ".gitattributes" {
+            return relative == Path::new(".gitattributes") && notice_attributes(&bytes);
         }
         if relative == Path::new("tests/fixtures/syft-compiler/Dockerfile") {
             return syft_candidate_dockerfile(&bytes);
@@ -755,6 +778,26 @@ mod tests {
             }
         }
     }
+    #[test]
+    fn notice_attributes_only_preserve_three_exact_legal_bundles() {
+        let original = include_bytes!(".gitattributes");
+        assert!(notice_attributes(original));
+        for extra in [
+            "*.rs -whitespace\n",
+            "* -text -whitespace\n",
+            "* filter=command\n",
+            "*.rs diff=command\n",
+        ] {
+            let mut changed = original.to_vec();
+            changed.extend_from_slice(extra.as_bytes());
+            assert!(!notice_attributes(&changed));
+        }
+        let changed = String::from_utf8(original.to_vec())
+            .unwrap()
+            .replace("licenses/scanners/syft-NOTICES.txt", "*");
+        assert!(!notice_attributes(changed.as_bytes()));
+    }
+
     #[test]
     fn rust_is_the_only_glue_layer() {
         for relative in eligible_files(root()) {
@@ -1635,7 +1678,12 @@ jobs:";
             "README.md",
             "docs/tool-inventory.md",
             "docs/results.md",
-            "docs/cargo-audit-supplier.md",
+            "docs/operations.md",
+            "docs/releases.md",
+            "docs/security.md",
+            "docs/threat-model.md",
+            "llms.txt",
+            "licenses/scanners/README.md",
             ".agents/skills/maintain-tool-images/SKILL.md",
             ".agents/skills/verify-tool-images/SKILL.md",
             ".agents/skills/maintain-docs/SKILL.md",

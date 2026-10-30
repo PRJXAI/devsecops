@@ -1,0 +1,25 @@
+# PRJXAI DevSecOps tool images
+
+> Digest-pinned distroless/nonroot CLI images for SRE and DevSecOps pipelines. Rust orchestrates checks and independent two-native-architecture releases. Distroless is not vulnerability freedom.
+
+## Documentation
+
+- [Overview and catalog](README.md): versions, intended users and quick usage.
+- [Operations](docs/operations.md): mounts, resources, offline analysis, caches and privileged clients.
+- [Release engineering](docs/releases.md): native handoffs, source-bound approval, provenance, package visibility and consumer adoption.
+- [Security and accepted risks](docs/security.md): exact owner-selected stack policy; remaining inventory/runtime/legal gates.
+- [Trust model](docs/threat-model.md): runner authority, unsigned evidence and storage limits.
+- [Integration reference](docs/tool-inventory.md): contracts and unsupported replacement boundaries.
+- [Verification record](docs/results.md): measured evidence and current qualifications.
+- [Licenses and source](licenses/README.md): redistribution and source availability.
+- [Repository instructions](AGENTS.md): implementation ownership and mandatory checks.
+
+## Automation contract
+
+First-party code/tests/orchestration are Rust; CI run steps are single Cargo invocations. No Python, first-party unsafe Rust, shell programs or generic supplier-rebuild framework. Preserve literal pins, resource/capture/deadline/cancellation/cleanup checks and public-output privacy.
+
+Use check/contract/catalog/prepare/publish for their distinct purposes. A version smoke, catalog, experimental candidate or successful sibling is not a release. Only manual main/tool/source-bound approved publication can write the registry; both native archives must load/identify correctly before any push.
+
+The owner accepted investigated stack risks on 2026-10-30, including known fixable findings. Exact recipes/packages/advisories/fixes/locations/occurrence limits remain visible as accepted-risk; new findings and missing evidence still block. Grype remains the image vulnerability matcher, with separate retrieval/offline analysis and no matching filters.
+
+Do not use real vaults, clusters, provider accounts, operator overrides or credentials. No current kubecontext, scanner socket, host changes or production deployment. Consume only an actual verified published digest after successful provenance and package-access checks. Keep the consumer's host cargo-deny and real-client/deployment gates until equivalence is proven.

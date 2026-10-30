@@ -1,9 +1,66 @@
-//! Owner-reviewed no-fix acceptance, not scanner suppression or a clean claim.
-//! Narrow explicit rule; see docs/release-risk-policy.md. All other matches block.
+//! Owner-selected current-stack acceptance, not scanner suppression or a clean claim.
+//! Exact snapshot and separate Gitleaks rule; see docs/security.md. New matches block.
 use super::{Result, SEVERITIES, text, tool_identity};
 use serde_json::{Value, json};
+#[cfg(test)]
+#[path = "risk_snapshot_capture.rs"]
+mod capture;
 
-pub(super) const POLICY: &str = "reviewed-nofix-2026-10-28-v1";
+pub(super) const POLICY: &str = "owner-selected-stack-2026-10-30-v1";
+
+fn snapshot(tool: &str) -> Result<Option<Value>> {
+    let all: Value = serde_json::from_str(include_str!("../inventory/accepted-risks.json"))
+        .map_err(|_| "invalid accepted-risk snapshot")?;
+    let Some(profile) = all["tools"].get(tool) else {
+        return Ok(None);
+    };
+    let recipe: &[u8] = match tool {
+        "syft" => include_bytes!("../images/syft/Dockerfile"),
+        "grype" => include_bytes!("../images/grype/Dockerfile"),
+        _ => return Err("unsupported accepted-risk snapshot tool"),
+    };
+    use sha2::{Digest, Sha256};
+    let digest = Sha256::digest(recipe)
+        .iter()
+        .map(|b| format!("{b:02x}"))
+        .collect::<String>();
+    if all["schema"] != 1
+        || all["decision"] != "owner-selected-stack-2026-10-30"
+        || profile["recipe_sha256"] != digest
+    {
+        return Err("accepted-risk recipe scope changed");
+    }
+    Ok(Some(profile.clone()))
+}
+
+pub(super) fn projection(finding: &Value, package: &Value) -> Result<Value> {
+    let mut paths = package["locations"]
+        .as_array()
+        .ok_or("missing risk package locations")?
+        .iter()
+        .map(|v| {
+            v["path"]
+                .as_str()
+                .map(str::to_owned)
+                .ok_or("invalid risk package location")
+        })
+        .collect::<Result<Vec<_>>>()?;
+    paths.sort();
+    paths.dedup();
+    if paths.is_empty() {
+        return Err("missing risk package locations");
+    }
+    let mut related=finding["relatedVulnerabilities"].as_array().ok_or("missing related advisory coverage")?.iter().map(|v|json!({"id":v["id"],"namespace":v["namespace"],"severity":v["severity"],"fix":v["fix"]})).collect::<Vec<_>>();
+    related.sort_by_key(Value::to_string);
+    let v = &finding["vulnerability"];
+    Ok(
+        json!({"package":{"name":package["name"],"version":package["version"],"type":package["type"],"locations":paths},"vulnerability":{"id":v["id"],"namespace":v["namespace"],"severity":v["severity"],"fix":v["fix"]},"related":related}),
+    )
+}
+fn scope_matches(rule: &Value, package: &Value) -> bool {
+    let finding = json!({"vulnerability":rule["identity"]["vulnerability"],"relatedVulnerabilities":rule["identity"]["related"]});
+    projection(&finding, package).is_ok_and(|value| value == rule["identity"])
+}
 const EXCEPTION: &str = "gitleaks-openpgp-no-fix-v1";
 const PACKAGE: &str = "golang.org/x/crypto";
 const VERSION: &str = "v0.58.0";
@@ -59,6 +116,8 @@ pub(super) fn assess(tool: &str, sbom: &Value, report: &Value) -> Result<Value> 
     let packages = sbom["artifacts"]
         .as_array()
         .ok_or("missing risk inventory")?;
+    let profile = snapshot(tool)?;
+    let mut used = std::collections::BTreeMap::<String, u64>::new();
     let (mut accepted, mut blocking) = (0u64, 0u64);
     for key in ["matches", "ignoredMatches"] {
         let findings = match report.get(key) {
@@ -80,6 +139,30 @@ pub(super) fn assess(tool: &str, sbom: &Value, report: &Value) -> Result<Value> 
             }
             if accepted == 0 && eligible(tool, finding, package) {
                 accepted += 1;
+            } else if let Some(rule) = profile
+                .as_ref()
+                .and_then(|p| p["rules"].as_array())
+                .and_then(|rules| {
+                    rules.iter().find(|rule| {
+                        projection(finding, package).is_ok_and(|v| v == rule["identity"])
+                    })
+                })
+            {
+                let id = rule["id"]
+                    .as_str()
+                    .ok_or("invalid risk snapshot rule")?
+                    .to_owned();
+                let count = used.entry(id).or_default();
+                if *count
+                    < rule["maximum_occurrences"]
+                        .as_u64()
+                        .ok_or("invalid risk occurrence limit")?
+                {
+                    *count += 1;
+                    accepted += 1;
+                } else {
+                    blocking += 1;
+                }
             } else {
                 blocking += 1;
             }
@@ -87,7 +170,7 @@ pub(super) fn assess(tool: &str, sbom: &Value, report: &Value) -> Result<Value> 
     }
     Ok(
         json!({"policy":POLICY,"accepted":accepted,"blocking":blocking,
-        "exceptions":if accepted == 1 { vec![EXCEPTION] } else { vec![] }}),
+        "exceptions":if accepted > 0 { vec![if let Some(profile) = profile.as_ref() { profile["acceptance_id"].as_str().ok_or("missing acceptance identity")? } else { EXCEPTION }] } else { vec![] }}),
     )
 }
 
@@ -142,6 +225,26 @@ pub(super) fn receipt(value: &Value, tool: &str) -> Result<()> {
         json!([])
     } else if total == 1 && tool == "gitleaks" && counts["Unknown"].as_u64() == Some(1) {
         json!([EXCEPTION])
+    } else if let Some(profile) = snapshot(tool)? {
+        let mut allowed = std::collections::BTreeMap::<&str, u64>::new();
+        for rule in profile["rules"]
+            .as_array()
+            .ok_or("missing accepted-risk rules")?
+        {
+            let severity = rule["identity"]["vulnerability"]["severity"]
+                .as_str()
+                .ok_or("invalid accepted-risk severity")?;
+            *allowed.entry(severity).or_default() += rule["maximum_occurrences"]
+                .as_u64()
+                .ok_or("invalid accepted-risk limit")?;
+        }
+        if SEVERITIES[..6]
+            .iter()
+            .any(|s| counts[*s].as_u64().unwrap_or(u64::MAX) > *allowed.get(s).unwrap_or(&0))
+        {
+            return Err("receipt exceeds reviewed risk snapshot");
+        }
+        json!([profile["acceptance_id"]])
     } else {
         return Err("receipt contains unapproved findings");
     };
@@ -153,7 +256,22 @@ pub(super) fn receipt(value: &Value, tool: &str) -> Result<()> {
 
 pub(super) fn inventory(value: &Value, tool: &str, sbom: &Value) -> Result<()> {
     receipt(value, tool)?;
-    if value["risk"]["accepted"] == 1 {
+    if value["risk"]["accepted"] == 0 {
+        return Ok(());
+    }
+    if let Some(profile) = snapshot(tool)? {
+        let packages = sbom["artifacts"]
+            .as_array()
+            .ok_or("missing risk inventory")?;
+        for rule in profile["rules"]
+            .as_array()
+            .ok_or("missing accepted-risk rules")?
+        {
+            if !packages.iter().any(|p| scope_matches(rule, p)) {
+                return Err("accepted snapshot package differs from verified SBOM");
+            }
+        }
+    } else if value["risk"]["accepted"] == 1 {
         let packages = sbom["artifacts"]
             .as_array()
             .ok_or("missing risk inventory")?;
@@ -291,6 +409,76 @@ mod tests {
         assert!(receipt(&bad, "gitleaks").is_err());
     }
 
+    #[test]
+    fn selected_stack_accepts_only_the_reviewed_snapshot_and_preserves_counts() {
+        for tool in ["syft", "grype"] {
+            let p = snapshot(tool).unwrap().unwrap();
+            let mut packages = Vec::new();
+            let mut findings = Vec::new();
+            let mut counts = SEVERITIES
+                .into_iter()
+                .map(|s| (s.to_owned(), 0u64))
+                .collect::<std::collections::BTreeMap<_, _>>();
+            for (n, r) in p["rules"].as_array().unwrap().iter().enumerate() {
+                let mut package = r["identity"]["package"].clone();
+                package["id"] = json!(n.to_string());
+                package["locations"] = json!(
+                    package["locations"]
+                        .as_array()
+                        .unwrap()
+                        .iter()
+                        .map(|path| json!({"path":path}))
+                        .collect::<Vec<_>>()
+                );
+                for _ in 0..r["maximum_occurrences"].as_u64().unwrap() {
+                    findings.push(json!({"artifact":package,"vulnerability":r["identity"]["vulnerability"],"relatedVulnerabilities":r["identity"]["related"]}));
+                    *counts
+                        .get_mut(r["identity"]["vulnerability"]["severity"].as_str().unwrap())
+                        .unwrap() += 1;
+                }
+                packages.push(package);
+            }
+            let bom = json!({"artifacts":packages});
+            let raw = json!({"matches":findings});
+            let assessment = assess(tool, &bom, &raw).unwrap();
+            let total = raw["matches"].as_array().unwrap().len();
+            assert_eq!(assessment["accepted"], total);
+            assert_eq!(assessment["blocking"], 0);
+            let receipt = json!({"count":total,"counts":counts,"risk":assessment,"status":"accepted-risk","diagnostics":"none"});
+            assert!(inventory(&receipt, tool, &bom).is_ok());
+            let mut duplicate = raw.clone();
+            duplicate["matches"]
+                .as_array_mut()
+                .unwrap()
+                .push(raw["matches"][0].clone());
+            assert_eq!(assess(tool, &bom, &duplicate).unwrap()["blocking"], 1);
+            for (pointer, value) in [
+                ("/vulnerability/id", json!("new-advisory")),
+                ("/vulnerability/severity", json!("Low")),
+                ("/vulnerability/fix/versions", json!(["new-fix"])),
+                ("/relatedVulnerabilities", json!([])),
+            ] {
+                let mut changed = raw.clone();
+                if changed["matches"][0].pointer(pointer) == Some(&value) {
+                    continue;
+                }
+                *changed["matches"][0].pointer_mut(pointer).unwrap() = value;
+                assert_eq!(
+                    assess(tool, &bom, &changed).unwrap()["blocking"],
+                    1,
+                    "{tool}/{pointer}"
+                );
+            }
+            let mut changed = bom.clone();
+            for package in changed["artifacts"].as_array_mut().unwrap() {
+                package["locations"][0]["path"] = json!("/other");
+            }
+            assert!(inventory(&receipt, tool, &changed).is_err());
+            let mut changed = receipt.clone();
+            changed["status"] = json!("clean");
+            assert!(super::receipt(&changed, tool).is_err());
+        }
+    }
     #[test]
     fn precision_warning_is_exact_and_other_diagnostics_still_fail() {
         assert_eq!(diagnostics(b""), Ok("none"));

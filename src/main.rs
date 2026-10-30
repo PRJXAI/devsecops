@@ -8,6 +8,7 @@ mod contracts;
 mod coverage;
 mod filesystem;
 mod grype_contract;
+mod notices;
 mod release;
 #[cfg(test)]
 mod runtime_probe;
@@ -641,6 +642,13 @@ fn built_image_id(path: &Path) -> Result<String> {
 
 fn main() {
     let args: Vec<_> = std::env::args_os().skip(1).collect();
+    if args.as_slice() == ["collect-scanner-notices"] {
+        if let Err(error) = Driver::new().and_then(|mut driver| notices::collect(&mut driver)) {
+            eprintln!("notice collection failed: {error}");
+            std::process::exit(1);
+        }
+        return;
+    }
     if args.as_slice() == ["audit-dependencies"] {
         if let Err(error) = Driver::new().and_then(|mut driver| audit::gate(&mut driver)) {
             eprintln!("dependency audit failed: {error}");

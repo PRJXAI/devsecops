@@ -1,0 +1,5 @@
+# Preserve original upstream legal bytes, including CRLF and whitespace.
+# The packaged bundles remain subject to exact byte/hash/mode validation.
+licenses/scanners/syft-NOTICES.txt -text -whitespace
+licenses/scanners/grype-NOTICES.txt -text -whitespace
+licenses/scanners/STATIC-BASE-NOTICES.txt -text -whitespace
