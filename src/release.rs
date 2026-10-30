@@ -23,6 +23,10 @@ mod risk;
 pub(super) mod gitleaks_candidate;
 
 #[cfg(test)]
+#[path = "syft_candidate.rs"]
+mod syft_candidate;
+
+#[cfg(test)]
 #[path = "debian_runtime.rs"]
 mod debian_runtime;
 

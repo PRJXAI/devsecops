@@ -97,7 +97,7 @@ fn text<'a>(value: &'a Value, pointer: &str) -> Result<&'a str> {
 // Retain only bounded member metadata and manifest JSON. Raw iteration prevents
 // tar from allocating PAX/GNU extensions or interpreting sparse/alternate paths.
 // No extraction, archive-sized buffer, or reopen of the selected config occurs.
-fn saved_config(path: &Path) -> Result<(String, Vec<u8>, usize)> {
+pub(super) fn saved_config(path: &Path) -> Result<(String, Vec<u8>, usize)> {
     let mut input = regular(path)?.take(ARCHIVE_LIMIT + 1);
     let mut members = BTreeMap::new();
     let mut manifest = None;

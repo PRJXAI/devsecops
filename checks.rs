@@ -541,6 +541,9 @@ mod tests {
         if bytes.starts_with(b"#!") && !bytes.starts_with(b"#![") {
             return false;
         }
+        if relative == Path::new("tests/fixtures/syft-compiler/Dockerfile") {
+            return syft_candidate_dockerfile(&bytes);
+        }
         if relative == Path::new("tests/fixtures/gitleaks/Dockerfile") {
             return candidate_dockerfile(&bytes);
         }
@@ -603,6 +606,32 @@ mod tests {
             assert!(!docker_policy(&text.replace(old, new), "gitleaks"));
         }
         assert!(!docker_policy(&text, "syft"));
+    }
+
+    fn syft_candidate_dockerfile(bytes: &[u8]) -> bool {
+        use sha2::Digest;
+        sha2::Sha256::digest(bytes)
+            .iter()
+            .map(|b| format!("{b:02x}"))
+            .collect::<String>()
+            == "9df921c1b16830077fb36f9f915bfe6052875dfb966979a384bd90e91020ddf8"
+    }
+    #[test]
+    fn syft_compiler_fixture_is_exact_and_cannot_authorize_production() {
+        let bytes = include_bytes!("tests/fixtures/syft-compiler/Dockerfile");
+        assert!(syft_candidate_dockerfile(bytes));
+        let text = std::str::from_utf8(bytes).unwrap();
+        for (old, new) in [
+            ("65532:65532", "0"),
+            ("COPY --chmod=0555 candidate", "COPY --chmod=0555 ."),
+            ("WORKDIR /tmp", "RUN [\"sh\",\"-c\",\"true\"]\nWORKDIR /tmp"),
+        ] {
+            assert!(!syft_candidate_dockerfile(
+                text.replace(old, new).as_bytes()
+            ));
+        }
+        assert!(!docker_policy(text, "syft"));
+        assert!(!candidate_dockerfile(bytes));
     }
 
     fn debian_candidate_dockerfile(bytes: &[u8]) -> bool {

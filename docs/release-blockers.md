@@ -30,7 +30,7 @@ The separately authorized [Debian replacement evaluation](gitleaks-debian-runtim
 
 | Identity | Required next work (in addition to accountable notices/provenance review) |
 |---|---|
-| `syft` | Latest hosted scans retain **18 blocking findings per architecture**. Remediate compiler/dependencies and individually review any genuine no-fix case; rerun both native catalogs/contracts/scans |
+| `syft` | Production hosted scans retain **18 blocking findings per architecture**. The separate [arm64 compiler/dependency experiment](syft-compiler-candidate.md) measures 18 → 4 → 1 blocking, not adoption. Complete upstream fixtures/tests, compiler-input catalog coverage, native amd64, remaining x/crypto disposition and source/notices/provenance; rerun fresh qualified production catalogs/contracts/scans |
 | `grype` | Latest hosted scans retain **23 blocking findings per architecture**. Compiler/x/crypto work plus migration away from the affected legacy Docker module remain |
 | `gitleaks` | Both hosted production preparations passed. Obtain complete source overlays/notices/delivery and accountable review, or a replacement that clears its own gates (the Debian prototype has 26 blocking findings). Authorize controlled runtime/host investigation of the loader-only reproducer, then obtain fresh preparation and approved publication/attestation/consumer verification |
 | `cargo-audit` | Recoverable Rust/compiler/native inventories, exact GNU-runtime source/provenance, then fresh native scans |

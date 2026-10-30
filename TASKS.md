@@ -18,6 +18,10 @@ Public APK control metadata now supplies the exact expanded recipes, with **20 s
 
 The authorized [Debian experiment](docs/gitleaks-debian-runtime.md) verifies signed metadata, eight binary packages, twelve corresponding-source objects and selected ELF/notices on both architectures. A separate arm64 prototype preserves the Gitleaks executable and passes the existing filesystem/history/redaction controls, but reports **26 blocking / 1 previously accepted finding**. No new exception or adoption follows. Base/source delivery/provenance, complete runtime ownership/closure, native amd64 and the historical completion failure remain unresolved. Production/host/consumer are unchanged; **B4/B5/D3/D4 remain open and 14/18 checked is unchanged**.
 
+## Dependency implementation — 2026-10-29
+
+A separate fixed-source [Syft compiler/dependency experiment](docs/syft-compiler-candidate.md) now measures **18 → 4 → 1 blocking finding** on native arm64. The two module upgrades are frozen in a literal manifest patch; no production image/profile, scanner pin or risk approval changes. Upstream suites remain failed/incomplete, the compiler catalog exceeds its existing output cap and native amd64/source/notices/provenance are unapproved. An interrupted full run and the separately labeled retained-binary scan are both preserved. Consumer tooling now assembles a private artifact-bound dependency baseline; it does not suppress findings or approve replacements. **B4/B5/D3/D4 and 14/18 checked remain unchanged.**
+
 ## Scope and baseline
 
 - At the initial review baseline, this was an uncommitted initialization: `main` had **no commits**, `git ls-files` was empty, and repository files were untracked. No pre-existing `TASKS.md` was present. An empty tracked diff is not evidence of an unchanged implementation.
