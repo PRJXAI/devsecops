@@ -189,13 +189,13 @@ mod tests {
                     .then(|| format!("{op} {args}"))
             })
             .collect();
-        let static_base = "cgr.dev/chainguard/static:latest@sha256:17367e4d3ae2b46c3290858e483fac09be085c92b372360fe3bf6a6150848fde";
+        let static_base = "cgr.dev/chainguard/static:latest@sha256:fc42af33e643f20d08baf03cddcc1c02ba57052dfb02edb0d79f3fc47bcea8d9";
         let expected = [
             "FROM scratch AS archive-amd64".into(),
-            "ADD --checksum=sha256:1890badd5f15831a9af4b074399fcd21e6f7c0fe42c84e9254cdffc9f813765c https://github.com/rustsec/rustsec/releases/download/cargo-audit/v0.22.1/cargo-audit-x86_64-unknown-linux-gnu-v0.22.1.tgz /cargo-audit.tgz".into(),
+            "ADD --checksum=sha256:ab28a1bdb54db4d5d8ad5981cf1f959410370b3d28250dbd35f6a44248620e39 https://github.com/rustsec/rustsec/releases/download/cargo-audit/v0.22.2/cargo-audit-x86_64-unknown-linux-gnu-v0.22.2.tgz /cargo-audit.tgz".into(),
             "FROM scratch AS archive-arm64".into(),
-            "ADD --checksum=sha256:4c8df835ee484441bd2c8c6bcac28c4ce4b4058ba9e7477cb9e0012fe7769f66 https://github.com/rustsec/rustsec/releases/download/cargo-audit/v0.22.1/cargo-audit-aarch64-unknown-linux-gnu-v0.22.1.tgz /cargo-audit.tgz".into(),
-            "FROM --platform=$BUILDPLATFORM alpine:3.23.7@sha256:ff7f0c727dd796aa36787bfcd9a64bf35a6ce72a73451b3359fde849b6703d63 AS extract".into(),
+            "ADD --checksum=sha256:c6603814ddaa45e51263dafd31c0ac98808f688d26f7395804f9670b0fd599dd https://github.com/rustsec/rustsec/releases/download/cargo-audit/v0.22.2/cargo-audit-aarch64-unknown-linux-gnu-v0.22.2.tgz /cargo-audit.tgz".into(),
+            "FROM --platform=$BUILDPLATFORM alpine:3.24.3@sha256:be2656061b536c1883c4034790e21d0a09c5aaaf51968b89368a3c0371ea2c9a AS extract".into(),
             "RUN --network=none [\"mkdir\", \"/out\"]".into(),
             "FROM extract AS binary-amd64".into(),
             "COPY --from=archive-amd64 /cargo-audit.tgz /tmp/cargo-audit.tgz".into(),
@@ -204,7 +204,7 @@ mod tests {
             "COPY --from=archive-arm64 /cargo-audit.tgz /tmp/cargo-audit.tgz".into(),
             "RUN --network=none [\"tar\", \"-xzf\", \"/tmp/cargo-audit.tgz\", \"-C\", \"/out\", \"--strip-components=1\"]".into(),
             "FROM binary-${TARGETARCH} AS binary".into(),
-            "FROM cgr.dev/chainguard/glibc-dynamic:latest@sha256:5380a8b913d0900cf44180e2205bf3ebf0e0b00a32a0f2fa4ab16cb06d7f9cdf AS glibc".into(),
+            "FROM cgr.dev/chainguard/glibc-dynamic:latest@sha256:709673274b417a48f56374da8a7633ef7b2f5b27e34612ce98a335737318cc94 AS glibc".into(),
             format!("FROM {static_base} AS runtime-amd64"),
             "COPY --from=glibc /usr/lib/ld-linux-x86-64.so.2 /usr/lib/ld-linux-x86-64.so.2".into(),
             "COPY --from=glibc /usr/lib/libc.so.6 /usr/lib/libm.so.6 /usr/lib/libgcc_s.so.1 /usr/lib/".into(),
@@ -212,7 +212,7 @@ mod tests {
             "COPY --from=glibc /usr/lib/ld-linux-aarch64.so.1 /usr/lib/ld-linux-aarch64.so.1".into(),
             "COPY --from=glibc /usr/lib/libc.so.6 /usr/lib/libm.so.6 /usr/lib/libgcc_s.so.1 /usr/lib/libpthread.so.0 /usr/lib/libdl.so.2 /usr/lib/".into(),
             "FROM runtime-${TARGETARCH}".into(),
-            "LABEL org.opencontainers.image.title=\"cargo-audit\" org.opencontainers.image.version=\"0.22.1\" org.opencontainers.image.source=\"https://github.com/rustsec/rustsec\"".into(),
+            "LABEL org.opencontainers.image.title=\"cargo-audit\" org.opencontainers.image.version=\"0.22.2\" org.opencontainers.image.source=\"https://github.com/rustsec/rustsec\"".into(),
             "COPY --from=binary --chmod=0555 /out/cargo-audit /usr/local/bin/cargo-audit".into(),
             "COPY --from=binary-amd64 /out/LICENSE-APACHE /out/LICENSE-MIT /out/README.md /out/CHANGELOG.md /usr/share/licenses/cargo-audit/".into(),
         ];
@@ -584,7 +584,7 @@ mod tests {
             .iter()
             .map(|b| format!("{b:02x}"))
             .collect::<String>()
-            == "e9d5b25c3fcf828544c97885f996907289d3e4f7b8498dbca9d762943972d5df"
+            == "76bfd69521745e27085f3472aac140ebdc7862073efc025f54c90edfe7653f65"
             && instructions(bytes).is_some()
             && instructions(bytes) == instructions(reviewed)
     }
@@ -871,12 +871,12 @@ mod tests {
             ),
             ("unknown-linux-gnu", "unknown-linux-musl"),
             (
-                "4c8df835ee484441bd2c8c6bcac28c4ce4b4058ba9e7477cb9e0012fe7769f66",
-                "1890badd5f15831a9af4b074399fcd21e6f7c0fe42c84e9254cdffc9f813765c",
+                "c6603814ddaa45e51263dafd31c0ac98808f688d26f7395804f9670b0fd599dd",
+                "ab28a1bdb54db4d5d8ad5981cf1f959410370b3d28250dbd35f6a44248620e39",
             ),
             (
-                "5380a8b913d0900cf44180e2205bf3ebf0e0b00a32a0f2fa4ab16cb06d7f9cdf",
-                "17367e4d3ae2b46c3290858e483fac09be085c92b372360fe3bf6a6150848fde",
+                "709673274b417a48f56374da8a7633ef7b2f5b27e34612ce98a335737318cc94",
+                "fc42af33e643f20d08baf03cddcc1c02ba57052dfb02edb0d79f3fc47bcea8d9",
             ),
             ("AS runtime-arm64", "AS unreviewed-arm64"),
             ("FROM runtime-${TARGETARCH}", "FROM glibc"),

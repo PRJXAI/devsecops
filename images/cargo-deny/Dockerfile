@@ -6,12 +6,12 @@ FROM scratch AS archive-arm64
 ADD --checksum=sha256:995c82be0defc7a025cae49a2aa2644ce8245c9a3318fc4103907c6a285e8c7d https://github.com/EmbarkStudios/cargo-deny/releases/download/0.20.2/cargo-deny-0.20.2-aarch64-unknown-linux-musl.tar.gz /cargo-deny.tar.gz
 FROM archive-${TARGETARCH} AS archive
 
-FROM --platform=$BUILDPLATFORM alpine:3.23.7@sha256:ff7f0c727dd796aa36787bfcd9a64bf35a6ce72a73451b3359fde849b6703d63 AS extract
+FROM --platform=$BUILDPLATFORM alpine:3.24.3@sha256:be2656061b536c1883c4034790e21d0a09c5aaaf51968b89368a3c0371ea2c9a AS extract
 COPY --from=archive /cargo-deny.tar.gz /tmp/cargo-deny.tar.gz
 RUN --network=none ["mkdir", "/out"]
 RUN --network=none ["tar", "-xzf", "/tmp/cargo-deny.tar.gz", "-C", "/out", "--strip-components=1"]
 
-FROM cgr.dev/chainguard/static:latest@sha256:17367e4d3ae2b46c3290858e483fac09be085c92b372360fe3bf6a6150848fde
+FROM cgr.dev/chainguard/static:latest@sha256:fc42af33e643f20d08baf03cddcc1c02ba57052dfb02edb0d79f3fc47bcea8d9
 LABEL org.opencontainers.image.title="cargo-deny" org.opencontainers.image.version="0.20.2" org.opencontainers.image.source="https://github.com/EmbarkStudios/cargo-deny"
 COPY --from=extract --chmod=0555 /out/cargo-deny /usr/local/bin/cargo-deny
 COPY --from=extract /out/LICENSE-APACHE /out/LICENSE-MIT /out/README.md /usr/share/licenses/cargo-deny/

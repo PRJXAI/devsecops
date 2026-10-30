@@ -1,4 +1,6 @@
-# cargo-audit 0.22.1 supplier candidate
+# cargo-audit supplier evidence
+
+The 2026-10-30 owner-authorized refresh selects official **0.22.2** GNU artifacts and a refreshed pinned glibc closure. New artifact hashes are literal in `images/cargo-audit/Dockerfile`; both downloads were rehashed and native arm64 controls pass, as recorded in [results](results.md). The **0.22.1 evidence below is historical** and does not approve the new binary, libraries, provenance or redistribution.
 
 Official RustSec GNU release artifacts replace the distinct Cargo Quickinstall arm64 supplier. This is a runtime/supplier change, not publication approval. Version and `[/usr/local/bin/cargo-audit, audit]` entrypoint are unchanged. Readiness remains false; [release gates](release-readiness.md) and the [trust boundary](threat-model.md) still apply.
 

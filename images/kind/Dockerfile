@@ -15,7 +15,7 @@ FROM docker:29.9.2-cli@sha256:5e6baf67325a79f64ed3bed6863954d5e05d0f3d4e57cbdb14
 
 # Supplier license; complete embedded-dependency notice review is required before publication.
 
-FROM cgr.dev/chainguard/static:latest@sha256:17367e4d3ae2b46c3290858e483fac09be085c92b372360fe3bf6a6150848fde
+FROM cgr.dev/chainguard/static:latest@sha256:fc42af33e643f20d08baf03cddcc1c02ba57052dfb02edb0d79f3fc47bcea8d9
 LABEL org.opencontainers.image.title="kind" \
       org.opencontainers.image.version="0.33.0" \
       org.opencontainers.image.source="https://github.com/kubernetes-sigs/kind" \

@@ -9,13 +9,15 @@ Source: PRJXAI/obsidian-sync `.github/workflows/ci.yml` plus its Dockerfile and 
 | Syft | 1.55.0 | Native Syft JSON, CycloneDX and SPDX; development/workspace lock coverage; offline directory/archive scans and controlled registry retrieval |
 | Grype | 0.121.0 | Separate fresh advisory DB retrieval; offline SBOM scan; all severities and suppressed matches remain counted |
 | Gitleaks | 8.30.1 | Source and all-ref bare Git history, redaction, offline operation; requires Git at runtime |
-| cargo-audit | 0.22.1 | Cargo.lock/RustSec audit with separately provided advisory data |
+| cargo-audit | 0.22.2 | Cargo.lock/RustSec audit with separately provided advisory data |
 | cargo-deny | 0.20.2 | Advisories, bans, licenses and sources; a compiler-free image requires externally generated Cargo metadata and source/cache mounts |
 | kind | 0.33.0 | Local disposable clusters only; explicit private kubeconfig; Docker control-plane access is privileged |
-| kustomize | 5.8.1 | Render all consumer overlays without a cluster |
-| kubectl | Consumer inherits runner; this repo pins 1.37.0 | New image must choose a version compatible with the pinned kind node (Kubernetes 1.37); offline client tests first |
+| kustomize | 5.8.3 | Render all consumer overlays without a cluster |
+| kubectl | Consumer inherits runner; this repo pins 1.37.2 | New image must choose a version compatible with the pinned kind node (Kubernetes 1.37); offline client tests first |
 | Docker CLI + Compose | Consumer inherits runner; this repo pins 29.9.2 + 5.6.1, Buildx 0.38.1 | Build/save/load/inspect/exec and Compose config/services; Docker engine remains external |
 | Git | Consumer inherits runner; Gitleaks image includes vendor build 2.56.0.1.g02cd7dbd28 | Local source/history operations; preserve detached/all-ref history and ignore isolation |
+
+The 2026-10-30 live release refresh supersedes those historical inspected versions where listed above. Native version/functional checks run against the refreshed recipes; previous base/native/source evidence is historical, not transferable approval. The published kind node remains 1.37.0: upstream Kubernetes 1.37.2 exists but its kind node image does not.
 
 ## Release identities
 
@@ -43,12 +45,12 @@ The separate [Syft compiler/dependency experiment](syft-compiler-candidate.md) r
 ## Keep outside the distroless CLI images
 
 - Rust 1.99.1, Cargo, rustfmt and Clippy plus musl/C/C++/CMake/Perl/linker build dependencies: build/test host or builder image, not a shell-free CLI replacement.
-- Node 24.20.0/npm: genuine pinned Commonlib/PouchDB fixtures and npm audit only; not repository orchestration or runtime.
+- Node 26.13.0 LTS/npm: genuine pinned Commonlib/PouchDB fixtures and npm audit only; not repository orchestration or runtime.
 - Go on the runner: currently installs kind/kustomize. Released CLI images can eventually avoid these installs, but consumer invocation/mount changes require separate verified integration.
 - Docker daemon/BuildKit and Dockerfile frontend 1.28.0: preserve the external build engine/frontend contract; a Docker CLI image is not a daemon.
 - kindest/node 1.37.0: a privileged Kubernetes node with init/container runtime, not a distroless CLI.
 - RustFS: an S3-compatible test service, not a scanner/tool CLI; retain its separately validated service image.
-- Alpine helper: consumer fixtures explicitly use utilities such as test/rm. Do not silently remove these or claim a distroless replacement without equivalent tests.
+- The standalone Alpine helper is retired under the 2026-10-30 owner instruction. Consumer build/test source proofs, context canaries and synthetic-data cleanup reuse the already required pinned Rust builder base; utilities are not added to any distroless runtime. Producer extraction alone uses Alpine 3.24.3.
 - GitHub Actions checkout/upload/download/setup-node and the hosted runner: Actions need their supported shell/Node environment. These tool images are explicit invocations, not whole-job containers.
 
 No Apache CouchDB or Trivy replacement is needed: the consumer already retired them. Actionlint is a local maintenance aid, not a step in the inspected consumer workflow.

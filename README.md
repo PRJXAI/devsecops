@@ -11,12 +11,14 @@ GHCR namespace: **`ghcr.io/prjxai/devsecops/<tool>`**.
 | syft | 1.55.0 |
 | grype | 0.121.0 |
 | gitleaks + offline Git | 8.30.1 reviewed source derivative (Go 1.27.3) + 2.56.0.1.g02cd7dbd28 |
-| cargo-audit | 0.22.1 |
+| cargo-audit | 0.22.2 |
 | cargo-deny | 0.20.2 |
 | kind | 0.33.0 |
-| kustomize | 5.8.1 |
-| kubectl | 1.37.0 |
+| kustomize | 5.8.3 |
+| kubectl | 1.37.2 |
 | docker + Compose + Buildx | 29.9.2 + 5.6.1 + 0.38.1 |
+
+The 2026-10-30 owner-authorized refresh updates released tools and pinned static/glibc/Git suppliers. Alpine 3.24.3 is extraction/build-only, never a final runtime. Historical inventories/source reviews remain bound to their original images; new bases require fresh native coverage, not inherited approval. See [results](docs/results.md).
 
 Packaging targets linux/amd64 and linux/arm64. Seven functional contracts have hosted native evidence on both; complete release acceptance is still blocked. All final stages are pinned distroless/nonroot. Git and official GNU cargo-audit require verified minimal native library closures; the other payloads are static. These are explicit CLI invocations, **not whole GitHub Actions job containers**. See the [workflow inventory and exceptions](docs/tool-inventory.md).
 

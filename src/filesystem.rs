@@ -165,6 +165,7 @@ fn files(path: &Path, tool: &str) -> Result<()> {
     let required = required(tool)?;
     let mut input = release::regular(path, ARCHIVE)?.take(ARCHIVE + 1);
     let (mut seen, mut found) = (BTreeMap::new(), BTreeSet::new());
+    let mut timezone_files = BTreeMap::new();
     let mut audit_interpreter = false;
     let mut end = 0;
     {
@@ -190,8 +191,14 @@ fn files(path: &Path, tool: &str) -> Result<()> {
                         | ("dev/random", Some(8))
                         | ("dev/urandom", Some(9))
                 );
-            // Raw iteration: no PAX/GNU/sparse allocations or hardlink resolution.
-            if !kind.is_file() && !kind.is_dir() && !kind.is_symlink() && !device {
+            // Raw iteration: no extraction, PAX/GNU/sparse allocations or general
+            // hardlink resolution. Only backward TZif data aliases are supported.
+            if !kind.is_file()
+                && !kind.is_dir()
+                && !kind.is_symlink()
+                && !kind.is_hard_link()
+                && !device
+            {
                 return Err("unsupported filesystem member type");
             }
             let size = entry.size();
@@ -210,7 +217,25 @@ fn files(path: &Path, tool: &str) -> Result<()> {
             if (kind.is_file() && mode & 0o111 != 0 || kind.is_symlink()) && forbidden(&name) {
                 return Err("forbidden filesystem executable");
             }
-            if kind.is_symlink() {
+            if kind.is_hard_link() {
+                let target = safe(
+                    &entry
+                        .link_name_bytes()
+                        .ok_or("missing timezone link target")?,
+                    false,
+                )?;
+                if !name.starts_with("usr/share/zoneinfo/")
+                    || !target.starts_with("usr/share/zoneinfo/")
+                    || mode & 0o111 != 0
+                    || timezone_files.get(&target) != Some(&mode)
+                    || [&name, &target].iter().any(|path| {
+                        path.match_indices('/')
+                            .any(|(i, _)| seen.get(&path[..i]) != Some(&true))
+                    })
+                {
+                    return Err("unverified timezone hardlink");
+                }
+            } else if kind.is_symlink() {
                 let target = entry
                     .link_name_bytes()
                     .ok_or("missing filesystem link target")?;
@@ -293,15 +318,22 @@ fn files(path: &Path, tool: &str) -> Result<()> {
                     }
                 }
                 found.insert(name);
-            } else if tool == "cargo-audit" && kind.is_file() && size >= 4 {
-                // No unreviewed extra native payloads (e.g. libstdc++, ldconfig)
-                // may enter the official tool's deliberately minimal closure.
+            } else if kind.is_file()
+                && size >= 4
+                && (tool == "cargo-audit" || name.starts_with("usr/share/zoneinfo/"))
+            {
+                // Cargo-audit still rejects every extra ELF. Remember only actual
+                // non-executable TZif regular files, never aliases or other data.
                 let mut magic = [0; 4];
                 entry
                     .read_exact(&mut magic)
                     .map_err(|_| "truncated filesystem file")?;
-                if magic == *b"\x7fELF" {
+                if tool == "cargo-audit" && magic == *b"\x7fELF" {
                     return Err("unexpected cargo-audit ELF outside verified closure");
+                }
+                if name.starts_with("usr/share/zoneinfo/") && magic == *b"TZif" && mode & 0o111 == 0
+                {
+                    timezone_files.insert(name, mode);
                 }
             }
         }
@@ -436,6 +468,126 @@ mod tests {
         }
         tar.finish().unwrap();
         (driver, path)
+    }
+
+    #[test]
+    fn timezone_hardlinks_are_backward_data_only_not_payload_aliases() {
+        for case in [
+            "valid",
+            "executable",
+            "changed-mode",
+            "outside",
+            "absolute",
+            "traversal",
+            "missing",
+            "chain",
+            "forward",
+            "non-tzif",
+            "symlink-parent",
+            "directory",
+            "duplicate",
+            "payload",
+            "nonzero-size",
+        ] {
+            let (driver, base) = fixture(
+                "syft",
+                if case == "payload" {
+                    "usr/local/bin/syft"
+                } else {
+                    ""
+                },
+                None,
+            );
+            let path = driver.logs.join("timezone.tar");
+            let mut output = tar::Builder::new(
+                OpenOptions::new()
+                    .write(true)
+                    .create_new(true)
+                    .mode(0o600)
+                    .open(&path)
+                    .unwrap(),
+            );
+            for entry in tar::Archive::new(fs::File::open(base).unwrap())
+                .entries()
+                .unwrap()
+            {
+                let mut entry = entry.unwrap();
+                let h = entry.header().clone();
+                output.append(&h, &mut entry).unwrap();
+            }
+            for directory in [
+                "usr",
+                "usr/share",
+                "usr/share/zoneinfo",
+                "usr/share/zoneinfo/Africa",
+            ] {
+                output
+                    .append(&header(directory, EntryType::Directory, 0), &[][..])
+                    .unwrap();
+            }
+            let source = "usr/share/zoneinfo/Africa/Abidjan";
+            let alias = "usr/share/zoneinfo/Africa/Accra";
+            let regular = |output: &mut tar::Builder<fs::File>| {
+                let bytes = if case == "non-tzif" { b"data" } else { b"TZif" };
+                let mut h = header(source, EntryType::Regular, bytes.len() as u64);
+                h.set_mode(0o644);
+                h.set_cksum();
+                output.append(&h, &bytes[..]).unwrap();
+            };
+            if case != "forward" {
+                regular(&mut output);
+            }
+            if case == "symlink-parent" {
+                let mut h = header("usr/share/zoneinfo/alias", EntryType::Symlink, 0);
+                h.set_link_name("Africa").unwrap();
+                h.set_cksum();
+                output.append(&h, &[][..]).unwrap();
+            }
+            let name = match case {
+                "outside" => "usr/local/bin/alias",
+                "symlink-parent" => "usr/share/zoneinfo/alias/Accra",
+                "duplicate" => source,
+                "payload" => "usr/local/bin/syft",
+                _ => alias,
+            };
+            let target = match case {
+                "absolute" => "/usr/share/zoneinfo/Africa/Abidjan",
+                "traversal" => "usr/share/zoneinfo/Africa/../Africa/Abidjan",
+                "missing" => "usr/share/zoneinfo/Africa/missing",
+                "directory" => "usr/share/zoneinfo/Africa",
+                _ => source,
+            };
+            let mut h = header(name, EntryType::Link, u64::from(case == "nonzero-size"));
+            h.set_mode(match case {
+                "executable" => 0o755,
+                "changed-mode" => 0o600,
+                _ => 0o644,
+            });
+            h.set_link_name(target).unwrap();
+            h.set_cksum();
+            output
+                .append(
+                    &h,
+                    if case == "nonzero-size" {
+                        &b"x"[..]
+                    } else {
+                        &[][..]
+                    },
+                )
+                .unwrap();
+            if case == "forward" {
+                regular(&mut output);
+            }
+            if case == "chain" {
+                let mut h = header("usr/share/zoneinfo/Africa/Bamako", EntryType::Link, 0);
+                h.set_mode(0o644);
+                h.set_link_name(alias).unwrap();
+                h.set_cksum();
+                output.append(&h, &[][..]).unwrap();
+            }
+            output.finish().unwrap();
+            assert_eq!(files(&path, "syft").is_ok(), case == "valid", "{case}");
+        }
     }
 
     #[test]
