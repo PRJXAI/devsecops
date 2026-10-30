@@ -99,7 +99,7 @@ jobs:
           DEVSECOPS_LICENSE_SOURCE_PROVENANCE_APPROVED_TOOL: ${{ inputs.tool }}
         run: cargo run --locked --bin devsecops -- publish-tool
       - name: Attest this tool's published manifest digest through GitHub
-        uses: actions/attest-build-provenance@977bb373ede98d70efdf65b84cb5f73e068dcc2a
+        uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8
         with:
           subject-checksums: .work/published-${{ inputs.tool }}/subjects.checksums
       - name: Require anonymous public access to the exact delivered images
