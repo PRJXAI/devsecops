@@ -4,7 +4,7 @@
 
 Each tool owns its GHCR repository, two native jobs, handoffs, concurrency group and publish/provenance job. An unrelated failure is not a veto. Targets are Linux amd64 and arm64; cross-builds, registry scans and emulation are not native execution evidence.
 
-Syft and Grype are the first published deliveries with refreshed captured native profiles, source-attributed notice bundles and the owner's [accepted-risk policy](security.md). Both native releases/provenance passed at `13edb5277101befe100a435f5ade8da6ea3d40af`; anonymous package access is still blocked. Other tools retain their specific inventory, runtime or redistribution gaps. Do not infer availability from this document: [the verification record](results.md) records completed publication and the workflow's `published-digests-TOOL` artifact is the digest authority.
+Syft and Grype are the first published deliveries with refreshed captured native profiles, source-attributed notice bundles and the owner's [accepted-risk policy](security.md). Both native releases/provenance passed at `13edb5277101befe100a435f5ade8da6ea3d40af`; anonymous package access is now verified, including both native platform/config bindings and exact source/workflow provenance. Other tools retain their specific inventory, runtime or redistribution gaps. Do not infer availability from this document: [the verification record](results.md) records completed publication and the workflow's `published-digests-TOOL` artifact is the digest authority.
 
 ## Required gates
 
