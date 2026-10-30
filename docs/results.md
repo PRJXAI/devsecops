@@ -21,14 +21,27 @@ The owner accepted the investigated stack risks on **2026-10-30**. Exact rules n
 
 | Area | Status |
 |---|---|
-| Syft/Grype fresh release handoffs, publish and attestation | Required; record actual workflow result and digest before consumer adoption |
+| Syft/Grype fresh release handoffs, publish and attestation | **PASS**, both native architectures at `13edb5277101befe100a435f5ade8da6ea3d40af`; exact identities below |
 | Gitleaks | Exact Git/glibc source/overlay/notices/source-delivery review and retained loader-completion issue remain unresolved |
 | cargo-audit/cargo-deny | Complete compiled Rust/native inventory absent; cargo-deny's full compiler-free coverage remains unproven |
 | k3d | Packaged native control-plane and inventory incomplete; consumer host-CLI smoke is not equivalent |
 | Docker/Kustomize/kubectl | Payload/dependency or UNKNOWN-version coverage remains incomplete |
-| Package visibility | Public repository does not establish public GHCR access; anonymous pulls require verification |
+| Package visibility | **BLOCKED for anonymous consumption:** both token requests return 401; known-public control passes. Owner must make packages public or grant/configure explicit consumer Actions read access |
 | Host and private evidence | No host upgrades or real deployment; hard host-disk quota and durable private raw archive are not established |
 
 Historical Go compiler/dependency experiments, Debian/native source evaluations and finite successful runtime batches do not erase failed suites, cap/deadline errors or the loader-only stall. They are not publication handoffs. No benchmark, native/provider/GUI certification or vulnerability-free claim is made.
 
-Actual release identities are taken only from successful tool-specific `published-digests-TOOL` artifacts, never inferred from local tags or the counts above.
+## Published scanner handoffs
+
+Both independent runs completed successfully from source **`13edb5277101befe100a435f5ade8da6ea3d40af`**, including native amd64/arm64 preparation, actual archive-load/config checks, native pushes, two-platform index and provenance:
+
+| Tool | Successful workflow | Published manifest digest | Per-architecture disposition |
+|---|---|---|---|
+| Syft | [41099233895](https://github.com/PRJXAI/devsecops/actions/runs/41099233895) | `sha256:7d484d97e289e8ba108ef17a7ecd9dbbbe457398b92f5f3d79219a6445aaaf2c` | **18 accepted / 0 blocking / 0 suppressed** |
+| Grype | [41099238680](https://github.com/PRJXAI/devsecops/actions/runs/41099238680) | `sha256:3079a040326484d0b50ac28c7fc2fb25894a22170e81445ab90c400d091378e0` | **23 accepted / 0 blocking / 0 suppressed** |
+
+These identities came from successful `published-digests-TOOL` artifacts. Credentialed `gh attestation verify` checks succeeded with exact source/signer digest, repository/reusable workflow, main ref and GitHub-hosted-runner enforcement. They do not certify vulnerability freedom or independent regulated approval.
+
+The consumer's credential-free HTTPS check passed a known-public registry control but received **401 at both scanner token endpoints**. Its first unclassified attempt, later classified attempts and HTTP 403 package-metadata query (insufficient `read:packages` scope) remain retained. No token/body was logged or private package-access grant assumed. Public repository visibility is not public package access; active consumer pins remain unchanged pending owner action.
+
+The redundant nine-tool push run was canceled in favor of these independent manual runs; no canceled result was used as release evidence. The earlier local Grype write failure remains a failed local observation, not retroactively completed by these fresh hosted successes.

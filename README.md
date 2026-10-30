@@ -22,6 +22,8 @@ These are **CLI containers**, not GitHub Actions job environments, Docker daemon
 
 Targets: **Linux amd64 and arm64**. A target is not a support claim until its native release checks succeed. Images release independently; one blocked tool does not hold another back. See [release status and verification](docs/releases.md) before choosing an image. A Dockerfile or successful version command does not mean a package has been published.
 
+**Delivered:** Syft and Grype passed native amd64/arm64 release and provenance at `13edb5277101befe100a435f5ade8da6ea3d40af`. Their [exact digests and accepted-risk counts](docs/results.md) are recorded. Anonymous pulls currently fail; package visibility/consumer access still needs owner action. Other tools are not approved deliveries.
+
 ## Use by digest
 
 Take the manifest digest from that tool's successful publish **and provenance** job. Tags identify source revisions (`sha-<full-commit>`); there is no floating `latest` release.
