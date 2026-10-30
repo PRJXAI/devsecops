@@ -12,7 +12,7 @@ on:
         type: choice
         required: true
         default: all
-        options: [all, syft, grype, gitleaks, cargo-audit, cargo-deny, kind, kustomize, kubectl, docker]
+        options: [all, syft, grype, gitleaks, cargo-audit, cargo-deny, k3d, kustomize, kubectl, docker]
       publish:
         description: Publish selected policy-approved tools to GHCR from main
         type: boolean
@@ -47,7 +47,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        tool: ${{ fromJSON(inputs.tool != '' && inputs.tool != 'all' && format('["{0}"]', inputs.tool) || '["syft","grype","gitleaks","cargo-audit","cargo-deny","kind","kustomize","kubectl","docker"]') }}
+        tool: ${{ fromJSON(inputs.tool != '' && inputs.tool != 'all' && format('["{0}"]', inputs.tool) || '["syft","grype","gitleaks","cargo-audit","cargo-deny","k3d","kustomize","kubectl","docker"]') }}
     permissions:
       contents: read
       packages: write

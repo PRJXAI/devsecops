@@ -110,7 +110,6 @@ fn required(tool: &str) -> Result<Vec<String>> {
         "docker" => {
             "usr/local/libexec/docker/cli-plugins/docker-compose usr/local/libexec/docker/cli-plugins/docker-buildx"
         }
-        "kind" => "usr/local/bin/docker",
         "gitleaks" => "usr/bin/git usr/lib/libc.so.6 usr/lib/libpcre2-8.so.0 usr/lib/libz.so.1",
         "cargo-audit" => "usr/lib/libc.so.6 usr/lib/libm.so.6 usr/lib/libgcc_s.so.1",
         _ => "",
@@ -598,7 +597,7 @@ mod tests {
             ("gitleaks", vec!["/usr/local/bin/gitleaks"]),
             ("cargo-audit", vec!["/usr/local/bin/cargo-audit", "audit"]),
             ("cargo-deny", vec!["/usr/local/bin/cargo-deny"]),
-            ("kind", vec!["/usr/local/bin/kind"]),
+            ("k3d", vec!["/usr/local/bin/k3d"]),
             ("kustomize", vec!["/usr/local/bin/kustomize"]),
             ("kubectl", vec!["/usr/local/bin/kubectl"]),
             ("docker", vec!["/usr/local/bin/docker"]),

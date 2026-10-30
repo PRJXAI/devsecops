@@ -13,7 +13,7 @@ GHCR namespace: **`ghcr.io/prjxai/devsecops/<tool>`**.
 | gitleaks + offline Git | 8.30.1 reviewed source derivative (Go 1.27.3) + 2.56.0.1.g02cd7dbd28 |
 | cargo-audit | 0.22.2 |
 | cargo-deny | 0.20.2 |
-| kind | 0.33.0 |
+| k3d | 5.9.0 |
 | kustomize | 5.8.3 |
 | kubectl | 1.37.2 |
 | docker + Compose + Buildx | 29.9.2 + 5.6.1 + 0.38.1 |
@@ -34,7 +34,7 @@ cargo run --locked --bin devsecops -- contract syft
 cargo run --locked --bin devsecops -- audit-dependencies
 ```
 
-The driver requires a local Unix-socket Docker daemon with the native Linux architecture. Builds bind the checked effective endpoint to Buildx's default Docker driver, not an inherited builder selection. `check`/`check-all` build and smoke immutable IDs; `contract TOOL` adds final-filesystem and synthetic functional checks. cargo-deny/kind contracts deliberately fail until their missing requirements are resolved. `audit-dependencies` separately retrieves public RustSec data, validates the packaged tool and audits this repository offline; only counts/status are public.
+The driver requires a local Unix-socket Docker daemon with the native Linux architecture. Builds bind the checked effective endpoint to Buildx's default Docker driver, not an inherited builder selection. `check`/`check-all` build and smoke immutable IDs; `contract TOOL` adds final-filesystem and synthetic functional checks. cargo-deny/k3d contracts deliberately fail until their missing requirements are resolved. `audit-dependencies` separately retrieves public RustSec data, validates the packaged tool and audits this repository offline; only counts/status are public.
 
 The [release unblock plan](docs/release-blockers.md) lists each tool's remaining evidence. Tools release independently. Production Gitleaks now uses the tested fixed source/dependency patch and pinned Go 1.27.3 compiler, built and race-tested offline by Rust before packaging. Its collected Go notices are packaged and byte/mode-checked. The production profile requires the 74 tuples captured on both native architectures, rejecting the old supplier build. Hosted production preparation passes on **both amd64 and arm64**, most recently at source `904a55d` in run 40893774577, as **accepted-risk: 1 accepted / 0 blocking per architecture**. Source/legal review, local runtime-stall investigation and publication/attestation validation remain outstanding. The separate experimental CI job and `gitleaks-native-candidate-*` artifacts still cannot substitute for production release handoffs. The [2026-10-29 follow-up](licenses/gitleaks-runtime-review.md) now binds public APK recipes/payloads on both architectures; a loader-only diagnostic reproduces the exit stall without Gitleaks/Git execution, but its exact cause and complete source-delivery obligations remain unresolved.
 
@@ -68,7 +68,7 @@ GHCR packages are created on the first successful push. Package visibility is se
 - Compiler-free cargo-deny requires external metadata and matching source/index/cache mounts. Missing-Cargo/index errors can be nonfatal: **exit 0 does not prove complete coverage**. It is not approved as a replacement for the consumer's full host cargo-deny gate; see the [native supplied-graph investigation](docs/cargo-deny-coverage.md).
 - Gitleaks includes only the Git builtin/runtime closure tested for offline history, not remote helpers, LFS or shell hooks. Its [unresolved runtime-completion timeout](docs/runtime-completion.md) remains blocking; no speculative init/retry fix was retained.
 - Complete dependency notices, Git corresponding source and supplier provenance must be reviewed before checking the redistribution approval input. First-party code does not relicense the packaged binaries.
-- Kind now includes its pinned Docker/provider CLI, but disposable control-plane testing and the added payload inventory remain unapproved; no cluster functionality is claimed. Complete payload inventories/native acceptance also remain blocked; see the [inventory](docs/tool-inventory.md).
-- Rust/Node builders, Docker daemon/BuildKit, kind nodes, RustFS and shell-dependent helpers remain separate requirements. No real cluster or current kubecontext is used for these tool checks.
+- K3d replaces the retired kind CLI. It uses the Docker SDK, so no Docker/provider executable is packaged. The consumer's separate host-CLI disposable k3d/K3s smoke passes; that does not qualify this packaged image on both native architectures. Complete k3d inventories, source/notices and control-plane acceptance remain blocked; historical kind captures cannot approve it. See the [inventory](docs/tool-inventory.md).
+- Rust/Node builders, Docker daemon/BuildKit, K3s nodes/k3d tools/pause sandboxes, RustFS and shell-dependent helpers remain separate requirements. No real cluster or current kubecontext is used for these tool checks.
 
 Maintenance: [AGENTS.md](AGENTS.md), [skills](.agents/skills/), [inventory](docs/tool-inventory.md), [results](docs/results.md), [third-party redistribution](licenses/README.md).

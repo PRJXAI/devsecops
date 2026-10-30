@@ -1,0 +1,13 @@
+{
+  "schema": 2,
+  "tool": "k3d",
+  "repository": "ghcr.io/prjxai/devsecops/k3d",
+  "redistribution_complete": false,
+  "supplier_provenance_reviewed": false,
+  "native_functional_contracts_complete": false,
+  "blockers": [
+    "The consumer host-CLI disposable smoke does not qualify this packaged image on both native architectures.",
+    "New k3d payload/compiler/native inventories and fresh all-finding scans have no reviewed acceptance profile; historical kind captures cannot authorize it.",
+    "Complete dependency/base notices, supplier build provenance and accountable redistribution review remain missing."
+  ]
+}

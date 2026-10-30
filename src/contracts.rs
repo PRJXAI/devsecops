@@ -31,8 +31,8 @@ pub(super) fn functional(driver: &mut Driver, tool: &str, image: &str) -> Result
         "cargo-deny" => Err(
             "cargo-deny functional contract blocked: pinned compiler-free runtime cannot prove Cargo/index/advisory coverage",
         ),
-        "kind" => Err(
-            "kind functional contract blocked: provider inventory and separately authorized control-plane validation required",
+        "k3d" => Err(
+            "k3d functional contract blocked: packaged native control-plane and inventory qualification required",
         ),
         _ => Err("unsupported functional contract"),
     }

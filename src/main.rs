@@ -42,7 +42,7 @@ const TOOLS: &[&str] = &[
     "gitleaks",
     "cargo-audit",
     "cargo-deny",
-    "kind",
+    "k3d",
     "kustomize",
     "kubectl",
     "docker",
@@ -50,7 +50,7 @@ const TOOLS: &[&str] = &[
 
 fn version_args(tool: &str) -> Result<&'static [&'static str]> {
     match tool {
-        "syft" | "grype" | "gitleaks" | "kind" | "kustomize" => Ok(&["version"]),
+        "syft" | "grype" | "gitleaks" | "k3d" | "kustomize" => Ok(&["version"]),
         "cargo-audit" | "cargo-deny" | "docker" => Ok(&["--version"]),
         "kubectl" => Ok(&["version", "--client=true"]),
         _ => Err("unknown tool"),
@@ -402,7 +402,7 @@ impl Driver {
                 ("gitleaks", _) => "8.30.1",
                 ("cargo-audit", _) => "0.22.2",
                 ("cargo-deny", _) => "0.20.2",
-                ("kind", _) => "0.33.0",
+                ("k3d", _) => "5.9.0",
                 ("kustomize", _) => "5.8.3",
                 ("kubectl", _) => "1.37.2",
                 ("docker", ["compose", "version"]) => "5.6.1",
@@ -1269,10 +1269,11 @@ mod tests {
     #[test]
     fn explicit_tool_versions() {
         assert_eq!(TOOLS.len(), 9);
+        assert!(version_args("kind").is_err());
         for tool in TOOLS {
             assert!(version_args(tool).is_ok());
         }
-        for tool in ["syft", "grype", "gitleaks", "kind", "kustomize"] {
+        for tool in ["syft", "grype", "gitleaks", "k3d", "kustomize"] {
             assert_eq!(version_args(tool).unwrap(), ["version"]);
         }
         for tool in ["cargo-audit", "cargo-deny", "docker"] {

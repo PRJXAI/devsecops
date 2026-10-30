@@ -19,7 +19,7 @@ mod tests {
         "docker",
         "gitleaks",
         "grype",
-        "kind",
+        "k3d",
         "kubectl",
         "kustomize",
         "syft",
@@ -142,7 +142,7 @@ mod tests {
                         *v,
                         "/syft"
                             | "/grype"
-                            | "/kind"
+                            | "/k3d"
                             | "/kubectl"
                             | "/LICENSE"
                             | "/kustomize.tar.gz"
@@ -942,7 +942,7 @@ mod tests {
 
     #[test]
     fn license_only_stages_can_be_inlined_without_weakening_pins() {
-        for tool in ["kind", "kubectl", "kustomize"] {
+        for tool in ["k3d", "kubectl", "kustomize"] {
             let text =
                 fs::read_to_string(root().join(format!("images/{tool}/Dockerfile"))).unwrap();
             // Positive S1 compatibility fixture, without changing any Dockerfile.
@@ -1129,7 +1129,7 @@ on:
         type: choice
         required: true
         default: all
-        options: [all, syft, grype, gitleaks, cargo-audit, cargo-deny, kind, kustomize, kubectl, docker]
+        options: [all, syft, grype, gitleaks, cargo-audit, cargo-deny, k3d, kustomize, kubectl, docker]
       publish:
         description: Publish selected policy-approved tools to GHCR from main
         type: boolean
@@ -1164,7 +1164,7 @@ jobs:";
     strategy:
       fail-fast: false
       matrix:
-        tool: ${{ fromJSON(inputs.tool != '' && inputs.tool != 'all' && format('["{0}"]', inputs.tool) || '["syft","grype","gitleaks","cargo-audit","cargo-deny","kind","kustomize","kubectl","docker"]') }}
+        tool: ${{ fromJSON(inputs.tool != '' && inputs.tool != 'all' && format('["{0}"]', inputs.tool) || '["syft","grype","gitleaks","cargo-audit","cargo-deny","k3d","kustomize","kubectl","docker"]') }}
     permissions:
       contents: read
       packages: write

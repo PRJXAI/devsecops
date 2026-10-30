@@ -569,6 +569,10 @@ fn preparation_failure(stage: PreparationStage, error: &str) -> Value {
         "kind functional contract blocked: provider inventory and separately authorized control-plane validation required" => {
             "kind-control-plane-unapproved"
         }
+        "k3d functional contract blocked: packaged native control-plane and inventory qualification required" => {
+            "k3d-control-plane-unapproved"
+        }
+        "no captured payload coverage profile for tool" => "inventory-profile-missing",
         "fresh scan database unavailable" => "shared-setup-unavailable",
         "invalid Grype database status or schema" => "database-invalid",
         "stale or future-dated evidence" => "evidence-not-fresh",
@@ -2889,9 +2893,9 @@ mod tests {
         let mut driver = Driver::new().unwrap();
         for (tool, file, expected) in [
             (
-                "kind",
-                "kind/LICENSE",
-                "b40930bbcf80744c86c46a12bc9da056641d722716c378f5659b9e555ef833e1",
+                "k3d",
+                "k3d/LICENSE",
+                "8174fbb84d2253f37fbb00bb2378a1bbd622a73c450caf635f1bb65163a19a37",
             ),
             (
                 "kustomize",
@@ -2927,16 +2931,6 @@ mod tests {
                 "docker",
                 "buildx/LICENSE",
                 "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
-            ),
-            (
-                "kind",
-                "docker/LICENSE",
-                "2d81ea060825006fc8f3fe28aa5dc0ffeb80faf325b612c955229157b8c10dc0",
-            ),
-            (
-                "kind",
-                "docker/NOTICE",
-                "a8c869fbda819afb8d80e0ac19bac52e766bc6c19cb38cf94f52d64c4be2aab6",
             ),
         ] {
             let image = driver.check(tool).unwrap();

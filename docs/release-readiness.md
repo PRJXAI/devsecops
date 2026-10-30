@@ -2,6 +2,10 @@
 
 Each tool's readiness booleans in `.github/publication-readiness/TOOL.json` remain false until its own evidence and accountable review are complete. Technical checks do not provide redistribution/provenance sign-off. Publication now operates independently per tool, still requiring both native architectures and complete inventory. The subsequent owner-approved [no-fix policy](release-risk-policy.md) permits exact reviewed findings as accepted-risk and the exact pinned precision warning as informational; all other findings/diagnostics/errors block. The [release isolation contract](threat-model.md) and [blocker map](release-blockers.md) supersede the former all-nine-tool approval scope.
 
+## K3d replacement scope — 2026-10-30
+
+The owner replaces kind with k3d for consumer disposable Kubernetes checks. Active CLI packaging/readiness/workflow selection now uses k3d 5.9.0, without kind's external Docker-provider executable. Official release bytes and source license are pinned on both architectures. The separate consumer host CLI passes its fenced K3s smoke; packaged native control-plane/inventory/source/legal review remains incomplete, all new k3d approvals stay false, and historical kind evidence is preserved rather than reused. No image publication or custom GHCR adoption follows.
+
 ## Current remediation contract — Gitleaks production build
 
 The request to address remaining gaps authorizes adopting the already tested, fixed-source Gitleaks dependency upgrade into production packaging. Rust will construct a private, create-only context from the pinned source, patch and compiler; verify manifests before and after the offline upstream race tests/build; and package the checked executable plus the existing collected Go notices. No arbitrary prebuilt executable, caller-selected source/compiler, shared mutable build tag, retry or diagnostic waiver is introduced. Build failure or cleanup failure blocks packaging. The existing Git/native closure is unchanged and its source obligations remain unresolved.

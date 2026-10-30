@@ -190,7 +190,29 @@ mod tests {
     use super::*;
     use serde_json::json;
 
+    // Immutable old captures include retired kind, never the replacement k3d.
+    const HISTORICAL: &[&str] = &[
+        "syft",
+        "grype",
+        "gitleaks",
+        "cargo-audit",
+        "cargo-deny",
+        "kind",
+        "kustomize",
+        "kubectl",
+        "docker",
+    ];
     const POSITIVE: [&str; 3] = ["syft", "grype", "gitleaks"];
+
+    #[test]
+    fn replacement_k3d_cannot_borrow_historical_kind_coverage() {
+        assert!(super::super::TOOLS.contains(&"k3d"));
+        assert!(!super::super::TOOLS.contains(&"kind"));
+        assert_eq!(
+            check(&captured("kind"), "k3d"),
+            Err("no captured payload coverage profile for tool")
+        );
+    }
     const INCOMPLETE: [&str; 6] = [
         "kind",
         "cargo-audit",
@@ -242,7 +264,7 @@ mod tests {
         use sha2::{Digest, Sha256};
         let root =
             std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join(".work/tasks-catalog-evidence");
-        for tool in super::super::TOOLS {
+        for tool in HISTORICAL {
             let path = root.join(tool).join("syft.stdout");
             let original = super::super::release::bytes(&path, 64 * 1024 * 1024).unwrap();
             let hash: String = Sha256::digest(&original)
@@ -386,11 +408,11 @@ mod tests {
             assert_eq!(summary["syft"], HOSTED_SYFT);
             assert_eq!(summary["created"], evidence["created"]);
             let tools = summary["tools"].as_array().unwrap();
-            assert_eq!(tools.len(), super::super::TOOLS.len());
+            assert_eq!(tools.len(), HISTORICAL.len());
             let mut seen = BTreeSet::new();
             for entry in tools {
                 let tool = field(entry, "tool").unwrap();
-                assert!(super::super::TOOLS.contains(&tool) && seen.insert(tool));
+                assert!(HISTORICAL.contains(&tool) && seen.insert(tool));
                 assert_eq!(entry["status"], "captured-not-release");
                 assert_eq!(entry["sbom"], format!("{tool}.syft.json"));
                 for key in ["config_id", "sbom_sha256"] {
@@ -703,7 +725,7 @@ mod tests {
         ] {
             assert_eq!(evidence[key], false);
         }
-        for tool in super::super::TOOLS {
+        for tool in HISTORICAL {
             let profile = &evidence["profiles"][tool];
             assert_eq!(
                 profile["compilers"],
@@ -725,7 +747,7 @@ mod tests {
             assert_eq!(capture["artifact"], format!("catalog-evidence-{arch}"));
             assert_eq!(capture["summary_sha256"].as_str().unwrap().len(), 64);
             assert_eq!(capture["tools"].as_object().unwrap().len(), 9);
-            for tool in super::super::TOOLS {
+            for tool in HISTORICAL {
                 let record = &capture["tools"][tool];
                 assert_eq!(record["sbom_sha256"].as_str().unwrap().len(), 64);
                 assert_eq!(record["config_id"].as_str().unwrap().len(), 71);

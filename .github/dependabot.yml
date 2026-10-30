@@ -15,7 +15,7 @@ updates:
       - /images/gitleaks
       - /images/cargo-audit
       - /images/cargo-deny
-      - /images/kind
+      - /images/k3d
       - /images/kustomize
       - /images/kubectl
       - /images/docker
