@@ -6,6 +6,8 @@ On **2026-10-30**, after the applicability investigation, the repository owner a
 
 [`inventory/accepted-risks.json`](../inventory/accepted-risks.json) binds Syft/Grype acceptance to exact Dockerfile hashes and explicit package/version/type/location/advisory/namespace/severity/fix/related-advisory identities and occurrence limits. The retained baseline is **18 Syft / 23 Grype matches per architecture**. The prior exact Gitleaks OpenPGP exception remains separately bounded. No raw finding, including suppressed/Unknown/Negligible, is removed.
 
+On **2026-10-31**, the owner additionally accepted **GO-2026-6809 / CVE-2026-111943** changing from Unknown to **Medium** in both advisory identities for Syft/Grype's embedded Go **1.26.8** standard library. Only those two exact rules were amended; recipe/package/location/fix identities and one-occurrence limits are unchanged. Published fixes remain Go **1.26.10 / 1.27.3**; acceptance does not mean remediation. The original reference-report hashes remain historical evidence, not a claim that their severity metadata is current.
+
 Policy `owner-selected-stack-2026-10-30-v1` reports **accepted-risk**, not clean. New matches, extra occurrences, changed dependencies/locations/fixes/aliases and changed recipes do not inherit the snapshot. Review source and fresh evidence when updating a rule; the capture fixture writes proposals only, never auto-approves a new stack.
 
 Risk acceptance does not approve absent inventories, failed native functionality, malformed/stale data, cleanup failures, missing legal material or production deployment. The sole informational diagnostic remains the exact pinned Grype module-granularity warning for its known offline invocation. Other diagnostics fail.

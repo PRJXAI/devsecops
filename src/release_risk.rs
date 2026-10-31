@@ -480,6 +480,152 @@ mod tests {
         }
     }
     #[test]
+    fn medium_x509_risk_acceptance_is_exact_and_not_a_severity_waiver() {
+        for tool in ["syft", "grype"] {
+            let package = json!({"id":"stdlib","name":"stdlib","version":"go1.26.8","type":"go-module","locations":[{"path":format!("/usr/local/bin/{tool}")}]});
+            let finding = json!({
+                "artifact":package,
+                "vulnerability":{
+                    "id":"GO-2026-6809","namespace":"govulndb:language:go","severity":"Medium",
+                    "fix":{"state":"fixed","versions":["1.26.10","1.27.3"],"available":[
+                        {"date":"2026-10-20","kind":"release","version":"1.26.10"},
+                        {"date":"2026-10-20","kind":"release","version":"1.27.3"}
+                    ]}
+                },
+                "relatedVulnerabilities":[{"id":"CVE-2026-111943","namespace":"nvd:cpe","severity":"Medium","fix":null}]
+            });
+            let bom = json!({"artifacts":[package]});
+            let profile = snapshot(tool).unwrap().unwrap();
+            let identity = projection(&finding, &package).unwrap();
+            let rule = profile["rules"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .find(|rule| rule["identity"] == identity)
+                .unwrap();
+            use sha2::{Digest, Sha256};
+            let expected_id = Sha256::digest(identity.to_string().as_bytes())
+                .iter()
+                .map(|b| format!("{b:02x}"))
+                .collect::<String>();
+            assert_eq!(rule["id"], expected_id);
+            assert_eq!(rule["maximum_occurrences"], 1);
+            for key in ["matches", "ignoredMatches"] {
+                let mut report = json!({"matches":[]});
+                report[key] = json!([finding]);
+                let decision = assess(tool, &bom, &report).unwrap();
+                assert_eq!(decision["accepted"], 1);
+                assert_eq!(decision["blocking"], 0);
+                assert_eq!(status(&decision), "accepted-risk");
+            }
+            for (pointer, value) in [
+                ("/vulnerability/severity", json!("Unknown")),
+                ("/vulnerability/severity", json!("High")),
+                ("/relatedVulnerabilities/0/severity", json!("Unknown")),
+                ("/relatedVulnerabilities/0/severity", json!("High")),
+                ("/relatedVulnerabilities/0/id", json!("CVE-other")),
+                ("/vulnerability/id", json!("GO-other")),
+                ("/vulnerability/fix/state", json!("not-fixed")),
+                ("/vulnerability/fix/versions", json!(["1.26.11"])),
+                ("/vulnerability/fix/available/0/date", json!("2026-10-21")),
+            ] {
+                let mut changed = finding.clone();
+                *changed.pointer_mut(pointer).unwrap() = value;
+                let decision = assess(tool, &bom, &json!({"matches":[changed]})).unwrap();
+                assert_eq!(decision["accepted"], 0, "{tool}/{pointer}");
+                assert_eq!(decision["blocking"], 1, "{tool}/{pointer}");
+            }
+            for (pointer, value) in [
+                ("/name", json!("other")),
+                ("/version", json!("go1.26.9")),
+                ("/type", json!("rpm")),
+                ("/locations/0/path", json!("/other")),
+            ] {
+                let mut changed_package = package.clone();
+                *changed_package.pointer_mut(pointer).unwrap() = value;
+                let mut changed = finding.clone();
+                changed["artifact"] = changed_package.clone();
+                let decision = assess(
+                    tool,
+                    &json!({"artifacts":[changed_package]}),
+                    &json!({"matches":[changed]}),
+                )
+                .unwrap();
+                assert_eq!(decision["blocking"], 1, "{tool}/{pointer}");
+            }
+            let duplicate = assess(
+                tool,
+                &bom,
+                &json!({"matches":[finding],"ignoredMatches":[finding]}),
+            )
+            .unwrap();
+            assert_eq!(duplicate["accepted"], 1);
+            assert_eq!(duplicate["blocking"], 1);
+            assert_eq!(status(&duplicate), "findings");
+            assert_eq!(
+                assess("gitleaks", &bom, &json!({"matches":[finding]})).unwrap()["blocking"],
+                1
+            );
+        }
+    }
+
+    #[test]
+    #[ignore = "fixed private 2026-10-31 arm64 production catalog rescan replay; no Docker/network/publication"]
+    fn recorded_medium_x509_rescans_pass_only_as_accepted_risk() -> Result<()> {
+        use crate::release::{
+            JSON_LIMIT, db_status, hash, read_json, report_counts, sbom_packages,
+        };
+        use chrono::DateTime;
+        let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR"));
+        for (tool, bom_hash, report_hash, expected, high, medium) in [
+            (
+                "syft",
+                "9b8d99a143f09560a74f3cf18aa0679fb23dc16668f2df763e561f435962e1a1",
+                "c89022a31c78b6726796fc3aa33adf62a3e52ba41e9dcfe1f2f1527f1a1becb6",
+                18,
+                10,
+                3,
+            ),
+            (
+                "grype",
+                "8c877b67421736212305d96acde99e96b793d2be6bb544caee0bb902b190c548",
+                "cb269e7fef8cdcc63e3535d7cd66e1be8426fb83218e4a344495388870a66083",
+                23,
+                13,
+                5,
+            ),
+        ] {
+            let input = root.join(format!(
+                ".work/delivery-20261030/{tool}-published-arm64/{tool}.syft.json"
+            ));
+            let output = root.join(format!(".work/risk-review-20261031/{tool}.grype.json"));
+            assert_eq!(hash(&input, JSON_LIMIT)?, bom_hash);
+            assert_eq!(hash(&output, JSON_LIMIT)?, report_hash);
+            let bom = read_json(&input)?;
+            let report = read_json(&output)?;
+            let at = DateTime::parse_from_rfc3339(text(&report, "/descriptor/timestamp")?)
+                .map_err(|_| "invalid recorded scan timestamp")?
+                .with_timezone(&chrono::Utc);
+            let db = &report["descriptor"]["db"]["status"];
+            db_status(db, at)?;
+            let packages = sbom_packages(&bom, text(&bom, "/source/metadata/imageID")?, "arm64")?;
+            crate::coverage::check(&bom, tool)?;
+            let counts = report_counts(&bom, &packages, &report, db, at)?;
+            assert_eq!(counts["Critical"], 2);
+            assert_eq!(counts["High"], high);
+            assert_eq!(counts["Medium"], medium);
+            assert_eq!(counts["Unknown"], 3);
+            assert_eq!(counts["ignoredMatches"], 0);
+            let decision = assess(tool, &bom, &report)?;
+            assert_eq!(decision["accepted"], expected);
+            assert_eq!(decision["blocking"], 0);
+            assert_eq!(status(&decision), "accepted-risk");
+            assert_eq!(report["matches"].as_array().unwrap().len(), expected);
+        }
+        Ok(())
+    }
+
+    #[test]
     fn precision_warning_is_exact_and_other_diagnostics_still_fail() {
         assert_eq!(diagnostics(b""), Ok("none"));
         let known = format!("[0000{PRECISION}");

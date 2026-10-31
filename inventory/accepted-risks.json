@@ -1,5 +1,5 @@
 {
-  "authorization": "Repository owner explicitly accepts the investigated current stack risks and requests delivery; includes findings with published fixes. No inventory/runtime/legal proof is inferred.",
+  "authorization": "Repository owner explicitly accepts the investigated current stack risks and requests delivery; includes findings with published fixes. On 2026-10-31 the owner additionally accepts GO-2026-6809 / CVE-2026-111943 at Medium rather than Unknown for the existing Syft/Grype Go 1.26.8 identities, with unchanged fix identities and occurrence limits. No other finding or future change is approved. No inventory/runtime/legal proof is inferred.",
   "decision": "owner-selected-stack-2026-10-30",
   "schema": 1,
   "tools": {
@@ -319,7 +319,7 @@
           "maximum_occurrences": 1
         },
         {
-          "id": "81a5fff3ff0a3f8ce9c4366986987779a5dd10fffd0dc11df06a7a6aeb45628b",
+          "id": "a63bd48df054369afad1672daa530b3d1cca656aa719864c15e2e4d0cbb54773",
           "identity": {
             "package": {
               "locations": [
@@ -334,7 +334,7 @@
                 "fix": null,
                 "id": "CVE-2026-111943",
                 "namespace": "nvd:cpe",
-                "severity": "Unknown"
+                "severity": "Medium"
               }
             ],
             "vulnerability": {
@@ -359,7 +359,7 @@
               },
               "id": "GO-2026-6809",
               "namespace": "govulndb:language:go",
-              "severity": "Unknown"
+              "severity": "Medium"
             }
           },
           "maximum_occurrences": 1
@@ -1089,7 +1089,7 @@
           "maximum_occurrences": 1
         },
         {
-          "id": "083bebca48127df609640ef0ae3bba40dcc5e1cb948215375b576d770d2555d8",
+          "id": "e95dfc60bfdbda2ad7ed2e925b63d348211216c8f3e8d509d4b87ab980a1f4f8",
           "identity": {
             "package": {
               "locations": [
@@ -1104,7 +1104,7 @@
                 "fix": null,
                 "id": "CVE-2026-111943",
                 "namespace": "nvd:cpe",
-                "severity": "Unknown"
+                "severity": "Medium"
               }
             ],
             "vulnerability": {
@@ -1129,7 +1129,7 @@
               },
               "id": "GO-2026-6809",
               "namespace": "govulndb:language:go",
-              "severity": "Unknown"
+              "severity": "Medium"
             }
           },
           "maximum_occurrences": 1
