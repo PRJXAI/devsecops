@@ -849,11 +849,12 @@ pub(super) fn prepare(driver: &mut Driver, tool: &str) -> Result<()> {
     };
     let failed = setup.is_err()
         || !["clean", "accepted-risk"].contains(&status["status"].as_str().unwrap_or(""));
-    write_json(
-        &public.join("summary.json"),
-        &json!({"schema":1, "source_sha": revision, "tool":tool, "arch": arch, "status": if failed { "blocked" } else { status["status"].as_str().unwrap_or("blocked") }, "setup": setup_status, "tools": [status]}),
-    )?;
+    let summary = json!({"schema":1, "source_sha": revision, "tool":tool, "arch": arch, "status": if failed { "blocked" } else { status["status"].as_str().unwrap_or("blocked") }, "setup": setup_status, "tools": [status]});
+    write_json(&public.join("summary.json"), &summary)?;
     if failed {
+        // Only the already-public allowlisted summary reaches the Actions error
+        // annotation. Never print the underlying error or private scanner output.
+        eprintln!("::error title=Release qualification blocked::{summary}");
         Err("release blocked by findings or errors; see counts-only summary and private scans")
     } else {
         Ok(())
@@ -1574,7 +1575,18 @@ mod tests {
                 .env("GITHUB_SHA", REV)
                 .env_remove("DOCKER_HOST")
                 .env_remove("DOCKER_CONTEXT");
-            driver.execute(child, 30, false, 0).unwrap();
+            let output = driver.execute(child, 30, false, 0).unwrap();
+            let stdout = fs::read_to_string(&output).unwrap();
+            let stderr =
+                String::from_utf8(super::super::captured_stderr(&output).unwrap()).unwrap();
+            let summary = read_json(&root.join(".work/public-release-syft/summary.json")).unwrap();
+            assert_eq!(
+                stderr,
+                format!("::error title=Release qualification blocked::{summary}\n")
+            );
+            for stream in [&stdout, &stderr] {
+                assert!(!stream.contains("SYNTHETIC_PRIVATE_DIAGNOSTIC"));
+            }
         }
     }
 

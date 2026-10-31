@@ -14,6 +14,25 @@ use std::{
 
 const REPORT_LIMIT: u64 = 8 * 1024 * 1024;
 
+// These two tools still fail the full functional/release contract. Build checks
+// must explicitly report their narrower scope, not manufacture qualification.
+const BUILD_ONLY: [&str; 2] = ["cargo-deny", "k3d"];
+
+pub(super) fn build(driver: &mut Driver, tool: &str) -> Result<&'static str> {
+    let image = driver.check(tool)?;
+    super::filesystem::check(driver, tool, &image)?;
+    if BUILD_ONLY.contains(&tool) {
+        Ok(
+            "native build/version/filesystem passed; functional qualification unavailable (not release acceptance)",
+        )
+    } else {
+        functional(driver, tool, &image)?;
+        Ok(
+            "native build/version/filesystem and synthetic functional contract passed (not release acceptance)",
+        )
+    }
+}
+
 pub(super) fn check(driver: &mut Driver, tool: &str, image: &str) -> Result<()> {
     super::filesystem::check(driver, tool, image)?;
     functional(driver, tool, image)
@@ -691,6 +710,42 @@ fn compose(driver: &mut Driver, image: &str) -> Result<()> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn build_only_tools_do_not_gain_functional_or_release_qualification() {
+        assert_eq!(BUILD_ONLY, ["cargo-deny", "k3d"]);
+        let mut driver = Driver::new().unwrap();
+        for (tool, error) in [
+            (
+                "cargo-deny",
+                "cargo-deny functional contract blocked: pinned compiler-free runtime cannot prove Cargo/index/advisory coverage",
+            ),
+            (
+                "k3d",
+                "k3d functional contract blocked: packaged native control-plane and inventory qualification required",
+            ),
+        ] {
+            assert!(super::super::TOOLS.contains(&tool));
+            assert_eq!(
+                functional(&mut driver, tool, "not-a-release-image"),
+                Err(error)
+            );
+        }
+        assert_eq!(
+            driver.sequence, 0,
+            "blocked contracts must not start commands"
+        );
+    }
+
+    #[test]
+    #[ignore = "authorized serial native Docker build/filesystem/implemented-contract checks; no cluster or registry writes"]
+    fn native_all_tool_builds() {
+        let mut driver = Driver::new().unwrap();
+        for tool in super::super::TOOLS {
+            let status = build(&mut driver, tool).unwrap_or_else(|error| panic!("{tool}: {error}"));
+            println!("{tool}: {status}");
+        }
+    }
 
     fn inventory(format: &str) -> Value {
         let entries: Vec<_> = PACKAGES.iter().map(|(name, version, kind, ecosystem)| {

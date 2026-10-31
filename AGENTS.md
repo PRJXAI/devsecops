@@ -34,7 +34,7 @@ Publication requires that tool's actual evidence/readiness and manual tool/sourc
 
 ## Verification and maintenance
 
-Run formatting, strict all-target Clippy, all locked tests and `audit-dependencies`; execute native cases serially. `check` is version/identity, `contract` adds required functionality, `catalog-tool` is evidence only, `prepare-tool` adds fresh inventory/scans, `publish-tool` requires approved manual main context. Never call emulation/cross-build/registry scans native execution.
+Run formatting, strict all-target Clippy, all locked tests and `audit-dependencies`; execute native cases serially. `check` is version/identity; `build-tool` adds filesystem and implemented functional checks, explicitly reporting cargo-deny/k3d build-only scope. `contract` still requires full functionality; `catalog-tool` is evidence only; `prepare-tool` adds fresh inventory/scans; `publish-tool` requires approved manual main context. Push/PR builds all nine tools and fully qualifies Syft/Grype; scheduled/manual runs fully qualify every selected tool. Never turn a build-only result into release acceptance. Never call emulation/cross-build/registry scans native execution.
 
 Captured tuples come from unchanged real native output. Do not inject metadata, infer UNKNOWN versions or use package-count thresholds. Preserve all diagnostics and genuine client coverage. Both architectures, licenses/source arrangements, exact archive/config/manifest identities, provenance and package access matter independently.
 

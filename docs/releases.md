@@ -6,6 +6,10 @@ Each tool owns its GHCR repository, two native jobs, handoffs, concurrency group
 
 Syft and Grype are the first published deliveries with refreshed captured native profiles, source-attributed notice bundles and the owner's [accepted-risk policy](security.md). Both native releases/provenance passed at `13edb5277101befe100a435f5ade8da6ea3d40af`; anonymous package access is now verified, including both native platform/config bindings and exact source/workflow provenance. Other tools retain their specific inventory, runtime or redistribution gaps. Do not infer availability from this document: [the verification record](results.md) records completed publication and the workflow's `published-digests-TOOL` artifact is the digest authority.
 
+## Build CI versus release qualification
+
+Push/PR CI validates all nine native tool builds, stopped-container filesystems, implemented functional contracts and public catalogs on amd64/arm64. Cargo-deny/k3d report build-only scope because their full functional contracts remain blocked. Syft/Grype additionally run strict release preparation on every event. Scheduled and manual runs run strict `prepare-tool` for every selected tool, including all nine when `tool=all`; unresolved qualification still fails those runs. Publication remains manual-main-only and cannot use build-only jobs or catalogs in place of fresh release handoffs.
+
 ## Required gates
 
 1. Source formatting, strict Clippy, Rust regression/policy tests and the first-party dependency audit.

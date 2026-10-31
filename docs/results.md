@@ -25,6 +25,30 @@ Publication now records exact native manifest/config identities and runs `verify
 
 The consumer retired live Kubernetes tests and their K3s/k3d/pause dependencies. It retains rendered deployment examples and application security/client/storage/restart tests, and now requires public tool access without a reader-token/private-export workaround. Earlier private-access and archive failures remain historical; this changes scope, not vulnerability findings.
 
+## Pipeline failure investigation
+
+Run [41128200429](https://github.com/PRJXAI/devsecops/actions/runs/41128200429) and the upload-artifact/provenance Dependabot runs fail at `prepare-tool`, not at the updated Actions. The downloaded public security summaries from 41128200429 show shared setup ready on all 18 native jobs. Syft and Grype pass with **18 / 23 accepted, 0 blocking** matches per architecture. The other 14 jobs remain blocked:
+
+| Tool | amd64 reason | arm64 reason |
+|---|---|---|
+| Gitleaks | `inventory-tuple-mismatch` | `inventory-tuple-mismatch` |
+| cargo-audit | `inventory-architecture-unreviewed` | `inventory-tuple-mismatch` |
+| cargo-deny | `cargo-deny-coverage-unproven` | `cargo-deny-coverage-unproven` |
+| k3d | `k3d-control-plane-unapproved` | `k3d-control-plane-unapproved` |
+| Kustomize | `inventory-architecture-unreviewed` | `inventory-compiler-mismatch` |
+| kubectl | `inventory-architecture-unreviewed` | `inventory-compiler-mismatch` |
+| Docker | `inventory-architecture-unreviewed` | `inventory-tuple-mismatch` |
+
+These are qualification failures, not transient infrastructure errors. The initial diagnostic-only fix left profiles, readiness approvals, contracts and workflow scope unchanged. It emits the already-public summary as an Actions error annotation, so the next failure identifies its stage/reason without downloading an artifact. The subprocess regression verifies exact annotation contents, distinct shared/tool failures, private raw output and absent release handoffs. Formatting (after correcting one initial formatting failure), strict all-target Clippy, **133 ordinary tests / 39 ignored diagnostics**, and fresh `audit-dependencies` pass locally. No new native qualification, image publication or hosted run of this diagnostic change is claimed.
+
+## Native build pipeline separation
+
+At the owner's request to make tool builds work, push/PR CI now runs `build-tool` for all nine tools on both native architectures, retaining filesystem/version/identity checks, all seven implemented functional contracts and public catalog capture. Cargo-deny/k3d explicitly report build-only scope; their full `contract` and `prepare-tool` commands still fail. Syft/Grype retain strict preparation on every event. Scheduled/manual runs still require strict qualification for every selected tool, and manual publication still requires both fresh release handoffs, readiness and source/tool approval. No inventory profile, risk snapshot, supplier pin or publication gate changed.
+
+Local Linux/arm64 validation passed build/version/filesystem and functional checks for Syft, Grype, Gitleaks, cargo-audit, Kustomize and kubectl, plus build/version/filesystem checks for cargo-deny/k3d. The serial nine-tool test hit the external 600-second harness deadline during Docker's filesystem export after those eight successes; its exact owned stopped container was removed, with no broad cleanup or changed driver resource cap. A separate `cargo run --locked --bin devsecops -- build-tool docker` then passed filesystem, client/plugin version and Compose functional checks. The interrupted aggregate is not claimed as a passing test. Hosted run [41133295081](https://github.com/PRJXAI/devsecops/actions/runs/41133295081) passed at `e8a978ddbd3c9d852e1864eb1c55a5e8fc04d577`: **18/18 native amd64/arm64 tool jobs**, both Gitleaks candidate jobs and the first-party formatting/Clippy/test/dependency-audit job. Syft/Grype full preparation retained **18 / 23 accepted, 0 blocking** matches per architecture. All nine publish jobs were skipped; this is build validation, not new publication approval.
+
+Formatting, strict all-target Clippy, fresh dependency audit and **134 ordinary tests / 40 ignored explicit diagnostics** pass locally, including mutations rejecting skipped native builds, release preparation conditioned on publish approval, removed scheduled/manual/scanner qualification and continue-on-error. The existing missing-inventory/readiness/no-push regressions remain intact. No new image was published or approved for release.
+
 ## Remaining qualifications
 
 | Area | Status |

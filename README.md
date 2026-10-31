@@ -58,12 +58,14 @@ Requirements: pinned Rust toolchain, a local Unix-socket Docker daemon and a nat
 cargo fmt --all -- --check
 cargo clippy --all-targets --locked -- -D warnings
 cargo test --locked
-cargo run --locked --bin devsecops -- check syft
+cargo run --locked --bin devsecops -- build-tool syft
 cargo run --locked --bin devsecops -- contract syft
 cargo run --locked --bin devsecops -- audit-dependencies
 ```
 
-`check` builds and verifies identity/version. `contract` adds stopped-container filesystem and real synthetic functional checks. Neither publishes. `prepare-tool` adds inventory, fresh offline matching and hash-bound handoffs. Publication requires an approved manual dispatch on `main`, both native handoffs and tool-specific readiness; it loads the tested bytes rather than rebuilding them.
+`check` builds and verifies identity/version. `build-tool` also validates the stopped-container filesystem and runs implemented synthetic functional contracts; cargo-deny and k3d explicitly report build-only scope because their full contracts remain unqualified. `contract` requires the full functional contract and still fails for those two tools. None publishes. `prepare-tool` adds inventory, fresh offline matching and hash-bound handoffs. Publication requires an approved manual dispatch on `main`, both native handoffs and tool-specific readiness; it loads the tested bytes rather than rebuilding them.
+
+Push/PR CI builds all nine tools on native amd64/arm64 and captures their inventories. Syft/Grype also require full release qualification on every run. Scheduled and manual runs require full qualification for every selected tool; the documented incomplete tools still block release, not ordinary build validation.
 
 ## Documentation
 

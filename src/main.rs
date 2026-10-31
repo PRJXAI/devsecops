@@ -659,6 +659,7 @@ fn main() {
     }
     if args.first().is_some_and(|command| {
         [
+            "build-tool",
             "catalog-tool",
             "prepare-tool",
             "publish-tool",
@@ -676,11 +677,15 @@ fn main() {
         };
         let result = selected
             .as_deref()
-            .ok_or("one release tool is required")
+            .ok_or("one tool is required")
             .and_then(release::tool_identity)
             .and_then(|tool| {
                 Driver::new().and_then(|mut driver| {
-                    if args[0] == "catalog-tool" {
+                    if args[0] == "build-tool" {
+                        let status = contracts::build(&mut driver, tool)?;
+                        println!("{tool}: {status}");
+                        Ok(())
+                    } else if args[0] == "catalog-tool" {
                         release::catalog(&mut driver, tool)
                     } else if args[0] == "prepare-tool" {
                         release::prepare(&mut driver, tool)
@@ -710,7 +715,7 @@ fn main() {
         }
         _ => {
             eprintln!(
-                "usage: devsecops check TOOL | contract TOOL | check-all | audit-dependencies | catalog-tool TOOL | prepare-tool TOOL | publish-tool TOOL | verify-public-tool TOOL"
+                "usage: devsecops build-tool TOOL | check TOOL | contract TOOL | check-all | audit-dependencies | catalog-tool TOOL | prepare-tool TOOL | publish-tool TOOL | verify-public-tool TOOL"
             );
             std::process::exit(2);
         }

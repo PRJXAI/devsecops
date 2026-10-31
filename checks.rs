@@ -416,6 +416,7 @@ mod tests {
                 | "cargo test --locked"
                 | "cargo test --locked --bin devsecops release::gitleaks_candidate::native_gitleaks_dependency_candidate -- --ignored --exact"
                 | "cargo run --locked --bin devsecops -- audit-dependencies"
+                | "cargo run --locked --bin devsecops -- build-tool"
                 | "cargo run --locked --bin devsecops -- catalog-tool"
                 | "cargo run --locked --bin devsecops -- prepare-tool"
                 | "cargo run --locked --bin devsecops -- publish-tool"
@@ -1281,6 +1282,8 @@ jobs:";
     steps:
       - uses: actions/checkout@PIN
         with: {persist-credentials: false}
+      - name: Validate native build, filesystem and implemented functional contracts
+        run: cargo run --locked --bin devsecops -- build-tool
       - name: Capture public native inventories for this tool, not release acceptance
         run: cargo run --locked --bin devsecops -- catalog-tool
       - name: Preserve native inventory evidence, including blocked profiles
@@ -1291,10 +1294,11 @@ jobs:";
           path: .work/catalog-evidence-${{ inputs.tool }}/
           retention-days: 14
           if-no-files-found: error
-      - name: Rust builds, smokes, inventories and scans this exact native tool
+      - name: Require full release qualification for delivered scanners and scheduled or manual runs
+        if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || inputs.tool == 'syft' || inputs.tool == 'grype' }}
         run: cargo run --locked --bin devsecops -- prepare-tool
       - name: Public count/status summary only
-        if: always()
+        if: ${{ always() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || inputs.tool == 'syft' || inputs.tool == 'grype') }}
         uses: actions/upload-artifact@PIN
         with:
           name: security-status-${{ inputs.tool }}-${{ matrix.arch }}
@@ -1302,6 +1306,7 @@ jobs:";
           retention-days: 14
           if-no-files-found: error
       - name: Preserve policy-passing archives, inventories and explicit risk receipts
+        if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || inputs.tool == 'syft' || inputs.tool == 'grype' }}
         uses: actions/upload-artifact@PIN
         with:
           name: release-${{ inputs.tool }}-${{ matrix.arch }}
@@ -1503,6 +1508,25 @@ jobs:";
             (
                 "DEVSECOPS_LICENSE_SOURCE_PROVENANCE_APPROVED_TOOL: ${{ inputs.tool }}",
                 "DEVSECOPS_LICENSE_SOURCE_PROVENANCE_APPROVED_TOOL: syft",
+            ),
+            (
+                "        run: cargo run --locked --bin devsecops -- build-tool",
+                "        continue-on-error: true\n        run: cargo run --locked --bin devsecops -- build-tool",
+            ),
+            (
+                "        run: cargo run --locked --bin devsecops -- build-tool",
+                "        # run: cargo run --locked --bin devsecops -- build-tool",
+            ),
+            ("github.event_name == 'schedule' || ", ""),
+            ("inputs.tool == 'syft' || ", ""),
+            (" || inputs.tool == 'grype'", ""),
+            (
+                "github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || inputs.tool == 'syft' || inputs.tool == 'grype'",
+                "inputs.publish",
+            ),
+            (
+                "github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || inputs.tool == 'syft' || inputs.tool == 'grype'",
+                "false",
             ),
             (
                 "        run: cargo run --locked --bin devsecops -- prepare-tool",

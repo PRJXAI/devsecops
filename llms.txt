@@ -18,7 +18,7 @@
 
 First-party code/tests/orchestration are Rust; CI run steps are single Cargo invocations. No Python, first-party unsafe Rust, shell programs or generic supplier-rebuild framework. Preserve literal pins, resource/capture/deadline/cancellation/cleanup checks and public-output privacy.
 
-Use check/contract/catalog/prepare/publish for their distinct purposes. A version smoke, catalog, experimental candidate or successful sibling is not a release. Only manual main/tool/source-bound approved publication can write the registry; both native archives must load/identify correctly before any push.
+Use check/build-tool/contract/catalog/prepare/publish for their distinct purposes. Push/PR CI builds all nine tools, checks filesystems/implemented contracts and captures catalogs; cargo-deny/k3d explicitly remain build-only, not functionally qualified. Syft/Grype require full preparation on every run; scheduled/manual runs require it for every selected tool. A version smoke, catalog, experimental candidate or successful sibling is not a release. Only manual main/tool/source-bound approved publication can write the registry; both native archives must load/identify correctly before any push.
 
 The owner accepted investigated stack risks on 2026-10-30, including known fixable findings. Exact recipes/packages/advisories/fixes/locations/occurrence limits remain visible as accepted-risk; new findings and missing evidence still block. Grype remains the image vulnerability matcher, with separate retrieval/offline analysis and no matching filters.
 
