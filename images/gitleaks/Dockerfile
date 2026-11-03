@@ -1,6 +1,6 @@
 # Built only by the fixed-source Rust driver: verified Go source/patch, offline race tests.
 FROM cgr.dev/chainguard/git:latest@sha256:9af245693971eacc8414e52060ddaab20387a50908bb72fb3f142ba0bcf5d003 AS git
-FROM cgr.dev/chainguard/glibc-dynamic:latest@sha256:709673274b417a48f56374da8a7633ef7b2f5b27e34612ce98a335737318cc94
+FROM cgr.dev/chainguard/glibc-dynamic:latest@sha256:671a621016fb33812136dea6182b1db957996d3c8c618187aaf86abd9b14af53
 COPY --chmod=0555 candidate /usr/local/bin/gitleaks
 COPY --chmod=0444 go-notices.txt /usr/share/licenses/gitleaks/GO-NOTICES.txt
 COPY --from=git /usr/bin/git /usr/bin/git
