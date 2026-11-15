@@ -1682,11 +1682,11 @@ jobs:";
           path: .work/catalog-evidence-${{ inputs.tool }}/
           retention-days: 14
           if-no-files-found: error
-      - name: Require full release qualification for delivered scanners and scheduled or manual runs
-        if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || inputs.tool == 'syft' || inputs.tool == 'grype' }}
+      - name: Require full release qualification for delivered scanners, Gitleaks and scheduled or manual runs
+        if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || inputs.tool == 'syft' || inputs.tool == 'grype' || inputs.tool == 'gitleaks' }}
         run: cargo run --locked --bin devsecops -- prepare-tool
       - name: Public count/status summary only
-        if: ${{ always() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || inputs.tool == 'syft' || inputs.tool == 'grype') }}
+        if: ${{ always() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || inputs.tool == 'syft' || inputs.tool == 'grype' || inputs.tool == 'gitleaks') }}
         uses: actions/upload-artifact@PIN
         with:
           name: security-status-${{ inputs.tool }}-${{ matrix.arch }}
@@ -1694,7 +1694,7 @@ jobs:";
           retention-days: 14
           if-no-files-found: error
       - name: Preserve policy-passing archives, inventories and explicit risk receipts
-        if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || inputs.tool == 'syft' || inputs.tool == 'grype' }}
+        if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || inputs.tool == 'syft' || inputs.tool == 'grype' || inputs.tool == 'gitleaks' }}
         uses: actions/upload-artifact@PIN
         with:
           name: release-${{ inputs.tool }}-${{ matrix.arch }}
@@ -1908,12 +1908,13 @@ jobs:";
             ("github.event_name == 'schedule' || ", ""),
             ("inputs.tool == 'syft' || ", ""),
             (" || inputs.tool == 'grype'", ""),
+            (" || inputs.tool == 'gitleaks'", ""),
             (
-                "github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || inputs.tool == 'syft' || inputs.tool == 'grype'",
+                "github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || inputs.tool == 'syft' || inputs.tool == 'grype' || inputs.tool == 'gitleaks'",
                 "inputs.publish",
             ),
             (
-                "github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || inputs.tool == 'syft' || inputs.tool == 'grype'",
+                "github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || inputs.tool == 'syft' || inputs.tool == 'grype' || inputs.tool == 'gitleaks'",
                 "false",
             ),
             (

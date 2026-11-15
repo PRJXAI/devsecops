@@ -115,14 +115,37 @@ fn mount(path: &Path, target: &str, writable: bool) -> Result<String> {
     ))
 }
 
-// This helper fixes the offline resource/security policy; it is not a configurable
-// test runner. The only alternate entrypoint is the packaged Git builtin executable.
+// Fixed offline policy, not a caller-configurable runner. Only the packaged Git
+// builtin and native GNU loader are additional hardcoded entrypoints.
+#[derive(Clone, Copy, PartialEq, Eq)]
+enum Entry {
+    Default,
+    Git,
+    Loader,
+}
 fn run(
     driver: &mut Driver,
     image: &str,
     args: &[&str],
     input: Option<&str>,
     git: bool,
+    expected_exit: i32,
+) -> Result<PathBuf> {
+    run_entry(
+        driver,
+        image,
+        args,
+        input,
+        if git { Entry::Git } else { Entry::Default },
+        expected_exit,
+    )
+}
+fn run_entry(
+    driver: &mut Driver,
+    image: &str,
+    args: &[&str],
+    input: Option<&str>,
+    entry: Entry,
     expected_exit: i32,
 ) -> Result<PathBuf> {
     let identity = driver
@@ -179,8 +202,17 @@ fn run(
     if let Some(input) = input {
         command.extend(["--mount", input]);
     }
-    if git {
-        command.extend(["--entrypoint", "/usr/bin/git"]);
+    match entry {
+        Entry::Default => (),
+        Entry::Git => command.extend(["--entrypoint", "/usr/bin/git"]),
+        Entry::Loader => command.extend([
+            "--entrypoint",
+            if cfg!(target_arch = "aarch64") {
+                "/usr/lib/ld-linux-aarch64.so.1"
+            } else {
+                "/usr/lib/ld-linux-x86-64.so.2"
+            },
+        ]),
     }
     command.push(image);
     command.extend_from_slice(args);
@@ -196,7 +228,7 @@ fn run(
     }?;
     // Git setup has expected chatter; positive analyses must be diagnostic-free.
     // Gitleaks finding exits retain their separate two-stream redaction check.
-    if !git && expected_exit == 0 && !super::captured_stderr(&output)?.is_empty() {
+    if entry != Entry::Git && expected_exit == 0 && !super::captured_stderr(&output)?.is_empty() {
         return Err("functional analysis emitted diagnostics; private logs retained");
     }
     Ok(output)
@@ -337,6 +369,24 @@ fn leaks(
 }
 
 fn gitleaks(driver: &mut Driver, image: &str) -> Result<()> {
+    // Reproduce the historical loader-only boundary without executing Git or
+    // Gitleaks. A single bounded run must exit normally; no retry/host waiver.
+    let loader = run_entry(
+        driver,
+        image,
+        &["--list", "/usr/bin/git"],
+        None,
+        Entry::Loader,
+        0,
+    )?;
+    let loader = String::from_utf8(release::bytes(&loader, REPORT_LIMIT)?)
+        .map_err(|_| "invalid native loader output")?;
+    if !["libc.so.6", "libpcre2-8.so.0", "libz.so.1"]
+        .iter()
+        .all(|name| loader.contains(name))
+    {
+        return Err("native GNU loader closure incomplete");
+    }
     let input = fixture(driver, "gitleaks")?;
     let token = synthetic_token()?;
     write(

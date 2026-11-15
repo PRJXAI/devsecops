@@ -2,6 +2,80 @@ use super::*;
 use sha2::Digest;
 
 #[test]
+fn current_material_review_binds_original_sources_without_granting_a_release() {
+    let root = Path::new(env!("CARGO_MANIFEST_DIR"));
+    let review = read_json(&root.join("licenses/gitleaks-current-review.json")).unwrap();
+    assert_eq!(
+        review["review"]["publication_from_this_record_alone_authorized"],
+        false
+    );
+    assert_eq!(
+        review["review"]["fresh_both_native_release_preparations_required"],
+        true
+    );
+    assert_eq!(
+        review["review"]["independent_vendor_reproducibility_established"],
+        false
+    );
+    assert_eq!(
+        review["native_material"]["native_notice_sha256"],
+        hash(
+            &root.join("licenses/gitleaks-runtime-NOTICES.txt"),
+            1024 * 1024
+        )
+        .unwrap()
+    );
+    assert_eq!(
+        review["native_material"]["source_index_sha256"],
+        hash(
+            &root.join("licenses/gitleaks-runtime-source-index.json"),
+            1024 * 1024
+        )
+        .unwrap()
+    );
+    let current = read_json(&root.join("licenses/gitleaks-runtime-source-index.json")).unwrap();
+    assert_eq!(current["redistribution_approved"], false);
+    let rows = current["native_source_observations"]["observations"]
+        .as_array()
+        .unwrap();
+    assert_eq!(rows.len(), 20);
+    for arch in ["amd64", "arm64"] {
+        let names: std::collections::BTreeSet<_> = rows
+            .iter()
+            .filter(|row| row["arch"] == arch)
+            .map(|row| row["package"].as_str().unwrap())
+            .collect();
+        assert_eq!(names.len(), 10);
+        for source in sources(arch).unwrap() {
+            let observation = rows
+                .iter()
+                .find(|row| {
+                    row["arch"] == arch && row["source_file"] == format!("{arch}/{}", source.name)
+                })
+                .unwrap();
+            assert_eq!(observation["source_apk_sha256"], source.sha256);
+            assert!(observation["source_manifest_files"].as_u64().unwrap() > 0);
+            assert_eq!(observation["signature_verified"], false);
+        }
+    }
+    let go =
+        read_json(&root.join("licenses/gitleaks-go-notices/current-source-index.json")).unwrap();
+    assert_eq!(go["redistribution_approved"], false);
+    assert_eq!(
+        review["go_material"]["compiler_source_commit"],
+        go["go_source_commit"]
+    );
+    assert_eq!(
+        review["go_material"]["source_index_sha256"],
+        hash(
+            &root.join("licenses/gitleaks-go-notices/current-source-index.json"),
+            1024 * 1024
+        )
+        .unwrap()
+    );
+}
+
+#[test]
 fn source_delivery_requires_every_original_byte_mode_and_member_without_extracting() {
     let driver = Driver::new().unwrap();
     let file = driver.logs.join("synthetic-source.tar");
