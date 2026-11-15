@@ -3,22 +3,22 @@
   "tools": {
     "grype": {
       "compilers": {
-        "/usr/local/bin/grype": "go1.26.8"
+        "/usr/local/bin/grype": "go1.27.4"
       },
       "evidence": [
         {
           "arch": "amd64",
-          "config_id": "sha256:68f9af09c43c46f77f73a1e7c07a5aaeb63c6363a49204f0ef77c51aac3453b4",
-          "run": 41074964808,
-          "sbom_sha256": "c1acd4f75981463c54cd0f80fdacb8f2d846882e9d2ec5f064198e9f54d618e4",
-          "source_sha": "aaab990627e8f73fb89c5807193092324e3d004d"
+          "config_id": "sha256:b7b69ed8ea3a2720b3c252af9c10665f2a8ba14fa246d4f7d87024353356a914",
+          "run": 43730804248,
+          "sbom_sha256": "c168cea4d612a5e4637e026c0591f8d19a6dc337849cfe62afef37f01ae9dde8",
+          "source_sha": "d3b870dbb18148fcf71d0ea0986a2eed2b484872"
         },
         {
           "arch": "arm64",
-          "config_id": "sha256:751b4e76be8344599d2b2c3f4ff07a809a4e04875f8dd5b96e87b9ea2901cba8",
-          "run": 41074964808,
-          "sbom_sha256": "544087dc109662e1f5803f2c4c91d643316e22b1e04b4233c5f5a537af793a13",
-          "source_sha": "aaab990627e8f73fb89c5807193092324e3d004d"
+          "config_id": "sha256:ca4fa53b522d6d19686e5a62858c9b09a6a96c445e89750646c38a52ea2dd949",
+          "run": 43730804248,
+          "sbom_sha256": "a3fc72043c332d73043837035e792c3f9bb4b35c23c52d7fd131914b0312daeb",
+          "source_sha": "d3b870dbb18148fcf71d0ea0986a2eed2b484872"
         }
       ],
       "locations": {
@@ -166,7 +166,7 @@
           [
             "go-module",
             "github.com/ProtonMail/go-crypto",
-            "v1.4.1",
+            "v1.5.2",
             "go-module-binary-cataloger"
           ],
           [
@@ -214,7 +214,7 @@
           [
             "go-module",
             "github.com/anchore/clio",
-            "v0.1.1",
+            "v0.1.2",
             "go-module-binary-cataloger"
           ],
           [
@@ -280,7 +280,7 @@
           [
             "go-module",
             "github.com/anchore/grype",
-            "v0.121.0",
+            "v0.0.0-20261109145526-cd1f23eb50df+dirty",
             "go-module-binary-cataloger"
           ],
           [
@@ -292,25 +292,31 @@
           [
             "go-module",
             "github.com/anchore/stereoscope",
-            "v0.3.4",
+            "v0.4.1",
             "go-module-binary-cataloger"
           ],
           [
             "go-module",
             "github.com/anchore/syft",
-            "v1.55.0",
+            "v1.57.1",
             "go-module-binary-cataloger"
           ],
           [
             "go-module",
             "github.com/andybalholm/brotli",
-            "v1.2.0",
+            "v1.2.8",
             "go-module-binary-cataloger"
           ],
           [
             "go-module",
             "github.com/apparentlymart/go-textseg/v15",
             "v15.0.0",
+            "go-module-binary-cataloger"
+          ],
+          [
+            "go-module",
+            "github.com/apparentlymart/go-textseg/v17",
+            "v17.0.1",
             "go-module-binary-cataloger"
           ],
           [
@@ -447,12 +453,6 @@
           ],
           [
             "go-module",
-            "github.com/becheran/wildmatch-go",
-            "v1.0.0",
-            "go-module-binary-cataloger"
-          ],
-          [
-            "go-module",
             "github.com/bgentry/go-netrc",
             "v0.0.0-20140422174119-9fd32a8b3d3d",
             "go-module-binary-cataloger"
@@ -465,12 +465,6 @@
           ],
           [
             "go-module",
-            "github.com/blakesmith/ar",
-            "v0.0.0-20190502131153-809d4375e1fb",
-            "go-module-binary-cataloger"
-          ],
-          [
-            "go-module",
             "github.com/bmatcuk/doublestar/v2",
             "v2.0.4",
             "go-module-binary-cataloger"
@@ -478,7 +472,7 @@
           [
             "go-module",
             "github.com/bmatcuk/doublestar/v4",
-            "v4.10.2",
+            "v4.10.4",
             "go-module-binary-cataloger"
           ],
           [
@@ -586,7 +580,7 @@
           [
             "go-module",
             "github.com/containerd/containerd/v2",
-            "v2.4.1",
+            "v2.4.2",
             "go-module-binary-cataloger"
           ],
           [
@@ -640,7 +634,7 @@
           [
             "go-module",
             "github.com/containerd/stargz-snapshotter/estargz",
-            "v0.18.2",
+            "v0.19.0",
             "go-module-binary-cataloger"
           ],
           [
@@ -682,7 +676,7 @@
           [
             "go-module",
             "github.com/deitch/magic",
-            "v0.0.0-20240306090643-c67ab88f10cb",
+            "v1.0.0",
             "go-module-binary-cataloger"
           ],
           [
@@ -700,25 +694,19 @@
           [
             "go-module",
             "github.com/docker/cli",
-            "v29.8.2+incompatible",
-            "go-module-binary-cataloger"
-          ],
-          [
-            "go-module",
-            "github.com/docker/docker",
-            "v28.5.2+incompatible",
+            "v29.9.2+incompatible",
             "go-module-binary-cataloger"
           ],
           [
             "go-module",
             "github.com/docker/docker-credential-helpers",
-            "v0.9.8",
+            "v0.9.10",
             "go-module-binary-cataloger"
           ],
           [
             "go-module",
             "github.com/docker/go-connections",
-            "v0.8.1",
+            "v0.8.2",
             "go-module-binary-cataloger"
           ],
           [
@@ -796,13 +784,13 @@
           [
             "go-module",
             "github.com/gabriel-vasile/mimetype",
-            "v1.4.15",
+            "v1.4.16",
             "go-module-binary-cataloger"
           ],
           [
             "go-module",
             "github.com/github/go-spdx/v2",
-            "v2.7.1",
+            "v2.8.0",
             "go-module-binary-cataloger"
           ],
           [
@@ -838,7 +826,7 @@
           [
             "go-module",
             "github.com/go-jose/go-jose/v4",
-            "v4.1.5",
+            "v4.1.6",
             "go-module-binary-cataloger"
           ],
           [
@@ -916,7 +904,7 @@
           [
             "go-module",
             "github.com/google/pprof",
-            "v0.0.0-20260802141513-ef3492d7dac3",
+            "v0.0.0-20261016150608-1facf8f91b50",
             "go-module-binary-cataloger"
           ],
           [
@@ -946,13 +934,13 @@
           [
             "go-module",
             "github.com/gookit/color",
-            "v1.6.2",
+            "v1.6.3",
             "go-module-binary-cataloger"
           ],
           [
             "go-module",
             "github.com/gpustack/gguf-parser-go",
-            "v0.26.4",
+            "v0.28.1",
             "go-module-binary-cataloger"
           ],
           [
@@ -1078,13 +1066,13 @@
           [
             "go-module",
             "github.com/klauspost/compress",
-            "v1.20.1",
+            "v1.20.3",
             "go-module-binary-cataloger"
           ],
           [
             "go-module",
             "github.com/klauspost/pgzip",
-            "v1.2.6",
+            "v1.2.7",
             "go-module-binary-cataloger"
           ],
           [
@@ -1126,13 +1114,13 @@
           [
             "go-module",
             "github.com/mattn/go-runewidth",
-            "v0.0.27",
+            "v0.0.31",
             "go-module-binary-cataloger"
           ],
           [
             "go-module",
             "github.com/mattn/go-sqlite3",
-            "v1.14.48",
+            "v1.14.52",
             "go-module-binary-cataloger"
           ],
           [
@@ -1204,13 +1192,13 @@
           [
             "go-module",
             "github.com/moby/moby/api",
-            "v1.56.0",
+            "v1.56.1",
             "go-module-binary-cataloger"
           ],
           [
             "go-module",
             "github.com/moby/moby/client",
-            "v0.6.0",
+            "v0.6.2",
             "go-module-binary-cataloger"
           ],
           [
@@ -1222,7 +1210,7 @@
           [
             "go-module",
             "github.com/moby/sys/mountinfo",
-            "v0.7.2",
+            "v0.7.3",
             "go-module-binary-cataloger"
           ],
           [
@@ -1461,6 +1449,12 @@
           ],
           [
             "go-module",
+            "github.com/sbomify/ar",
+            "v0.0.0-20261110120314-cac91ea00b05",
+            "go-module-binary-cataloger"
+          ],
+          [
+            "go-module",
             "github.com/scylladb/go-set",
             "v1.0.3-0.20200225121959-cc7b2070d91e",
             "go-module-binary-cataloger"
@@ -1486,7 +1480,7 @@
           [
             "go-module",
             "github.com/sigstore/fulcio",
-            "v1.8.7",
+            "v1.8.8",
             "go-module-binary-cataloger"
           ],
           [
@@ -1635,6 +1629,12 @@
           ],
           [
             "go-module",
+            "github.com/varlink/go",
+            "v0.4.1-0.20261015173642-c935be0c53f7",
+            "go-module-binary-cataloger"
+          ],
+          [
+            "go-module",
             "github.com/vbatts/go-mtree",
             "v0.7.0",
             "go-module-binary-cataloger"
@@ -1648,13 +1648,13 @@
           [
             "go-module",
             "github.com/vbauerster/cupwriter",
-            "v0.0.4",
+            "v0.0.5",
             "go-module-binary-cataloger"
           ],
           [
             "go-module",
             "github.com/vbauerster/mpb/v8",
-            "v8.14.0",
+            "v8.16.2",
             "go-module-binary-cataloger"
           ],
           [
@@ -1750,49 +1750,55 @@
           [
             "go-module",
             "go.opentelemetry.io/otel",
-            "v1.46.0",
+            "v1.47.0",
+            "go-module-binary-cataloger"
+          ],
+          [
+            "go-module",
+            "go.opentelemetry.io/otel/log",
+            "v1.47.0",
             "go-module-binary-cataloger"
           ],
           [
             "go-module",
             "go.opentelemetry.io/otel/metric",
-            "v1.46.0",
+            "v1.47.0",
             "go-module-binary-cataloger"
           ],
           [
             "go-module",
             "go.opentelemetry.io/otel/sdk",
-            "v1.46.0",
+            "v1.47.0",
             "go-module-binary-cataloger"
           ],
           [
             "go-module",
             "go.opentelemetry.io/otel/sdk/metric",
-            "v1.46.0",
+            "v1.47.0",
             "go-module-binary-cataloger"
           ],
           [
             "go-module",
             "go.opentelemetry.io/otel/trace",
-            "v1.46.0",
+            "v1.47.0",
             "go-module-binary-cataloger"
           ],
           [
             "go-module",
             "go.podman.io/image/v5",
-            "v5.41.2",
+            "v5.42.0",
             "go-module-binary-cataloger"
           ],
           [
             "go-module",
             "go.podman.io/storage",
-            "v1.64.1",
+            "v1.65.0",
             "go-module-binary-cataloger"
           ],
           [
             "go-module",
             "go.yaml.in/yaml/v3",
-            "v3.0.5",
+            "v3.0.6",
             "go-module-binary-cataloger"
           ],
           [
@@ -1804,7 +1810,7 @@
           [
             "go-module",
             "golang.org/x/crypto",
-            "v0.58.0",
+            "v0.59.0",
             "go-module-binary-cataloger"
           ],
           [
@@ -1816,13 +1822,13 @@
           [
             "go-module",
             "golang.org/x/mod",
-            "v0.41.0",
+            "v0.42.0",
             "go-module-binary-cataloger"
           ],
           [
             "go-module",
             "golang.org/x/net",
-            "v0.61.0",
+            "v0.62.0",
             "go-module-binary-cataloger"
           ],
           [
@@ -1834,25 +1840,25 @@
           [
             "go-module",
             "golang.org/x/sync",
-            "v0.24.0",
+            "v0.25.0",
             "go-module-binary-cataloger"
           ],
           [
             "go-module",
             "golang.org/x/sys",
-            "v0.49.0",
+            "v0.50.0",
             "go-module-binary-cataloger"
           ],
           [
             "go-module",
             "golang.org/x/term",
-            "v0.47.0",
+            "v0.48.0",
             "go-module-binary-cataloger"
           ],
           [
             "go-module",
             "golang.org/x/text",
-            "v0.43.0",
+            "v0.44.0",
             "go-module-binary-cataloger"
           ],
           [
@@ -1864,7 +1870,7 @@
           [
             "go-module",
             "golang.org/x/tools",
-            "v0.51.0",
+            "v0.52.0",
             "go-module-binary-cataloger"
           ],
           [
@@ -1936,7 +1942,7 @@
           [
             "go-module",
             "modernc.org/libc",
-            "v1.77.1",
+            "v1.79.0",
             "go-module-binary-cataloger"
           ],
           [
@@ -1954,13 +1960,13 @@
           [
             "go-module",
             "modernc.org/sqlite",
-            "v1.60.1",
+            "v1.61.0",
             "go-module-binary-cataloger"
           ],
           [
             "go-module",
             "stdlib",
-            "go1.26.8",
+            "go1.27.4",
             "go-module-binary-cataloger"
           ]
         ]
@@ -1968,22 +1974,22 @@
     },
     "syft": {
       "compilers": {
-        "/usr/local/bin/syft": "go1.26.8"
+        "/usr/local/bin/syft": "go1.27.4"
       },
       "evidence": [
         {
           "arch": "amd64",
-          "config_id": "sha256:b37a43db25a0d7354cca32583f84b9554c0c274ea2be6718e2aa0fb532aa830f",
-          "run": 41074964808,
-          "sbom_sha256": "5a5f3414ed8c6756e5f8f54c055ff69280ca292c0e73a1180f3cd09da748fd84",
-          "source_sha": "aaab990627e8f73fb89c5807193092324e3d004d"
+          "config_id": "sha256:7192445882d8c46ae9e845d4fa46ab0a30ffc206a3cc0f27758e8a4f0d91a4a5",
+          "run": 43730804248,
+          "sbom_sha256": "da65d45f9ecb47041cb8f8e0fc68eb8270786113e4df043f9d3dd20c90ebf45c",
+          "source_sha": "d3b870dbb18148fcf71d0ea0986a2eed2b484872"
         },
         {
           "arch": "arm64",
-          "config_id": "sha256:2f1d363df908ea27b8f873d8ed978afe5eb4fee2ca90b07cbd2b1a147bb094de",
-          "run": 41074964808,
-          "sbom_sha256": "fb19c70ec78c583f52930b16c0a8fda80e72f223bc5df59461b508ee7273a669",
-          "source_sha": "aaab990627e8f73fb89c5807193092324e3d004d"
+          "config_id": "sha256:8d6ea0da108b7ce1ad8afa05579dcf5078fc3effd21d4fdbfb5cecb0bf8c8029",
+          "run": 43730804248,
+          "sbom_sha256": "6bea8858bafe08aa45584612775899c56f6985d779dee7e79446fedf48afd4be",
+          "source_sha": "d3b870dbb18148fcf71d0ea0986a2eed2b484872"
         }
       ],
       "locations": {
@@ -2119,7 +2125,7 @@
           [
             "go-module",
             "github.com/ProtonMail/go-crypto",
-            "v1.4.1",
+            "v1.5.2",
             "go-module-binary-cataloger"
           ],
           [
@@ -2167,7 +2173,7 @@
           [
             "go-module",
             "github.com/anchore/clio",
-            "v0.1.1",
+            "v0.1.2",
             "go-module-binary-cataloger"
           ],
           [
@@ -2239,25 +2245,31 @@
           [
             "go-module",
             "github.com/anchore/stereoscope",
-            "v0.3.4",
+            "v0.4.1",
             "go-module-binary-cataloger"
           ],
           [
             "go-module",
             "github.com/anchore/syft",
-            "v1.55.0",
+            "v0.0.0-20261109133238-a0c0d3890a9d+dirty",
             "go-module-binary-cataloger"
           ],
           [
             "go-module",
             "github.com/andybalholm/brotli",
-            "v1.2.0",
+            "v1.2.8",
             "go-module-binary-cataloger"
           ],
           [
             "go-module",
             "github.com/apparentlymart/go-textseg/v15",
             "v15.0.0",
+            "go-module-binary-cataloger"
+          ],
+          [
+            "go-module",
+            "github.com/apparentlymart/go-textseg/v17",
+            "v17.0.1",
             "go-module-binary-cataloger"
           ],
           [
@@ -2388,12 +2400,6 @@
           ],
           [
             "go-module",
-            "github.com/becheran/wildmatch-go",
-            "v1.0.0",
-            "go-module-binary-cataloger"
-          ],
-          [
-            "go-module",
             "github.com/bgentry/go-netrc",
             "v0.0.0-20140422174119-9fd32a8b3d3d",
             "go-module-binary-cataloger"
@@ -2406,14 +2412,8 @@
           ],
           [
             "go-module",
-            "github.com/blakesmith/ar",
-            "v0.0.0-20190502131153-809d4375e1fb",
-            "go-module-binary-cataloger"
-          ],
-          [
-            "go-module",
             "github.com/bmatcuk/doublestar/v4",
-            "v4.10.2",
+            "v4.10.4",
             "go-module-binary-cataloger"
           ],
           [
@@ -2521,7 +2521,7 @@
           [
             "go-module",
             "github.com/containerd/containerd/v2",
-            "v2.4.1",
+            "v2.4.2",
             "go-module-binary-cataloger"
           ],
           [
@@ -2575,7 +2575,7 @@
           [
             "go-module",
             "github.com/containerd/stargz-snapshotter/estargz",
-            "v0.18.2",
+            "v0.19.0",
             "go-module-binary-cataloger"
           ],
           [
@@ -2617,7 +2617,7 @@
           [
             "go-module",
             "github.com/deitch/magic",
-            "v0.0.0-20230404182410-1ff89d7342da",
+            "v1.0.0",
             "go-module-binary-cataloger"
           ],
           [
@@ -2635,19 +2635,19 @@
           [
             "go-module",
             "github.com/docker/cli",
-            "v29.8.2+incompatible",
+            "v29.9.2+incompatible",
             "go-module-binary-cataloger"
           ],
           [
             "go-module",
             "github.com/docker/docker-credential-helpers",
-            "v0.9.8",
+            "v0.9.10",
             "go-module-binary-cataloger"
           ],
           [
             "go-module",
             "github.com/docker/go-connections",
-            "v0.8.1",
+            "v0.8.2",
             "go-module-binary-cataloger"
           ],
           [
@@ -2725,13 +2725,13 @@
           [
             "go-module",
             "github.com/gabriel-vasile/mimetype",
-            "v1.4.15",
+            "v1.4.16",
             "go-module-binary-cataloger"
           ],
           [
             "go-module",
             "github.com/github/go-spdx/v2",
-            "v2.7.1",
+            "v2.8.0",
             "go-module-binary-cataloger"
           ],
           [
@@ -2755,7 +2755,7 @@
           [
             "go-module",
             "github.com/go-jose/go-jose/v4",
-            "v4.1.5",
+            "v4.1.6",
             "go-module-binary-cataloger"
           ],
           [
@@ -2827,7 +2827,7 @@
           [
             "go-module",
             "github.com/google/pprof",
-            "v0.0.0-20260802141513-ef3492d7dac3",
+            "v0.0.0-20261016150608-1facf8f91b50",
             "go-module-binary-cataloger"
           ],
           [
@@ -2857,13 +2857,13 @@
           [
             "go-module",
             "github.com/gookit/color",
-            "v1.6.2",
+            "v1.6.3",
             "go-module-binary-cataloger"
           ],
           [
             "go-module",
             "github.com/gpustack/gguf-parser-go",
-            "v0.26.4",
+            "v0.28.1",
             "go-module-binary-cataloger"
           ],
           [
@@ -2971,13 +2971,13 @@
           [
             "go-module",
             "github.com/klauspost/compress",
-            "v1.20.1",
+            "v1.20.3",
             "go-module-binary-cataloger"
           ],
           [
             "go-module",
             "github.com/klauspost/pgzip",
-            "v1.2.6",
+            "v1.2.7",
             "go-module-binary-cataloger"
           ],
           [
@@ -3001,13 +3001,13 @@
           [
             "go-module",
             "github.com/mattn/go-runewidth",
-            "v0.0.27",
+            "v0.0.31",
             "go-module-binary-cataloger"
           ],
           [
             "go-module",
             "github.com/mattn/go-sqlite3",
-            "v1.14.48",
+            "v1.14.52",
             "go-module-binary-cataloger"
           ],
           [
@@ -3079,13 +3079,13 @@
           [
             "go-module",
             "github.com/moby/moby/api",
-            "v1.56.0",
+            "v1.56.1",
             "go-module-binary-cataloger"
           ],
           [
             "go-module",
             "github.com/moby/moby/client",
-            "v0.6.0",
+            "v0.6.2",
             "go-module-binary-cataloger"
           ],
           [
@@ -3097,7 +3097,7 @@
           [
             "go-module",
             "github.com/moby/sys/mountinfo",
-            "v0.7.2",
+            "v0.7.3",
             "go-module-binary-cataloger"
           ],
           [
@@ -3306,6 +3306,12 @@
           ],
           [
             "go-module",
+            "github.com/sbomify/ar",
+            "v0.0.0-20261110120314-cac91ea00b05",
+            "go-module-binary-cataloger"
+          ],
+          [
+            "go-module",
             "github.com/scylladb/go-set",
             "v1.0.3-0.20200225121959-cc7b2070d91e",
             "go-module-binary-cataloger"
@@ -3331,7 +3337,7 @@
           [
             "go-module",
             "github.com/sigstore/fulcio",
-            "v1.8.7",
+            "v1.8.8",
             "go-module-binary-cataloger"
           ],
           [
@@ -3480,6 +3486,12 @@
           ],
           [
             "go-module",
+            "github.com/varlink/go",
+            "v0.4.1-0.20261015173642-c935be0c53f7",
+            "go-module-binary-cataloger"
+          ],
+          [
+            "go-module",
             "github.com/vbatts/go-mtree",
             "v0.7.0",
             "go-module-binary-cataloger"
@@ -3493,13 +3505,13 @@
           [
             "go-module",
             "github.com/vbauerster/cupwriter",
-            "v0.0.4",
+            "v0.0.5",
             "go-module-binary-cataloger"
           ],
           [
             "go-module",
             "github.com/vbauerster/mpb/v8",
-            "v8.14.0",
+            "v8.16.2",
             "go-module-binary-cataloger"
           ],
           [
@@ -3583,49 +3595,55 @@
           [
             "go-module",
             "go.opentelemetry.io/otel",
-            "v1.46.0",
+            "v1.47.0",
+            "go-module-binary-cataloger"
+          ],
+          [
+            "go-module",
+            "go.opentelemetry.io/otel/log",
+            "v1.47.0",
             "go-module-binary-cataloger"
           ],
           [
             "go-module",
             "go.opentelemetry.io/otel/metric",
-            "v1.46.0",
+            "v1.47.0",
             "go-module-binary-cataloger"
           ],
           [
             "go-module",
             "go.opentelemetry.io/otel/sdk",
-            "v1.46.0",
+            "v1.47.0",
             "go-module-binary-cataloger"
           ],
           [
             "go-module",
             "go.opentelemetry.io/otel/sdk/metric",
-            "v1.46.0",
+            "v1.47.0",
             "go-module-binary-cataloger"
           ],
           [
             "go-module",
             "go.opentelemetry.io/otel/trace",
-            "v1.46.0",
+            "v1.47.0",
             "go-module-binary-cataloger"
           ],
           [
             "go-module",
             "go.podman.io/image/v5",
-            "v5.41.2",
+            "v5.42.0",
             "go-module-binary-cataloger"
           ],
           [
             "go-module",
             "go.podman.io/storage",
-            "v1.64.1",
+            "v1.65.0",
             "go-module-binary-cataloger"
           ],
           [
             "go-module",
             "go.yaml.in/yaml/v3",
-            "v3.0.5",
+            "v3.0.6",
             "go-module-binary-cataloger"
           ],
           [
@@ -3637,7 +3655,7 @@
           [
             "go-module",
             "golang.org/x/crypto",
-            "v0.58.0",
+            "v0.59.0",
             "go-module-binary-cataloger"
           ],
           [
@@ -3649,13 +3667,13 @@
           [
             "go-module",
             "golang.org/x/mod",
-            "v0.41.0",
+            "v0.42.0",
             "go-module-binary-cataloger"
           ],
           [
             "go-module",
             "golang.org/x/net",
-            "v0.61.0",
+            "v0.62.0",
             "go-module-binary-cataloger"
           ],
           [
@@ -3667,25 +3685,25 @@
           [
             "go-module",
             "golang.org/x/sync",
-            "v0.24.0",
+            "v0.25.0",
             "go-module-binary-cataloger"
           ],
           [
             "go-module",
             "golang.org/x/sys",
-            "v0.49.0",
+            "v0.50.0",
             "go-module-binary-cataloger"
           ],
           [
             "go-module",
             "golang.org/x/term",
-            "v0.47.0",
+            "v0.48.0",
             "go-module-binary-cataloger"
           ],
           [
             "go-module",
             "golang.org/x/text",
-            "v0.43.0",
+            "v0.44.0",
             "go-module-binary-cataloger"
           ],
           [
@@ -3697,7 +3715,7 @@
           [
             "go-module",
             "golang.org/x/tools",
-            "v0.51.0",
+            "v0.52.0",
             "go-module-binary-cataloger"
           ],
           [
@@ -3757,7 +3775,7 @@
           [
             "go-module",
             "modernc.org/libc",
-            "v1.77.1",
+            "v1.79.0",
             "go-module-binary-cataloger"
           ],
           [
@@ -3775,13 +3793,13 @@
           [
             "go-module",
             "modernc.org/sqlite",
-            "v1.60.1",
+            "v1.61.0",
             "go-module-binary-cataloger"
           ],
           [
             "go-module",
             "stdlib",
-            "go1.26.8",
+            "go1.27.4",
             "go-module-binary-cataloger"
           ]
         ]

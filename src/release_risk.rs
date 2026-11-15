@@ -8,27 +8,32 @@ mod capture;
 
 pub(super) const POLICY: &str = "owner-selected-stack-2026-10-30-v1";
 
-fn snapshot(tool: &str) -> Result<Option<Value>> {
+fn recipe(tool: &str) -> &'static [u8] {
+    match tool {
+        "syft" => include_bytes!("../images/syft/Dockerfile"),
+        "grype" => include_bytes!("../images/grype/Dockerfile"),
+        _ => b"",
+    }
+}
+
+fn snapshot(tool: &str, recipe: &[u8]) -> Result<Option<Value>> {
     let all: Value = serde_json::from_str(include_str!("../inventory/accepted-risks.json"))
         .map_err(|_| "invalid accepted-risk snapshot")?;
     let Some(profile) = all["tools"].get(tool) else {
         return Ok(None);
-    };
-    let recipe: &[u8] = match tool {
-        "syft" => include_bytes!("../images/syft/Dockerfile"),
-        "grype" => include_bytes!("../images/grype/Dockerfile"),
-        _ => return Err("unsupported accepted-risk snapshot tool"),
     };
     use sha2::{Digest, Sha256};
     let digest = Sha256::digest(recipe)
         .iter()
         .map(|b| format!("{b:02x}"))
         .collect::<String>();
-    if all["schema"] != 1
-        || all["decision"] != "owner-selected-stack-2026-10-30"
-        || profile["recipe_sha256"] != digest
-    {
-        return Err("accepted-risk recipe scope changed");
+    if all["schema"] != 1 || all["decision"] != "owner-selected-stack-2026-10-30" {
+        return Err("invalid accepted-risk snapshot scope");
+    }
+    // A repaired recipe receives NO historical acceptance, even for the same
+    // advisory/package. Complete clean scans may pass; every finding still blocks.
+    if profile["recipe_sha256"] != digest {
+        return Ok(None);
     }
     Ok(Some(profile.clone()))
 }
@@ -112,11 +117,15 @@ fn eligible(tool: &str, finding: &Value, package: &Value) -> bool {
 /// Called only after complete report/source/DB/package/count validation.
 /// Rechecking relevant identities here keeps the acceptance boundary explicit.
 pub(super) fn assess(tool: &str, sbom: &Value, report: &Value) -> Result<Value> {
+    assess_recipe(tool, sbom, report, recipe(tool))
+}
+
+fn assess_recipe(tool: &str, sbom: &Value, report: &Value, recipe: &[u8]) -> Result<Value> {
     tool_identity(tool)?;
     let packages = sbom["artifacts"]
         .as_array()
         .ok_or("missing risk inventory")?;
-    let profile = snapshot(tool)?;
+    let profile = snapshot(tool, recipe)?;
     let mut used = std::collections::BTreeMap::<String, u64>::new();
     let (mut accepted, mut blocking) = (0u64, 0u64);
     for key in ["matches", "ignoredMatches"] {
@@ -187,6 +196,10 @@ pub(super) fn status(decision: &Value) -> &'static str {
 /// Independently validate public receipt accounting; no arbitrary reported
 /// exception name, severity or suppression can turn into publication permission.
 pub(super) fn receipt(value: &Value, tool: &str) -> Result<()> {
+    receipt_recipe(value, tool, recipe(tool))
+}
+
+fn receipt_recipe(value: &Value, tool: &str, recipe: &[u8]) -> Result<()> {
     tool_identity(tool)?;
     let counts = value["counts"]
         .as_object()
@@ -225,7 +238,7 @@ pub(super) fn receipt(value: &Value, tool: &str) -> Result<()> {
         json!([])
     } else if total == 1 && tool == "gitleaks" && counts["Unknown"].as_u64() == Some(1) {
         json!([EXCEPTION])
-    } else if let Some(profile) = snapshot(tool)? {
+    } else if let Some(profile) = snapshot(tool, recipe)? {
         let mut allowed = std::collections::BTreeMap::<&str, u64>::new();
         for rule in profile["rules"]
             .as_array()
@@ -255,11 +268,15 @@ pub(super) fn receipt(value: &Value, tool: &str) -> Result<()> {
 }
 
 pub(super) fn inventory(value: &Value, tool: &str, sbom: &Value) -> Result<()> {
-    receipt(value, tool)?;
+    inventory_recipe(value, tool, sbom, recipe(tool))
+}
+
+fn inventory_recipe(value: &Value, tool: &str, sbom: &Value, recipe: &[u8]) -> Result<()> {
+    receipt_recipe(value, tool, recipe)?;
     if value["risk"]["accepted"] == 0 {
         return Ok(());
     }
-    if let Some(profile) = snapshot(tool)? {
+    if let Some(profile) = snapshot(tool, recipe)? {
         let packages = sbom["artifacts"]
             .as_array()
             .ok_or("missing risk inventory")?;
@@ -290,6 +307,69 @@ pub(super) fn inventory(value: &Value, tool: &str, sbom: &Value) -> Result<()> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    // Keep the original approval tests bound to immutable original recipes, not
+    // the repaired production inputs. These overrides exist only in unit tests.
+    fn historical_recipe(tool: &str) -> &'static [u8] {
+        match tool {
+            "syft" => include_bytes!("../inventory/approved-syft-recipe.txt"),
+            "grype" => include_bytes!("../inventory/approved-grype-recipe.txt"),
+            _ => b"",
+        }
+    }
+    fn snapshot(tool: &str) -> Result<Option<Value>> {
+        super::snapshot(tool, historical_recipe(tool))
+    }
+    fn assess(tool: &str, sbom: &Value, report: &Value) -> Result<Value> {
+        assess_recipe(tool, sbom, report, historical_recipe(tool))
+    }
+    fn receipt(value: &Value, tool: &str) -> Result<()> {
+        receipt_recipe(value, tool, historical_recipe(tool))
+    }
+    fn inventory(value: &Value, tool: &str, sbom: &Value) -> Result<()> {
+        inventory_recipe(value, tool, sbom, historical_recipe(tool))
+    }
+
+    #[test]
+    fn repaired_recipes_cannot_inherit_old_acceptances_but_complete_clean_scans_can_pass() {
+        for tool in ["syft", "grype"] {
+            let profile = snapshot(tool).unwrap().unwrap();
+            assert!(super::snapshot(tool, recipe(tool)).unwrap().is_none());
+            let rule = &profile["rules"][0];
+            let mut package = rule["identity"]["package"].clone();
+            package["id"] = json!("fixture");
+            package["locations"] = json!(
+                package["locations"]
+                    .as_array()
+                    .unwrap()
+                    .iter()
+                    .map(|path| json!({"path":path}))
+                    .collect::<Vec<_>>()
+            );
+            let finding = json!({"artifact":package,"vulnerability":rule["identity"]["vulnerability"],"relatedVulnerabilities":rule["identity"]["related"]});
+            let bom = json!({"artifacts":[package]});
+            for key in ["matches", "ignoredMatches"] {
+                let mut report = json!({"matches":[]});
+                report[key] = json!([finding]);
+                let decision = super::assess(tool, &bom, &report).unwrap();
+                assert_eq!(decision["accepted"], 0);
+                assert_eq!(decision["blocking"], 1);
+                assert_eq!(decision["exceptions"], json!([]));
+            }
+            let clean = super::assess(tool, &bom, &json!({"matches":[]})).unwrap();
+            assert_eq!(status(&clean), "clean");
+            let counts = SEVERITIES
+                .into_iter()
+                .map(|key| (key, 0u64))
+                .collect::<std::collections::BTreeMap<_, _>>();
+            let receipt = json!({"count":0,"counts":counts,"risk":clean,"status":"clean","diagnostics":"none"});
+            assert!(super::inventory(&receipt, tool, &bom).is_ok());
+            let mut foreign = historical_recipe(tool).to_vec();
+            foreign.push(b'\n');
+            assert!(super::snapshot(tool, &foreign).unwrap().is_none());
+        }
+    }
+
     fn package() -> Value {
         json!({"id":"package","name":PACKAGE,"version":VERSION,"type":"go-module","locations":[{"path":LOCATION}]})
     }

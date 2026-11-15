@@ -12,6 +12,10 @@ path = "checks.rs"
 name = "devsecops"
 path = "src/main.rs"
 
+[[bin]]
+name = "scanner-units"
+path = "src/scanner_units.rs"
+
 [dependencies]
 signal-hook = "=0.4.5"
 chrono = { version = "0.4", default-features = false, features = ["now", "std"] }

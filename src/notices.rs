@@ -11,8 +11,8 @@ use std::{
 
 pub(super) fn bundle(root: &Path, tool: &str) -> Result<Vec<u8>> {
     let expected = match tool {
-        "syft" => "5d56eacef92c66e40d44034914d53dc599f68542388aa91542e71cef8b88ac15",
-        "grype" => "2a1096158a1f761a9366ddd7b99dfb01bd50aa1eea1299d7d8f0e8e4397e86a2",
+        "syft" => "06bec637a9fab5fb511f91c22d1cfaf59f76340bc4d9aeb45f01f9468546b3be",
+        "grype" => "c94fabd9eb510f00c2281efeefdb7b402a6d65952fa46ef7f86c8fff135c2af7",
         "static-base" => "378fef9d3e685a2ad1168283453781a01a66bd8ccc7e261e490340712bf18af4",
         _ => return Err("unsupported scanner notice bundle"),
     };
@@ -28,26 +28,28 @@ pub(super) fn bundle(root: &Path, tool: &str) -> Result<Vec<u8>> {
     bytes(&path, 8 * 1024 * 1024)
 }
 
+// Four unchanged native captures from run 43730804248, source-bound to the
+// actual PR merge tree. Collection proposes texts; it never approves delivery.
 const CAPTURES: [(&str, &str, &str); 4] = [
     (
         "syft",
         "amd64",
-        "5a5f3414ed8c6756e5f8f54c055ff69280ca292c0e73a1180f3cd09da748fd84",
+        "da65d45f9ecb47041cb8f8e0fc68eb8270786113e4df043f9d3dd20c90ebf45c",
     ),
     (
         "syft",
         "arm64",
-        "fb19c70ec78c583f52930b16c0a8fda80e72f223bc5df59461b508ee7273a669",
+        "6bea8858bafe08aa45584612775899c56f6985d779dee7e79446fedf48afd4be",
     ),
     (
         "grype",
         "amd64",
-        "c1acd4f75981463c54cd0f80fdacb8f2d846882e9d2ec5f064198e9f54d618e4",
+        "c168cea4d612a5e4637e026c0591f8d19a6dc337849cfe62afef37f01ae9dde8",
     ),
     (
         "grype",
         "arm64",
-        "544087dc109662e1f5803f2c4c91d643316e22b1e04b4233c5f5a537af793a13",
+        "a3fc72043c332d73043837035e792c3f9bb4b35c23c52d7fd131914b0312daeb",
     ),
 ];
 fn legal(name: &str) -> bool {
@@ -132,6 +134,73 @@ fn get(driver: &mut Driver, url: &str) -> Result<PathBuf> {
     ]);
     driver.execute(c, 75, false, 0)
 }
+// Legal-source attribution is distinct from the untouched native artifact version.
+// The derivative main modules have authentic VCS +dirty versions, not released tags.
+// Their unchanged legal texts come from the exact pinned upstream source base;
+// dependency-manifest patches and all replacement modules are attributed separately.
+fn module_source(package: &Value, tool: &str) -> Result<String> {
+    let name = text(package, "/name")?;
+    let version = text(package, "/version")?;
+    if version.eq_ignore_ascii_case("UNKNOWN") || name.contains([' ', '\n', '@']) {
+        return Err("unresolved scanner source module");
+    }
+    let (main, base, commit) = match tool {
+        "syft" => (
+            "github.com/anchore/syft",
+            "v1.57.1",
+            "a0c0d3890a9d79421c403e8fcadec50a2e55bf21",
+        ),
+        "grype" => (
+            "github.com/anchore/grype",
+            "v0.121.3",
+            "cd1f23eb50dfb52647090158f453c7359172591f",
+        ),
+        _ => return Err("unsupported fixed scanner source"),
+    };
+    if name != main {
+        if !version.starts_with('v')
+            || version.contains([' ', '\n', '@'])
+            || version.ends_with("+dirty")
+        {
+            return Err("unresolved dependency source version");
+        }
+        return Ok(format!("{name}@{version}"));
+    }
+    if package["type"] != "go-module"
+        || package["metadataType"] != "go-module-buildinfo-entry"
+        || package["metadata"]["mainModule"] != main
+        || package["metadata"]["goCompiledVersion"] != "go1.27.4"
+        || !version.starts_with("v0.0.0-")
+        || !version.ends_with(&format!("-{}+dirty", &commit[..12]))
+    {
+        return Err("main derivative source identity mismatch");
+    }
+    let mut settings = BTreeMap::new();
+    for setting in package["metadata"]["goBuildSettings"]
+        .as_array()
+        .ok_or("missing native source settings")?
+    {
+        if settings
+            .insert(text(setting, "/key")?, text(setting, "/value")?)
+            .is_some()
+        {
+            return Err("duplicate native source setting");
+        }
+    }
+    for (key, expected) in [
+        ("vcs", "git"),
+        ("vcs.revision", commit),
+        ("vcs.modified", "true"),
+        ("CGO_ENABLED", "0"),
+        ("GOOS", "linux"),
+    ] {
+        if settings.get(key).copied() != Some(expected) {
+            return Err("main source provenance differs from fixed recipe");
+        }
+    }
+    Ok(format!("{name}@{base}"))
+}
+
 pub(super) fn collect(driver: &mut Driver) -> Result<()> {
     let output = driver.root.join(".work/scanner-notice-collection");
     mkdir(&output, false)?;
@@ -148,20 +217,28 @@ pub(super) fn collect(driver: &mut Driver) -> Result<()> {
     }
     let mut modules = BTreeSet::new();
     let mut by_tool = BTreeMap::new();
+    let mut native_versions = BTreeMap::new();
     for tool in ["syft", "grype"] {
         let mut reference = None;
+        let mut native_reference = None;
         for (_, arch, expected) in CAPTURES.iter().filter(|(name, _, _)| *name == tool) {
             let path = driver.root.join(format!(
-                ".work/delivery-20261030/catalog-{tool}-{arch}/{tool}.syft.json"
+                ".work/security-repair-captures/{tool}-{arch}/{tool}.syft.json"
             ));
             if hash(&path, 8 * 1024 * 1024)? != *expected {
                 return Err("unreviewed scanner catalog");
             }
             let doc = read_json(&path)?;
-            if doc["source"]["metadata"]["architecture"] != *arch {
-                return Err("scanner catalog architecture mismatch");
+            if doc["source"]["metadata"]["architecture"] != *arch
+                || doc["source"]["metadata"]["labels"]["org.opencontainers.image.revision"]
+                    != "d3b870dbb18148fcf71d0ea0986a2eed2b484872"
+                || doc["source"]["metadata"]["labels"]["org.opencontainers.image.source"]
+                    != "https://github.com/PRJXAI/devsecops"
+            {
+                return Err("scanner catalog source/architecture mismatch");
             }
             let mut observed = BTreeSet::new();
+            let mut native_observed = BTreeSet::new();
             for package in doc["artifacts"]
                 .as_array()
                 .ok_or("missing scanner packages")?
@@ -169,26 +246,34 @@ pub(super) fn collect(driver: &mut Driver) -> Result<()> {
                 if package["type"] != "go-module" {
                     continue;
                 }
-                if package["metadata"]["goCompiledVersion"] != "go1.26.8" {
+                if package["metadata"]["goCompiledVersion"] != "go1.27.4" {
                     return Err("scanner compiler changed");
                 }
                 let name = text(package, "/name")?;
-                let version = text(package, "/version")?;
                 if name == "stdlib" {
                     continue;
                 }
-                if !version.starts_with('v') || name.contains([' ', '\n', '@']) {
-                    return Err("unresolved scanner source module");
-                }
-                observed.insert(format!("{name}@{version}"));
+                native_observed.insert(format!("{name}@{}", text(package, "/version")?));
+                observed.insert(module_source(package, tool)?);
             }
             if observed.is_empty() || reference.as_ref().is_some_and(|r| *r != observed) {
                 return Err("native scanner module graphs differ");
             }
+            if native_reference
+                .as_ref()
+                .is_some_and(|previous| previous != &native_observed)
+            {
+                return Err("native artifact module versions differ between architectures");
+            }
             modules.extend(observed.clone());
             reference = Some(observed);
+            native_reference = Some(native_observed);
         }
         by_tool.insert(tool, reference.ok_or("missing native scanner graph")?);
+        native_versions.insert(
+            tool,
+            native_reference.ok_or("missing native module versions")?,
+        );
     }
     // Fixed public module proxy, checksum verification on, no VCS/private fallback,
     // operator Go settings, workspace or automatic toolchain execution.
@@ -198,7 +283,7 @@ pub(super) fn collect(driver: &mut Driver) -> Result<()> {
         .env("HOME", &output)
         .env("GOENV", "off")
         .env("GOWORK", "off")
-        .env("GOTOOLCHAIN", "go1.27.3")
+        .env("GOTOOLCHAIN", "go1.27.4")
         .env("GOPATH", &cache)
         .env("GOMODCACHE", cache.join("pkg/mod"))
         .env("GOPROXY", "https://proxy.golang.org")
@@ -228,9 +313,30 @@ pub(super) fn collect(driver: &mut Driver) -> Result<()> {
     if downloads.len() != modules.len() {
         return Err("incomplete module source retrieval");
     }
+    for (module, commit) in [
+        (
+            "github.com/anchore/syft@v1.57.1",
+            "a0c0d3890a9d79421c403e8fcadec50a2e55bf21",
+        ),
+        (
+            "github.com/anchore/grype@v0.121.3",
+            "cd1f23eb50dfb52647090158f453c7359172591f",
+        ),
+        (
+            "github.com/sbomify/ar@v0.0.0-20261110120314-cac91ea00b05",
+            "cac91ea00b0538f92fd42fa3ece0b15adc5ef01f",
+        ),
+    ] {
+        let source = downloads
+            .get(module)
+            .ok_or("missing fixed main/replacement source")?;
+        if source["Origin"]["Hash"] != commit {
+            return Err("main/replacement legal source does not match pinned commit");
+        }
+    }
     let commit = read_json(&get(
         driver,
-        "https://api.github.com/repos/golang/go/commits/go1.26.8",
+        "https://api.github.com/repos/golang/go/commits/go1.27.4",
     )?)?;
     let commit = text(&commit, "/sha")?.to_owned();
     if commit.len() != 40 || !commit.bytes().all(|b| b.is_ascii_hexdigit()) {
@@ -317,17 +423,37 @@ pub(super) fn collect(driver: &mut Driver) -> Result<()> {
             return Err("Go notice source object mismatch");
         }
         go_texts.push((
-            format!("Go go1.26.8 / {path}"),
+            format!("Go go1.27.4 / {path}"),
             bytes(&downloaded, 1024 * 1024)?,
         ));
     }
-    if !go_texts.iter().any(|(p, _)| p == "Go go1.26.8 / LICENSE") {
+    if !go_texts.iter().any(|(p, _)| p == "Go go1.27.4 / LICENSE") {
         return Err("missing Go license");
     }
     for (tool, graph) in by_tool {
-        let mut bundle =
-            format!("Third-party notices for {tool}. Original text follows each source heading.\n")
-                .into_bytes();
+        let (version, commit, patch) = match tool {
+            "syft" => (
+                "1.57.1",
+                "a0c0d3890a9d79421c403e8fcadec50a2e55bf21",
+                "patches/syft-1.57.1-security.patch.txt",
+            ),
+            "grype" => (
+                "0.121.3",
+                "cd1f23eb50dfb52647090158f453c7359172591f",
+                "patches/grype-0.121.3-security.patch.txt",
+            ),
+            _ => return Err("unsupported derivative notice"),
+        };
+        let patch_hash = hash(&driver.root.join(patch), 1024 * 1024)?;
+        let mut bundle = format!(
+            "Modified distribution: {tool} {version}-dependency-security.1, rebuilt by PRJXAI.\n\
+             Upstream source: https://github.com/anchore/{tool}/tree/{commit}\n\
+             Changes: dependency manifests patched for x/crypto 0.59.0, OpenTelemetry 1.47.0 and the sbomify/ar negative-member-size fix. Compiler: Go 1.27.4.\n\
+             Exact build recipe, modified manifests (patch), and source checksums: the org.opencontainers.image.revision source tree at https://github.com/PRJXAI/devsecops .\n\
+             Patch: {patch}; SHA-256 {patch_hash}. Upstream endorsement is not claimed; original terms are not relicensed.\n\
+             Native embedded versions are preserved in the source-attributed index, not rewritten as release tags.\n\
+             Third-party notices for {tool}. Original text follows each source heading.\n"
+        ).into_bytes();
         let mut records = Vec::new();
         for module in graph {
             let value = &downloads[&module];
@@ -366,7 +492,7 @@ pub(super) fn collect(driver: &mut Driver) -> Result<()> {
         write_new(&file, &bundle, 0o444)?;
         write_json(
             &output.join(format!("{tool}-index.json")),
-            &json!({"tool":tool,"captured_run":41074964808u64,"source_sha":"aaab990627e8f73fb89c5807193092324e3d004d","go_source_commit":commit,"go_legal_files":go_texts.len(),"modules":records,"bundle_sha256":hash(&file, 8 * 1024 * 1024)?,"bundle_bytes":bundle.len(),"redistribution_approved":false}),
+            &json!({"tool":tool,"captured_run":43730804248u64,"source_sha":"d3b870dbb18148fcf71d0ea0986a2eed2b484872","go_source_commit":commit,"go_legal_files":go_texts.len(),"native_module_versions":native_versions[tool],"modules":records,"bundle_sha256":hash(&file, 8 * 1024 * 1024)?,"bundle_bytes":bundle.len(),"redistribution_approved":false}),
         )?;
     }
     Ok(())
@@ -374,6 +500,52 @@ pub(super) fn collect(driver: &mut Driver) -> Result<()> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn main_legal_source_mapping_requires_real_native_vcs_identity_not_a_guessed_version() {
+        let package = json!({"name":"github.com/anchore/syft","version":"v0.0.0-20261109133238-a0c0d3890a9d+dirty","type":"go-module","metadataType":"go-module-buildinfo-entry","metadata":{"mainModule":"github.com/anchore/syft","goCompiledVersion":"go1.27.4","goBuildSettings":[{"key":"vcs","value":"git"},{"key":"vcs.revision","value":"a0c0d3890a9d79421c403e8fcadec50a2e55bf21"},{"key":"vcs.modified","value":"true"},{"key":"CGO_ENABLED","value":"0"},{"key":"GOOS","value":"linux"}]}});
+        assert_eq!(
+            module_source(&package, "syft").unwrap(),
+            "github.com/anchore/syft@v1.57.1"
+        );
+        for (pointer, value) in [
+            ("/version", json!("UNKNOWN")),
+            ("/version", json!("v1.57.1")),
+            ("/metadata/goCompiledVersion", json!("go1.26.8")),
+            ("/metadata/mainModule", json!("foreign")),
+            ("/metadata/goBuildSettings/1/value", json!("foreign")),
+            ("/metadata/goBuildSettings/2/value", json!("false")),
+            ("/metadata/goBuildSettings/3/value", json!("1")),
+            ("/metadata/goBuildSettings/4/value", json!("windows")),
+        ] {
+            let mut changed = package.clone();
+            *changed.pointer_mut(pointer).unwrap() = value;
+            assert!(module_source(&changed, "syft").is_err(), "{pointer}");
+        }
+        assert_eq!(
+            package["version"],
+            "v0.0.0-20261109133238-a0c0d3890a9d+dirty"
+        );
+    }
+    #[test]
+    fn replacement_sources_keep_actual_module_versions_and_never_restore_abandoned_identity() {
+        let package =
+            json!({"name":"github.com/sbomify/ar","version":"v0.0.0-20261110120314-cac91ea00b05"});
+        assert_eq!(
+            module_source(&package, "syft").unwrap(),
+            "github.com/sbomify/ar@v0.0.0-20261110120314-cac91ea00b05"
+        );
+        let incompatible =
+            json!({"name":"github.com/example/legacy","version":"v2.0.0+incompatible"});
+        assert!(module_source(&incompatible, "grype").is_ok());
+        assert!(module_source(&package, "unsupported").is_err());
+        for version in ["UNKNOWN", "", "v1.0.0+dirty", "v1.0.0 @foreign"] {
+            let mut changed = package.clone();
+            changed["version"] = json!(version);
+            assert!(module_source(&changed, "syft").is_err());
+        }
+    }
+
     #[test]
     #[ignore = "fixed captured public static-base source/legal assembly; no network or publication"]
     fn assemble_captured_static_base_notices() {

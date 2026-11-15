@@ -10,8 +10,8 @@ These are **CLI containers**, not GitHub Actions job environments, Docker daemon
 
 | Image under `ghcr.io/prjxai/devsecops/` | Version | Purpose |
 |---|---|---|
-| `syft` | 1.55.0 | Native Syft JSON, SPDX and CycloneDX inventories |
-| `grype` | 0.121.0 | Offline vulnerability matching against a separately refreshed database |
+| `syft` | 1.57.1 source derivative; Go 1.27.4 | Native Syft JSON, SPDX and CycloneDX inventories |
+| `grype` | 0.121.3 source derivative; Go 1.27.4 | Offline vulnerability matching against a separately refreshed database |
 | `gitleaks` | 8.30.1 source derivative; Go 1.27.3 | Redacted source and offline Git-history checks |
 | `cargo-audit` | 0.22.2 | RustSec lockfile checks |
 | `cargo-deny` | 0.20.2 | Dependency policy checks; complete compiler-free coverage remains unqualified |
@@ -22,7 +22,7 @@ These are **CLI containers**, not GitHub Actions job environments, Docker daemon
 
 Targets: **Linux amd64 and arm64**. A target is not a support claim until its native release checks succeed. Images release independently; one blocked tool does not hold another back. See [release status and verification](docs/releases.md) before choosing an image. A Dockerfile or successful version command does not mean a package has been published.
 
-**Delivered:** Syft and Grype passed native amd64/arm64 release and provenance at `13edb5277101befe100a435f5ade8da6ea3d40af`. Their [exact digests and accepted-risk counts](docs/results.md) are recorded. The repository and both scanner packages are now public, with anonymous native-index/config/catalog/provenance verification passing after owner visibility changes. New delivery artifacts are gated on anonymous index/native/config verification after provenance, not private-token access. Other tools are not approved deliveries.
+**Delivered:** Syft and Grype passed native amd64/arm64 release and provenance at `13edb5277101befe100a435f5ade8da6ea3d40af`. Their [exact digests and accepted-risk counts](docs/results.md) are recorded. The repository and both scanner packages are now public, with anonymous native-index/config/catalog/provenance verification passing after owner visibility changes. New delivery artifacts are gated on anonymous index/native/config verification after provenance, not private-token access. Other tools are not approved deliveries. The corrected scanner recipes pass both native release preparations with zero findings/ignored/accepted in run 43734377826. Their tool-specific readiness now records the completed material and native-contract review. They are **not yet published deliveries**: fresh exact-source handoffs, manual-main publication, provenance and anonymous verification remain mandatory. Old accepted-risk profiles do not approve new recipes.
 
 ## Use by digest
 
@@ -48,7 +48,7 @@ The owner accepted the **investigated current stack risks on 2026-10-30**, inclu
 
 New or changed findings, malformed/stale reports, missing inventories, failed native contracts and cleanup errors still fail. Risk acceptance does not provide missing source, license or runtime evidence. Read [security and accepted risks](docs/security.md) and the machine-readable [risk snapshot](inventory/accepted-risks.json).
 
-Syft and Grype include source-attributed third-party notice bundles covering their captured Go module graphs and Go 1.26.8 legal texts. [Redistribution information](licenses/README.md) describes source availability and remaining tool-specific obligations. Gitleaks's Git/native source obligations are separate from the scanner bundles.
+The published Syft/Grype baseline includes source-attributed third-party notice bundles covering its captured Go module graphs and Go 1.26.8 legal texts. Those historical bundles do not cover the pending Go 1.27.4 source derivatives. [Redistribution information](licenses/README.md) describes source availability and remaining tool-specific obligations. Gitleaks's Git/native source obligations are separate from the scanner bundles.
 
 ## Build and verify
 

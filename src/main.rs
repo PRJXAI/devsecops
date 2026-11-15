@@ -13,6 +13,8 @@ mod public_access;
 mod release;
 #[cfg(test)]
 mod runtime_probe;
+#[cfg(test)]
+mod scanner_profile_capture;
 
 use std::{
     fs::{self, DirBuilder, File, OpenOptions},
@@ -29,7 +31,7 @@ use std::{
     process::{Child, Command, Stdio},
     sync::{
         Arc,
-        atomic::{AtomicBool, Ordering},
+        atomic::{AtomicBool, AtomicU64, Ordering},
     },
     thread,
     time::{Duration, Instant, SystemTime, UNIX_EPOCH},
@@ -173,6 +175,18 @@ fn container_output(result: Result<PathBuf>, cleanup: Result<PathBuf>) -> Result
     }
 }
 
+// Wall-clock resolution/rollback is not a uniqueness primitive for parallel
+// workers. Keep create-new semantics and fail closed on exhaustion/collisions.
+static DRIVER_SEQUENCE: AtomicU64 = AtomicU64::new(0);
+fn driver_log_name(stamp: u128) -> Result<String> {
+    let sequence = DRIVER_SEQUENCE
+        .try_update(Ordering::Relaxed, Ordering::Relaxed, |value| {
+            value.checked_add(1)
+        })
+        .map_err(|_| "driver identity exhausted")?;
+    Ok(format!("check-{}-{stamp}-{sequence}", std::process::id()))
+}
+
 struct Driver {
     root: PathBuf,
     logs: PathBuf,
@@ -199,7 +213,7 @@ impl Driver {
             .duration_since(UNIX_EPOCH)
             .map_err(|_| "clock unavailable")?
             .as_nanos();
-        let logs = work.join(format!("check-{}-{stamp}", std::process::id()));
+        let logs = work.join(driver_log_name(stamp)?);
         DirBuilder::new()
             .mode(0o700)
             .create(&logs)
@@ -399,8 +413,8 @@ impl Driver {
             "2.56.0.1.g02cd7dbd28"
         } else {
             match (tool, args) {
-                ("syft", _) => "1.55.0",
-                ("grype", _) => "0.121.0",
+                ("syft", _) => "1.57.1",
+                ("grype", _) => "0.121.3",
                 ("gitleaks", _) => "8.30.1",
                 ("cargo-audit", _) => "0.22.2",
                 ("cargo-deny", _) => "0.20.2",
@@ -508,6 +522,36 @@ impl Driver {
         } else {
             format!("images/{tool}/Dockerfile")
         };
+        // Retrieval, upstream tests and final linking have separate bounded
+        // phases. Cold compiler/module work must not consume the test/link
+        // budget; none of these phases is optional or a release acceptance.
+        // Keep the existing 1200s command bound and the workflow's total bound.
+        if matches!(tool, "syft" | "grype") {
+            for phase in ["sources", "unit-compiled", "unit-tested"] {
+                println!("{tool}: bounded native {phase} phase");
+                let mut prepare = Command::new("docker");
+                prepare
+                    .env_remove("DOCKER_CONTEXT")
+                    .current_dir(&context)
+                    .args([
+                        "--host",
+                        &endpoint,
+                        "buildx",
+                        "build",
+                        "--builder",
+                        "default",
+                        "--output=type=cacheonly",
+                        "--platform",
+                        &platform,
+                        "--file",
+                        &dockerfile,
+                        "--target",
+                        phase,
+                        ".",
+                    ]);
+                self.execute(prepare, 1200, false, 0)?;
+            }
+        }
         // Bind Buildx's builtin Docker driver to the checked local endpoint;
         // inherited builder selection must not redirect work to another daemon.
         let mut build = Command::new("docker");
@@ -741,6 +785,19 @@ fn main() {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn private_driver_names_are_unique_even_with_an_identical_wall_clock() {
+        let names = (0..256)
+            .map(|_| driver_log_name(1).unwrap())
+            .collect::<std::collections::BTreeSet<_>>();
+        assert_eq!(names.len(), 256);
+        assert!(
+            names
+                .iter()
+                .all(|name| name.starts_with(&format!("check-{}-1-", std::process::id())))
+        );
+    }
 
     #[test]
     fn diagnostic_captures_allow_empty_but_reject_links_special_and_oversized_files() {

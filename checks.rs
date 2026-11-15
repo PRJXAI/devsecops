@@ -114,6 +114,48 @@ mod tests {
             return true;
         }
         if matches!(tool, "syft" | "grype")
+            && matches!(
+                args,
+                "--chmod=0444 src/scanner_units.rs /scanner_units.rs"
+                    | "--from=unit-gate /scanner-units /scanner-units"
+            )
+        {
+            return true;
+        }
+        // The source-pinned OCI artifact contains only reviewed testdata trees,
+        // never a supplier root filesystem or production source replacement.
+        if tool == "syft" && args == "--from=fixtures --chown=65532:65532 /cache/ /src/" {
+            return true;
+        }
+        if tool == "syft"
+            && matches!(
+                args,
+                "--chown=65532:65532 tests/fixtures/syft-os-cache/not-rhel.tar /src/internal/os/testdata/cache/stereoscope-fixture-not_rhel-72b2a46da2554908034dbcd3f6ffbf4c098c9377e5a58abf729ee9de8f42d2a0.tar"
+                    | "--chown=65532:65532 tests/fixtures/syft-os-cache/rhel-manifests.tar /src/internal/os/testdata/cache/stereoscope-fixture-rhel_content_manifests-637e4cfac50d7b5122173d45aa8ac1ca7ff2c18b1994519f616b99da9c2f3d1f.tar"
+                    | "--chown=65532:65532 tests/fixtures/syft-os-cache/rhel-no-manifests.tar /src/internal/os/testdata/cache/stereoscope-fixture-rhel_no_manifests-5982583e26ad8209fb50063d2083d7e7894bb069cae67e65be9e54f271c1c35c.tar"
+            )
+        {
+            return true;
+        }
+        if tool == "grype"
+            && args
+                == "--chown=65532:65532 tests/fixtures/grype-source-cache/image-simple.tar /src/grype/pkg/testdata/cache/stereoscope-fixture-image-simple-42ea0faabdf8f9815ba86da9e859efafbb1aef8cf6c6ecce9d62e26137b83880.tar"
+        {
+            return true;
+        }
+        if matches!(
+            (tool, args),
+            (
+                "syft",
+                "--chmod=0444 patches/syft-1.57.1-security.patch.txt /security.patch"
+            ) | (
+                "grype",
+                "--chmod=0444 patches/grype-0.121.3-security.patch.txt /security.patch"
+            )
+        ) {
+            return true;
+        }
+        if matches!(tool, "syft" | "grype")
             && args
                 == "--chmod=0444 licenses/scanners/STATIC-BASE-NOTICES.txt /usr/share/licenses/static-base/NOTICES.txt"
         {
@@ -177,17 +219,18 @@ mod tests {
                             | "/out/LICENSE-MIT"
                             | "/out/README.md"
                             | "/out/CHANGELOG.md"
-                    ) || tool == "cargo-audit"
-                        && matches!(
-                            *v,
-                            "/usr/lib/ld-linux-x86-64.so.2"
-                                | "/usr/lib/ld-linux-aarch64.so.1"
-                                | "/usr/lib/libc.so.6"
-                                | "/usr/lib/libm.so.6"
-                                | "/usr/lib/libgcc_s.so.1"
-                                | "/usr/lib/libpthread.so.0"
-                                | "/usr/lib/libdl.so.2"
-                        ))
+                    ) || matches!((tool, *v), ("syft", "/out/syft") | ("grype", "/out/grype"))
+                        || tool == "cargo-audit"
+                            && matches!(
+                                *v,
+                                "/usr/lib/ld-linux-x86-64.so.2"
+                                    | "/usr/lib/ld-linux-aarch64.so.1"
+                                    | "/usr/lib/libc.so.6"
+                                    | "/usr/lib/libm.so.6"
+                                    | "/usr/lib/libgcc_s.so.1"
+                                    | "/usr/lib/libpthread.so.0"
+                                    | "/usr/lib/libdl.so.2"
+                            ))
             })
             && absolute_path(fields[fields.len() - 1], true)
     }
@@ -232,6 +275,51 @@ mod tests {
             "COPY --from=binary-amd64 /out/LICENSE-APACHE /out/LICENSE-MIT /out/README.md /out/CHANGELOG.md /usr/share/licenses/cargo-audit/".into(),
         ];
         instructions == expected
+    }
+
+    // Two fixed supplier derivatives, not a caller-configurable rebuild facility.
+    // The complete recipes bind compiler/source, exact patches, offline verification,
+    // full race suites and final payloads. No general Go/shell RUN exemption exists.
+    fn scanner_source_recipe(text: &str, tool: &str) -> bool {
+        use sha2::Digest;
+        let expected = match tool {
+            "syft" => "f36c0dc67474e1eb2d80bbbcb1c8b8a1b498efbbd7a7c39fbb4b86c7fbdbd09a",
+            "grype" => "1e43063e4a2a11d6516356ee6b0e8296a02c86603199ca16beb64b26da6931a6",
+            _ => return false,
+        };
+        let reviewed = match tool {
+            "syft" => include_str!("images/syft/Dockerfile"),
+            "grype" => include_str!("images/grype/Dockerfile"),
+            _ => return false,
+        };
+        fn instructions(text: &str) -> Option<Vec<String>> {
+            let mut lines = Vec::new();
+            let mut pending = String::new();
+            for raw in text.lines().map(str::trim) {
+                if raw.is_empty() || raw.starts_with('#') {
+                    continue;
+                }
+                if let Some(part) = raw.strip_suffix('\\') {
+                    pending.push_str(part);
+                    pending.push(' ');
+                    continue;
+                }
+                pending.push_str(raw);
+                let (op, args) = pending.split_once(' ')?;
+                if !op.eq_ignore_ascii_case("USER") {
+                    lines.push(format!("{} {args}", op.to_ascii_uppercase()));
+                }
+                pending.clear();
+            }
+            pending.is_empty().then_some(lines)
+        }
+        sha2::Sha256::digest(reviewed.as_bytes())
+            .iter()
+            .map(|byte| format!("{byte:02x}"))
+            .collect::<String>()
+            == expected
+            && instructions(text).is_some()
+            && instructions(text) == instructions(reviewed)
     }
 
     fn docker_policy(text: &str, tool: &str) -> bool {
@@ -329,7 +417,9 @@ mod tests {
                     }
                 }
                 "RUN" => {
-                    if final_image.is_empty() || !direct_extraction(args) {
+                    if final_image.is_empty()
+                        || !(direct_extraction(args) || scanner_source_recipe(text, tool))
+                    {
                         return false;
                     }
                     final_run = true;
@@ -379,6 +469,7 @@ mod tests {
         pending.is_empty()
             && TOOLS.contains(&tool)
             && (tool != "gitleaks" || production_gitleaks_dockerfile(text.as_bytes()))
+            && (!matches!(tool, "syft" | "grype") || scanner_source_recipe(text, tool))
             && (if tool == "cargo-audit" {
                 final_image == "runtime-${TARGETARCH}" && official_audit_supplier(text)
             } else {
@@ -529,7 +620,23 @@ mod tests {
             .and_then(|v| v.to_str())
             .unwrap_or("")
             .to_ascii_lowercase();
+        let fixture_hash = match relative.to_str() {
+            Some("tests/fixtures/syft-os-cache/not-rhel.tar") => {
+                Some("04afeaa7e5fba473488b1556ba895b2836d2d4aca3347c5e1cccc89885943335")
+            }
+            Some("tests/fixtures/syft-os-cache/rhel-manifests.tar") => {
+                Some("39a2ae2f09b8a557e90268ff7457a2bee9d9bf6979ffe6f9b028f6b111c6af0a")
+            }
+            Some("tests/fixtures/syft-os-cache/rhel-no-manifests.tar") => {
+                Some("befc70081e96a5b9b18f89b96ced88027936603de81158e91ae09fcf163a34c3")
+            }
+            Some("tests/fixtures/grype-source-cache/image-simple.tar") => {
+                Some("4e9f1960620315490f6c64057657fdd1355e1de9e76814cc27deb50d75b19203")
+            }
+            _ => None,
+        };
         if !["rs", "md", "toml", "lock", "json", "yml", "yaml", "txt"].contains(&extension.as_str())
+            && fixture_hash.is_none()
             && ![
                 "Dockerfile",
                 ".dockerignore",
@@ -546,7 +653,7 @@ mod tests {
         let Ok(metadata) = fs::symlink_metadata(&path) else {
             return false;
         };
-        if !metadata.is_file() {
+        if !metadata.is_file() || (fixture_hash.is_some() && metadata.len() > 512 * 1024) {
             return false;
         }
         #[cfg(unix)]
@@ -559,6 +666,14 @@ mod tests {
         let Ok(bytes) = fs::read(&path) else {
             return false;
         };
+        if let Some(expected) = fixture_hash {
+            use sha2::Digest;
+            return sha2::Sha256::digest(&bytes)
+                .iter()
+                .map(|byte| format!("{byte:02x}"))
+                .collect::<String>()
+                == expected;
+        }
         // Also catch extension-disguised interpreter launchers, not Rust attributes.
         if bytes.starts_with(b"#!") && !bytes.starts_with(b"#![") {
             return false;
@@ -631,6 +746,163 @@ mod tests {
             assert!(!docker_policy(&text.replace(old, new), "gitleaks"));
         }
         assert!(!docker_policy(&text, "syft"));
+    }
+
+    #[test]
+    fn scanner_derivatives_bind_fixed_inputs_and_cannot_skip_offline_race_tests() {
+        use sha2::Digest;
+        for (tool, patch, expected) in [
+            (
+                "syft",
+                "syft-1.57.1-security.patch.txt",
+                "795846bbf2ceb946b21c1ae8cf2583aeb441420cb1ea5b090058c51294ec7bb1",
+            ),
+            (
+                "grype",
+                "grype-0.121.3-security.patch.txt",
+                "ad4dee172338094aa882ddedaefcd371cf4a3da79e3a1a67cd94f78f737a16ff",
+            ),
+        ] {
+            let text =
+                fs::read_to_string(root().join(format!("images/{tool}/Dockerfile"))).unwrap();
+            assert!(docker_policy(&text, tool));
+            assert_eq!(
+                sha2::Sha256::digest(fs::read(root().join("patches").join(patch)).unwrap())
+                    .iter()
+                    .map(|byte| format!("{byte:02x}"))
+                    .collect::<String>(),
+                expected
+            );
+            for (old, new) in [
+                ("GOTOOLCHAIN=local", "GOTOOLCHAIN=auto"),
+                ("GOSUMDB=sum.golang.org", "GOSUMDB=off"),
+                ("GOFLAGS=-mod=readonly", "GOFLAGS=-mod=mod"),
+                ("--network=none", "--network=host"),
+                ("\"-race\",", ""),
+                ("\"/scanner-units\"", "\"/arbitrary-test-runner\""),
+                ("\"github.com/blakesmith/ar\"", "\"./selected-only\""),
+                ("/security.patch", "/arbitrary.patch"),
+            ] {
+                let changed = text.replace(old, new);
+                assert_ne!(changed, text);
+                assert!(!docker_policy(&changed, tool), "{tool}: {old}");
+            }
+            assert!(!docker_policy(&text, "gitleaks"));
+        }
+    }
+
+    #[test]
+    fn pinned_upstream_fixture_artifact_contains_testdata_only_not_source_or_rootfs() {
+        use sha2::Digest;
+        let data = include_bytes!("inventory/syft-source-fixture-manifest.json");
+        assert_eq!(
+            sha2::Sha256::digest(data)
+                .iter()
+                .map(|byte| format!("{byte:02x}"))
+                .collect::<String>(),
+            "12e1cbf78a9834abc7cb750dc18355bdd85485f30b9f004d9f99b7eb32a6ea3c"
+        );
+        let manifest: serde_json::Value = serde_json::from_slice(data).unwrap();
+        assert_eq!(
+            manifest["annotations"]["org.opencontainers.image.source"],
+            "https://github.com/anchore/oss-cache"
+        );
+        let mut bytes = 0u64;
+        for layer in manifest["layers"].as_array().unwrap() {
+            let path = layer["annotations"]["org.opencontainers.image.title"]
+                .as_str()
+                .unwrap();
+            assert!(!path.starts_with('/'));
+            assert!(path == ".tmp/cache_paths.json" || path.contains("/testdata/"));
+            assert!(!path.split('/').any(|part| part == ".." || part.is_empty()));
+            assert!(sha256(
+                layer["digest"]
+                    .as_str()
+                    .unwrap()
+                    .strip_prefix("sha256:")
+                    .unwrap()
+            ));
+            let size = layer["size"].as_u64().unwrap();
+            assert!(size <= 512 * 1024 * 1024);
+            bytes = bytes.checked_add(size).unwrap();
+        }
+        assert!(bytes <= 2 * 1024 * 1024 * 1024);
+        let text = include_str!("images/syft/Dockerfile");
+        for (old, new) in [
+            (
+                "--from=fixtures --chown=65532:65532 /cache/ /src/",
+                "--from=fixtures / /src/",
+            ),
+            ("/scanner_units.rs", "/arbitrary.rs"),
+            (
+                "syft-test-fixture-cache@sha256:",
+                "syft-test-fixture-cache:latest@sha256:",
+            ),
+        ] {
+            assert_ne!(text.replace(old, new), text);
+            assert!(!docker_policy(&text.replace(old, new), "syft"));
+        }
+    }
+
+    #[test]
+    fn supplemental_os_fixtures_are_unchanged_small_actual_image_archives() {
+        use sha2::Digest;
+        for (file, expected) in [
+            (
+                "not-rhel.tar",
+                "04afeaa7e5fba473488b1556ba895b2836d2d4aca3347c5e1cccc89885943335",
+            ),
+            (
+                "rhel-manifests.tar",
+                "39a2ae2f09b8a557e90268ff7457a2bee9d9bf6979ffe6f9b028f6b111c6af0a",
+            ),
+            (
+                "rhel-no-manifests.tar",
+                "befc70081e96a5b9b18f89b96ced88027936603de81158e91ae09fcf163a34c3",
+            ),
+        ] {
+            let path = root().join("tests/fixtures/syft-os-cache").join(file);
+            let metadata = fs::symlink_metadata(&path).unwrap();
+            assert!(metadata.is_file() && metadata.len() <= 512 * 1024);
+            let bytes = fs::read(path).unwrap();
+            assert_eq!(
+                sha2::Sha256::digest(&bytes)
+                    .iter()
+                    .map(|byte| format!("{byte:02x}"))
+                    .collect::<String>(),
+                expected
+            );
+            let mut archive = tar::Archive::new(std::io::Cursor::new(bytes));
+            assert!(
+                archive
+                    .entries()
+                    .unwrap()
+                    .any(|entry| entry.unwrap().path().unwrap() == Path::new("manifest.json"))
+            );
+        }
+    }
+
+    #[test]
+    fn grype_package_exclusion_fixture_is_exact_nonexecutable_image_data() {
+        use sha2::Digest;
+        let path = root().join("tests/fixtures/grype-source-cache/image-simple.tar");
+        let metadata = fs::symlink_metadata(&path).unwrap();
+        assert!(metadata.is_file() && metadata.len() <= 512 * 1024);
+        let bytes = fs::read(path).unwrap();
+        assert_eq!(
+            sha2::Sha256::digest(&bytes)
+                .iter()
+                .map(|byte| format!("{byte:02x}"))
+                .collect::<String>(),
+            "4e9f1960620315490f6c64057657fdd1355e1de9e76814cc27deb50d75b19203"
+        );
+        let mut archive = tar::Archive::new(std::io::Cursor::new(bytes));
+        assert!(
+            archive
+                .entries()
+                .unwrap()
+                .any(|entry| entry.unwrap().path().unwrap() == Path::new("manifest.json"))
+        );
     }
 
     fn syft_candidate_dockerfile(bytes: &[u8]) -> bool {
@@ -861,7 +1133,7 @@ mod tests {
             "/", "/.", "/./", "/*", ".", "/rootfs", "/usr", "/syft/", "/../syft",
         ] {
             let changed = text.replace(
-                "COPY --from=supplier /syft",
+                "COPY --from=supplier /out/syft",
                 &format!("copy --from=supplier {source}"),
             );
             assert!(
@@ -897,7 +1169,7 @@ mod tests {
         assert!(!remote_add(&duplicate));
         let bad_add = "add http://example.org/tool /tool\n";
         assert!(!docker_policy(&format!("{text}\n{bad_add}"), "syft"));
-        assert!(!docker_policy(&text.replace("FROM anchore/syft:v1.55.0-nonroot@sha256:ec5bdbc745485920c6f444239f0c09ed87b3c4c165ff9433f95bc66b3500fbf9", "from anchore/syft:latest"), "syft"));
+        assert!(!docker_policy(&text.replace("FROM golang:1.27.4@sha256:5e8afd493a7124a8586e134d9b532731161d4b9becf9dee5a5956b107426f93d", "from golang:latest"), "syft"));
         assert!(!docker_policy(
             &format!("# syntax=docker/dockerfile:latest\n{text}"),
             "syft"
@@ -983,6 +1255,38 @@ mod tests {
             &text.replace("\"kustomize\"]", "\"--to-command=sh\"]"),
             "kustomize"
         ));
+    }
+
+    #[test]
+    fn scanner_link_payload_depends_on_the_complete_offline_unit_stage() {
+        for tool in ["syft", "grype"] {
+            let text =
+                fs::read_to_string(root().join(format!("images/{tool}/Dockerfile"))).unwrap();
+            let compiled = text.find("FROM sources AS unit-compiled\n").unwrap();
+            let compile_call = text
+                .find(&format!("\"/scanner-units\", \"{tool}\", \"compile\"]"))
+                .unwrap();
+            let units = text.find("FROM unit-compiled AS unit-tested\n").unwrap();
+            assert!(compiled < compile_call && compile_call < units);
+            let ar = text.find("\"github.com/blakesmith/ar\"]").unwrap();
+            let suite = text
+                .find(&format!("\"/scanner-units\", \"{tool}\"]"))
+                .unwrap();
+            let supplier = text.find("FROM unit-tested AS supplier\n").unwrap();
+            let link = text.find("[\"go\", \"build\",").unwrap();
+            let payload = text.find("COPY --from=supplier /out/").unwrap();
+            assert!(
+                units < ar && ar < suite && suite < supplier && supplier < link && link < payload
+            );
+            assert!(
+                text[units..supplier]
+                    .lines()
+                    .filter(|line| line.starts_with("RUN "))
+                    .all(|line| {
+                        line.contains("--network=none") && line.contains("\"GOPROXY=off\"")
+                    })
+            );
+        }
     }
 
     #[test]
@@ -1650,8 +1954,27 @@ jobs:";
                 "!images/",
                 "!images/*/",
                 "!images/*/Dockerfile",
+                "!src/",
+                "src/**",
+                "!src/scanner_units.rs",
+                "!tests/",
+                "tests/**",
+                "!tests/fixtures/",
+                "tests/fixtures/**",
+                "!tests/fixtures/syft-os-cache/",
+                "tests/fixtures/syft-os-cache/**",
+                "!tests/fixtures/syft-os-cache/not-rhel.tar",
+                "!tests/fixtures/syft-os-cache/rhel-manifests.tar",
+                "!tests/fixtures/syft-os-cache/rhel-no-manifests.tar",
+                "!tests/fixtures/grype-source-cache/",
+                "tests/fixtures/grype-source-cache/**",
+                "!tests/fixtures/grype-source-cache/image-simple.tar",
                 "!licenses/",
                 "!licenses/**",
+                "!patches/",
+                "patches/**",
+                "!patches/syft-1.57.1-security.patch.txt",
+                "!patches/grype-0.121.3-security.patch.txt",
                 ".git",
                 ".work",
                 "target",
@@ -1673,6 +1996,12 @@ jobs:";
             "!**/credentials*",
             "!**",
             "!images/*/secret.sh",
+            "!patches/**",
+            "!patches/unreviewed.patch.txt",
+            "!src/**",
+            "!src/other.rs",
+            "!tests/fixtures/syft-os-cache/arbitrary.tar",
+            "!tests/**",
         ] {
             assert!(!context_policy(&format!("{rules}\n{reinclusion}\n")));
         }

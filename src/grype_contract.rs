@@ -60,7 +60,7 @@ fn no_stderr(stdout: &Path) -> Result<()> {
 
 fn report(value: &Value, db: &Value, target: &str, vulnerable: bool) -> Result<usize> {
     if value.pointer("/descriptor/name").and_then(Value::as_str) != Some("grype")
-        || value.pointer("/descriptor/version").and_then(Value::as_str) != Some("0.121.0")
+        || value.pointer("/descriptor/version").and_then(Value::as_str) != Some("0.121.3")
         || value
             .pointer("/descriptor/configuration/include-matcher-suppressions")
             .and_then(Value::as_bool)
@@ -210,7 +210,7 @@ mod tests {
         json!({"valid":true,"schemaVersion":"v6.1.10","built":Utc::now().to_rfc3339()})
     }
     fn clean(db: &Value) -> Value {
-        json!({"descriptor":{"name":"grype","version":"0.121.0","db":{"status":db},
+        json!({"descriptor":{"name":"grype","version":"0.121.3","db":{"status":db},
             "configuration":{"include-matcher-suppressions":true}},"source":{"type":"sbom-file","target":"/input/clean.cdx.json"},"matches":[]})
     }
     fn finding(severity: &str) -> Value {
