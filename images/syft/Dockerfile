@@ -40,9 +40,11 @@ COPY --from=unit-gate /scanner-units /scanner-units
 # Only the pinned fixture artifact's testdata trees and cache fingerprint, not a rootfs.
 COPY --from=fixtures --chown=65532:65532 /cache/ /src/
 # Actual scratch-image archives built from the pinned upstream OS fixtures.
-COPY --chmod=0444 tests/fixtures/syft-os-cache/not-rhel.tar /src/internal/os/testdata/cache/stereoscope-fixture-not_rhel-72b2a46da2554908034dbcd3f6ffbf4c098c9377e5a58abf729ee9de8f42d2a0.tar
-COPY --chmod=0444 tests/fixtures/syft-os-cache/rhel-manifests.tar /src/internal/os/testdata/cache/stereoscope-fixture-rhel_content_manifests-637e4cfac50d7b5122173d45aa8ac1ca7ff2c18b1994519f616b99da9c2f3d1f.tar
-COPY --chmod=0444 tests/fixtures/syft-os-cache/rhel-no-manifests.tar /src/internal/os/testdata/cache/stereoscope-fixture-rhel_no_manifests-5982583e26ad8209fb50063d2083d7e7894bb069cae67e65be9e54f271c1c35c.tar
+RUN --network=none ["mkdir", "-p", "/src/internal/os/testdata/cache"]
+COPY --chown=65532:65532 tests/fixtures/syft-os-cache/not-rhel.tar /src/internal/os/testdata/cache/stereoscope-fixture-not_rhel-72b2a46da2554908034dbcd3f6ffbf4c098c9377e5a58abf729ee9de8f42d2a0.tar
+COPY --chown=65532:65532 tests/fixtures/syft-os-cache/rhel-manifests.tar /src/internal/os/testdata/cache/stereoscope-fixture-rhel_content_manifests-637e4cfac50d7b5122173d45aa8ac1ca7ff2c18b1994519f616b99da9c2f3d1f.tar
+COPY --chown=65532:65532 tests/fixtures/syft-os-cache/rhel-no-manifests.tar /src/internal/os/testdata/cache/stereoscope-fixture-rhel_no_manifests-5982583e26ad8209fb50063d2083d7e7894bb069cae67e65be9e54f271c1c35c.tar
+RUN --network=none ["chmod", "0755", "/src/internal/os/testdata/cache"]
 # Includes the fork's negative-member-size regression, not only Syft's own tests.
 RUN --mount=type=cache,id=devsecops-syft-go1274-user,target=/tmp/go-build,uid=65532,gid=65532,mode=0700,sharing=locked --network=none ["env", "CGO_ENABLED=1", "GOPROXY=off", "go", "test", "-race", "-count=1", "-p=1", "github.com/blakesmith/ar"]
 RUN --mount=type=cache,id=devsecops-syft-go1274-user,target=/tmp/go-build,uid=65532,gid=65532,mode=0700,sharing=locked --network=none ["env", "CGO_ENABLED=1", "GOPROXY=off", "/scanner-units", "syft"]

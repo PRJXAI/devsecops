@@ -29,7 +29,7 @@ use std::{
     process::{Child, Command, Stdio},
     sync::{
         Arc,
-        atomic::{AtomicBool, Ordering},
+        atomic::{AtomicBool, AtomicU64, Ordering},
     },
     thread,
     time::{Duration, Instant, SystemTime, UNIX_EPOCH},
@@ -173,6 +173,18 @@ fn container_output(result: Result<PathBuf>, cleanup: Result<PathBuf>) -> Result
     }
 }
 
+// Wall-clock resolution/rollback is not a uniqueness primitive for parallel
+// workers. Keep create-new semantics and fail closed on exhaustion/collisions.
+static DRIVER_SEQUENCE: AtomicU64 = AtomicU64::new(0);
+fn driver_log_name(stamp: u128) -> Result<String> {
+    let sequence = DRIVER_SEQUENCE
+        .try_update(Ordering::Relaxed, Ordering::Relaxed, |value| {
+            value.checked_add(1)
+        })
+        .map_err(|_| "driver identity exhausted")?;
+    Ok(format!("check-{}-{stamp}-{sequence}", std::process::id()))
+}
+
 struct Driver {
     root: PathBuf,
     logs: PathBuf,
@@ -199,7 +211,7 @@ impl Driver {
             .duration_since(UNIX_EPOCH)
             .map_err(|_| "clock unavailable")?
             .as_nanos();
-        let logs = work.join(format!("check-{}-{stamp}", std::process::id()));
+        let logs = work.join(driver_log_name(stamp)?);
         DirBuilder::new()
             .mode(0o700)
             .create(&logs)
@@ -741,6 +753,19 @@ fn main() {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn private_driver_names_are_unique_even_with_an_identical_wall_clock() {
+        let names = (0..256)
+            .map(|_| driver_log_name(1).unwrap())
+            .collect::<std::collections::BTreeSet<_>>();
+        assert_eq!(names.len(), 256);
+        assert!(
+            names
+                .iter()
+                .all(|name| name.starts_with(&format!("check-{}-1-", std::process::id())))
+        );
+    }
 
     #[test]
     fn diagnostic_captures_allow_empty_but_reject_links_special_and_oversized_files() {

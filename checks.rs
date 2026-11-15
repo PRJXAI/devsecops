@@ -130,9 +130,9 @@ mod tests {
         if tool == "syft"
             && matches!(
                 args,
-                "--chmod=0444 tests/fixtures/syft-os-cache/not-rhel.tar /src/internal/os/testdata/cache/stereoscope-fixture-not_rhel-72b2a46da2554908034dbcd3f6ffbf4c098c9377e5a58abf729ee9de8f42d2a0.tar"
-                    | "--chmod=0444 tests/fixtures/syft-os-cache/rhel-manifests.tar /src/internal/os/testdata/cache/stereoscope-fixture-rhel_content_manifests-637e4cfac50d7b5122173d45aa8ac1ca7ff2c18b1994519f616b99da9c2f3d1f.tar"
-                    | "--chmod=0444 tests/fixtures/syft-os-cache/rhel-no-manifests.tar /src/internal/os/testdata/cache/stereoscope-fixture-rhel_no_manifests-5982583e26ad8209fb50063d2083d7e7894bb069cae67e65be9e54f271c1c35c.tar"
+                "--chown=65532:65532 tests/fixtures/syft-os-cache/not-rhel.tar /src/internal/os/testdata/cache/stereoscope-fixture-not_rhel-72b2a46da2554908034dbcd3f6ffbf4c098c9377e5a58abf729ee9de8f42d2a0.tar"
+                    | "--chown=65532:65532 tests/fixtures/syft-os-cache/rhel-manifests.tar /src/internal/os/testdata/cache/stereoscope-fixture-rhel_content_manifests-637e4cfac50d7b5122173d45aa8ac1ca7ff2c18b1994519f616b99da9c2f3d1f.tar"
+                    | "--chown=65532:65532 tests/fixtures/syft-os-cache/rhel-no-manifests.tar /src/internal/os/testdata/cache/stereoscope-fixture-rhel_no_manifests-5982583e26ad8209fb50063d2083d7e7894bb069cae67e65be9e54f271c1c35c.tar"
             )
         {
             return true;
@@ -277,7 +277,7 @@ mod tests {
     fn scanner_source_recipe(text: &str, tool: &str) -> bool {
         use sha2::Digest;
         let expected = match tool {
-            "syft" => "3d143aeb93b3cddf0b3d1b1d8dfcf2fb87c1f4d511671821063367c74f0dcba3",
+            "syft" => "3d4bc83c1da1ed35ba6e9616742f5171966c729b77b9aac42beb4cf876d54133",
             "grype" => "ae479e9d7e3acdeec2b34b633cd8c3c1540c6d28b42d23721ac86d614f6958b4",
             _ => return false,
         };
