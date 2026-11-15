@@ -431,7 +431,7 @@ pub(super) fn collect(driver: &mut Driver) -> Result<()> {
         return Err("missing Go license");
     }
     for (tool, graph) in by_tool {
-        let (version, commit, patch) = match tool {
+        let (version, upstream_commit, patch) = match tool {
             "syft" => (
                 "1.57.1",
                 "a0c0d3890a9d79421c403e8fcadec50a2e55bf21",
@@ -447,7 +447,7 @@ pub(super) fn collect(driver: &mut Driver) -> Result<()> {
         let patch_hash = hash(&driver.root.join(patch), 1024 * 1024)?;
         let mut bundle = format!(
             "Modified distribution: {tool} {version}-dependency-security.1, rebuilt by PRJXAI.\n\
-             Upstream source: https://github.com/anchore/{tool}/tree/{commit}\n\
+             Upstream source: https://github.com/anchore/{tool}/tree/{upstream_commit}\n\
              Changes: dependency manifests patched for x/crypto 0.59.0, OpenTelemetry 1.47.0 and the sbomify/ar negative-member-size fix. Compiler: Go 1.27.4.\n\
              Exact build recipe, modified manifests (patch), and source checksums: the org.opencontainers.image.revision source tree at https://github.com/PRJXAI/devsecops .\n\
              Patch: {patch}; SHA-256 {patch_hash}. Upstream endorsement is not claimed; original terms are not relicensed.\n\
@@ -500,6 +500,28 @@ pub(super) fn collect(driver: &mut Driver) -> Result<()> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn legal_indexes_bind_the_compiler_source_not_the_scanner_commit() -> Result<()> {
+        let root = Path::new(env!("CARGO_MANIFEST_DIR"));
+        let folder = root.join("licenses/scanners");
+        let review = read_json(&folder.join("review.json"))?;
+        let compiler = "7b2881024c95a11ddb86663a616340aa3a88b67f";
+        assert_eq!(review["go_source_commit"], compiler);
+        for tool in ["syft", "grype"] {
+            let file = folder.join(format!("{tool}-index.json"));
+            let index = read_json(&file)?;
+            assert_eq!(index["go_source_commit"], compiler, "{tool}");
+            assert_eq!(index["go_legal_files"], 38);
+            assert_eq!(review[tool]["index_sha256"], hash(&file, 8 * 1024 * 1024)?);
+            assert_eq!(index["bundle_sha256"], review[tool]["bundle_sha256"]);
+            assert_eq!(
+                index["bundle_sha256"],
+                hash(&folder.join(format!("{tool}-NOTICES.txt")), 8 * 1024 * 1024)?
+            );
+        }
+        Ok(())
+    }
 
     #[test]
     fn main_legal_source_mapping_requires_real_native_vcs_identity_not_a_guessed_version() {
