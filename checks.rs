@@ -283,8 +283,8 @@ mod tests {
     fn scanner_source_recipe(text: &str, tool: &str) -> bool {
         use sha2::Digest;
         let expected = match tool {
-            "syft" => "46053a2410701cfab37f63889439913080942fdddcd348f90c990d9b506f8946",
-            "grype" => "4624adabafe55447bb532c053825071a3f44b07d6db80b87d0a4c9ea5632019d",
+            "syft" => "f36c0dc67474e1eb2d80bbbcb1c8b8a1b498efbbd7a7c39fbb4b86c7fbdbd09a",
+            "grype" => "1e43063e4a2a11d6516356ee6b0e8296a02c86603199ca16beb64b26da6931a6",
             _ => return false,
         };
         let reviewed = match tool {
@@ -1262,7 +1262,12 @@ mod tests {
         for tool in ["syft", "grype"] {
             let text =
                 fs::read_to_string(root().join(format!("images/{tool}/Dockerfile"))).unwrap();
-            let units = text.find("FROM sources AS unit-tested\n").unwrap();
+            let compiled = text.find("FROM sources AS unit-compiled\n").unwrap();
+            let compile_call = text
+                .find(&format!("\"/scanner-units\", \"{tool}\", \"compile\"]"))
+                .unwrap();
+            let units = text.find("FROM unit-compiled AS unit-tested\n").unwrap();
+            assert!(compiled < compile_call && compile_call < units);
             let ar = text.find("\"github.com/blakesmith/ar\"]").unwrap();
             let suite = text
                 .find(&format!("\"/scanner-units\", \"{tool}\"]"))

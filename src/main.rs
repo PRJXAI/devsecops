@@ -527,7 +527,7 @@ impl Driver {
         // budget; none of these phases is optional or a release acceptance.
         // Keep the existing 1200s command bound and the workflow's total bound.
         if matches!(tool, "syft" | "grype") {
-            for phase in ["sources", "unit-tested"] {
+            for phase in ["sources", "unit-compiled", "unit-tested"] {
                 println!("{tool}: bounded native {phase} phase");
                 let mut prepare = Command::new("docker");
                 prepare

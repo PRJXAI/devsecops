@@ -45,8 +45,10 @@ COPY --chown=65532:65532 tests/fixtures/syft-os-cache/not-rhel.tar /src/internal
 COPY --chown=65532:65532 tests/fixtures/syft-os-cache/rhel-manifests.tar /src/internal/os/testdata/cache/stereoscope-fixture-rhel_content_manifests-637e4cfac50d7b5122173d45aa8ac1ca7ff2c18b1994519f616b99da9c2f3d1f.tar
 COPY --chown=65532:65532 tests/fixtures/syft-os-cache/rhel-no-manifests.tar /src/internal/os/testdata/cache/stereoscope-fixture-rhel_no_manifests-5982583e26ad8209fb50063d2083d7e7894bb069cae67e65be9e54f271c1c35c.tar
 RUN --network=none ["chmod", "0755", "/src/internal/os/testdata/cache"]
-# A separate bounded native phase must complete before linking the payload.
-FROM sources AS unit-tested
+# Cold compilation is separate from mandatory uncached race-test execution.
+FROM sources AS unit-compiled
+RUN --mount=type=cache,id=devsecops-syft-go1274-user,target=/tmp/go-build,uid=65532,gid=65532,mode=0700,sharing=locked --network=none ["env", "CGO_ENABLED=1", "GOPROXY=off", "/scanner-units", "syft", "compile"]
+FROM unit-compiled AS unit-tested
 # Includes the fork's negative-member-size regression, not only Syft's own tests.
 RUN --mount=type=cache,id=devsecops-syft-go1274-user,target=/tmp/go-build,uid=65532,gid=65532,mode=0700,sharing=locked --network=none ["env", "CGO_ENABLED=1", "GOPROXY=off", "go", "test", "-race", "-count=1", "-p=1", "github.com/blakesmith/ar"]
 RUN --mount=type=cache,id=devsecops-syft-go1274-user,target=/tmp/go-build,uid=65532,gid=65532,mode=0700,sharing=locked --network=none ["env", "CGO_ENABLED=1", "GOPROXY=off", "/scanner-units", "syft"]

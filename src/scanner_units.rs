@@ -54,12 +54,19 @@ fn packages(data: &[u8], tool: &str) -> Result<Vec<String>, &'static str> {
     Ok(units)
 }
 
-fn run() -> Result<(), &'static str> {
-    let args: Vec<_> = std::env::args().skip(1).collect();
-    let [tool] = args.as_slice() else {
-        return Err("one fixed scanner identity required");
+fn mode(args: &[String]) -> Result<(&str, bool), &'static str> {
+    let (tool, compile) = match args {
+        [tool] => (tool.as_str(), false),
+        [tool, action] if action == "compile" => (tool.as_str(), true),
+        _ => return Err("one fixed scanner identity and optional compile action required"),
     };
     prefix(tool)?;
+    Ok((tool, compile))
+}
+
+fn run() -> Result<(), &'static str> {
+    let args: Vec<_> = std::env::args().skip(1).collect();
+    let (tool, compile) = mode(&args)?;
     if std::env::consts::OS != "linux" {
         return Err("native Linux build-only command");
     }
@@ -89,6 +96,30 @@ fn run() -> Result<(), &'static str> {
         return Err("upstream package listing failed");
     }
     let units = packages(&data, tool)?;
+    if compile {
+        println!(
+            "Compile-only: {} upstream unit packages; no test execution or acceptance",
+            units.len()
+        );
+        // Unique output per package avoids Go's duplicate test-binary basenames.
+        // Keep only compiler cache: no test binary belongs in a supplier layer.
+        for (index, package) in units.iter().enumerate() {
+            let output = format!("/tmp/scanner-unit-{tool}-{index}.test");
+            let status = Command::new(GO)
+                .args(["test", "-c", "-race", "-p=1", TAGS, "-o", &output, package])
+                .status()
+                .map_err(|_| "cannot compile upstream unit package")?;
+            match std::fs::remove_file(&output) {
+                Ok(()) => (),
+                Err(error) if error.kind() == std::io::ErrorKind::NotFound => (), // no test files
+                Err(_) => return Err("unit binary cleanup failed"),
+            }
+            if !status.success() {
+                return Err("upstream unit compilation failed");
+            }
+        }
+        return Ok(());
+    }
     println!(
         "Upstream unit scope: {} packages; official **/test/** integration boundary retained",
         units.len()
@@ -115,6 +146,22 @@ fn main() {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn compilation_is_explicit_and_cannot_select_or_skip_test_packages() {
+        assert_eq!(mode(&["syft".into()]).unwrap(), ("syft", false));
+        assert_eq!(
+            mode(&["grype".into(), "compile".into()]).unwrap(),
+            ("grype", true)
+        );
+        for args in [
+            vec![],
+            vec!["other"],
+            vec!["syft", "-run=x"],
+            vec!["syft", "compile", "some/package"],
+        ] {
+            assert!(mode(&args.into_iter().map(str::to_owned).collect::<Vec<_>>()).is_err());
+        }
+    }
     #[test]
     fn every_unit_package_is_retained_and_only_official_test_directories_are_excluded() {
         let input = b"github.com/anchore/syft\ngithub.com/anchore/syft/cmd/syft\ngithub.com/anchore/syft/internal/test/integration\ngithub.com/anchore/syft/internal/testutils\ngithub.com/anchore/syft/syft/pkg/cataloger\ngithub.com/anchore/syft/test/cli\n";

@@ -34,8 +34,10 @@ COPY --from=unit-gate /scanner-units /scanner-units
 RUN --network=none ["mkdir", "-p", "/src/grype/pkg/testdata/cache"]
 COPY --chown=65532:65532 tests/fixtures/grype-source-cache/image-simple.tar /src/grype/pkg/testdata/cache/stereoscope-fixture-image-simple-42ea0faabdf8f9815ba86da9e859efafbb1aef8cf6c6ecce9d62e26137b83880.tar
 RUN --network=none ["chmod", "0755", "/src/grype/pkg/testdata/cache"]
-# A separate bounded native phase must complete before linking the payload.
-FROM sources AS unit-tested
+# Cold compilation is separate from mandatory uncached race-test execution.
+FROM sources AS unit-compiled
+RUN --mount=type=cache,id=devsecops-grype-go1274-user,target=/tmp/go-build,uid=65532,gid=65532,mode=0700,sharing=locked --network=none ["env", "CGO_ENABLED=1", "GOPROXY=off", "/scanner-units", "grype", "compile"]
+FROM unit-compiled AS unit-tested
 RUN --mount=type=cache,id=devsecops-grype-go1274-user,target=/tmp/go-build,uid=65532,gid=65532,mode=0700,sharing=locked --network=none ["env", "CGO_ENABLED=1", "GOPROXY=off", "go", "test", "-race", "-count=1", "-p=1", "github.com/blakesmith/ar"]
 RUN --mount=type=cache,id=devsecops-grype-go1274-user,target=/tmp/go-build,uid=65532,gid=65532,mode=0700,sharing=locked --network=none ["env", "CGO_ENABLED=1", "GOPROXY=off", "/scanner-units", "grype"]
 FROM unit-tested AS supplier
