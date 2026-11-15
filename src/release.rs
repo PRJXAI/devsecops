@@ -21,6 +21,8 @@ mod risk;
 
 #[path = "gitleaks_candidate.rs"]
 pub(super) mod gitleaks_candidate;
+#[path = "gitleaks_runtime.rs"]
+pub(super) mod gitleaks_runtime;
 
 #[cfg(test)]
 #[path = "syft_candidate.rs"]

@@ -3,12 +3,16 @@ FROM cgr.dev/chainguard/git:latest@sha256:2d3f84f09551129f6e815d82c335e04cd3b39b
 FROM cgr.dev/chainguard/glibc-dynamic:latest@sha256:a5e9991904f2034c4b39d27e3121ce7eba5a667ead9b5f3a96bfbda259be4f29
 COPY --chmod=0555 candidate /usr/local/bin/gitleaks
 COPY --chmod=0444 go-notices.txt /usr/share/licenses/gitleaks/GO-NOTICES.txt
+COPY --chmod=0444 native-notices.txt /usr/share/licenses/gitleaks/NATIVE-NOTICES.txt
+COPY --chmod=0444 source-index.json /usr/share/licenses/gitleaks/SOURCE-INDEX.json
+COPY --chmod=0444 sources/gcc-source-16.2.0-r4.apk sources/git-source-2.56.1-r1.apk sources/glibc-2.44-source-2.44-r19.apk sources/wolfi-baselayout-source-20230201-r31.apk /usr/share/licenses/gitleaks/corresponding-source/
 COPY --from=git /usr/bin/git /usr/bin/git
 COPY --from=git /usr/lib/libpcre2-8.so.0 /usr/lib/libpcre2-8.so.0
 COPY --from=git /usr/lib/libz.so.1 /usr/lib/libz.so.1
 ADD --chmod=0644 --checksum=sha256:e3884b252b3bfc045e55be43a34d1e80da070bc6f804ac95bf4660e97d62ebc6 https://raw.githubusercontent.com/gitleaks/gitleaks/83d9cd684c87d95d656c1458ef04895a7f1cbd8e/LICENSE /usr/share/licenses/gitleaks/LICENSE
 ADD --chmod=0644 --checksum=sha256:5b2198d1645f767585e8a88ac0499b04472164c0d2da22e75ecf97ef443ab32e https://raw.githubusercontent.com/git/git/v2.56.1/COPYING /usr/share/licenses/git/COPYING
-# Exact vendor Git/glibc corresponding source and redistribution review remain mandatory.
+# Complete current native source companions accompany the binary; exact
+# source hashes, read-only modes and native rights text remain contract-checked.
 ENV HOME=/tmp \
     XDG_CACHE_HOME=/tmp/.cache \
     GIT_CONFIG_NOSYSTEM=1 \

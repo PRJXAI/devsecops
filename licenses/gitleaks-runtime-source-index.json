@@ -1,0 +1,1225 @@
+{
+  "native_notice_bytes": 227530,
+  "native_notice_sha256": "505907d7c7178d6b75e9a9e6f67f4b0e8b232b7772433a3f6596c8f2b56158c9",
+  "native_source_observations": {
+    "both_native_catalogs_verified": true,
+    "observations": [
+      {
+        "apk_payload_path": "etc/ssl/certs/ca-certificates.crt",
+        "arch": "amd64",
+        "binary_apk_sha256": "f0bee352ca8f87c2c3ec1bdd459836f2afbb4874703e3a21888846ee08a96f71",
+        "binary_package": "ca-certificates-bundle",
+        "legal_files": [],
+        "native_path": "/etc/ssl/certs/ca-certificates.crt",
+        "native_sha256": "5961c0a3c65459931c023e0075c09733f09aea4ca439cb85bc4a08bb4f3f568b",
+        "origin": "ca-certificates",
+        "package": "ca-certificates-bundle",
+        "recipient_notice_delivery_complete": false,
+        "signature_verified": false,
+        "source_kind": "unaltered editable PEM source data actually delivered in native image; MPL-2.0/MIT text and source instructions remain mandatory",
+        "version": "20261020-r0"
+      },
+      {
+        "arch": "amd64",
+        "binary_apk_sha256": "f3ffad0543c509c95d949d47ddcc3c9b99a78b1523c8c8d70d407713cb5b30e0",
+        "license": "GPL-2.0-or-later AND ( Artistic-1.0-Perl OR GPL-1.0-or-later )",
+        "native_payload_bindings": [
+          {
+            "apk_path": "usr/bin/git",
+            "native_paths": [
+              "/usr/bin/git"
+            ],
+            "sha256": "6b82e5f1d092d780976ac1002b465444e064af7dd87195958a5261a9a43b47a9"
+          }
+        ],
+        "origin": "git",
+        "package": "git",
+        "signature_verified": false,
+        "source_apk_sha256": "4de71c71249c08ab270e72ae7d143aa58ec58c931febdab6915f18f28d31696d",
+        "source_file": "amd64/git-source-2.56.1-r1.apk",
+        "source_manifest_files": 9,
+        "version": "2.56.1-r1"
+      },
+      {
+        "arch": "amd64",
+        "binary_apk_sha256": "79f9904a16bccf19c250434cdf9d61d796b50b0112eac70db185ec2daa676d42",
+        "license": "LGPL-2.1-or-later",
+        "native_payload_bindings": [
+          {
+            "apk_path": "etc/apk/commit_hooks.d/ldconfig-commit.sh",
+            "native_paths": [
+              "/etc/apk/commit_hooks.d/ldconfig-commit.sh"
+            ],
+            "sha256": "3b7637d6b5e83fe60045d8bd6155b971503ba03f447f3670062368da8916227e"
+          },
+          {
+            "apk_path": "etc/rpc",
+            "native_paths": [
+              "/etc/rpc"
+            ],
+            "sha256": "3b24a975dcde688434258566813a83ce256a4c73efd7a8a9c3998327b0b4de68"
+          },
+          {
+            "apk_path": "usr/bin/ldconfig",
+            "native_paths": [
+              "/usr/bin/ldconfig"
+            ],
+            "sha256": "ca3f963ece5d6dc7c7f2d242ae414254c698d031f9e1b331088afc9b5c189c4f"
+          },
+          {
+            "apk_path": "usr/lib/libBrokenLocale.so.1",
+            "native_paths": [
+              "/usr/lib/libBrokenLocale.so.1"
+            ],
+            "sha256": "b3c0c29c24b4b004b7933418c4b4d88ba2e4f710c4cd1256de715f5c99a71aef"
+          },
+          {
+            "apk_path": "usr/lib/libanl.so.1",
+            "native_paths": [
+              "/usr/lib/libanl.so.1"
+            ],
+            "sha256": "53a457d703b38f8f93e40c18f8c9d3eb857cbd32af0e8d0d114a1e7572bd41dc"
+          },
+          {
+            "apk_path": "usr/lib/libc.so.6",
+            "native_paths": [
+              "/usr/lib/libc.so.6"
+            ],
+            "sha256": "fec137bdeecab9eae7a6f0a00a10805f51631b17d6191e7c6e2d6eef2de70a2c"
+          },
+          {
+            "apk_path": "usr/lib/libc_malloc_debug.so.0",
+            "native_paths": [
+              "/usr/lib/libc_malloc_debug.so.0"
+            ],
+            "sha256": "2f83c64dd06fe2d97b64569994f1b713f8554a43225d185dec0ec7c0ad523df5"
+          },
+          {
+            "apk_path": "usr/lib/libdl.so.2",
+            "native_paths": [
+              "/usr/lib/libdl.so.2"
+            ],
+            "sha256": "88fe6647e29c63fc7e3500db5233ed8108631390412ea54a7760f2652e31a971"
+          },
+          {
+            "apk_path": "usr/lib/libm.so.6",
+            "native_paths": [
+              "/usr/lib/libm.so.6"
+            ],
+            "sha256": "0535a22f8a7538a14148369d87d27b574461d993509aee0422e4d1f07daef4f5"
+          },
+          {
+            "apk_path": "usr/lib/libmemusage.so",
+            "native_paths": [
+              "/usr/lib/libmemusage.so"
+            ],
+            "sha256": "d04e96754c6fa30c1256305aa447f8866825ef7367b9862760d552e90cfa7348"
+          },
+          {
+            "apk_path": "usr/lib/libmvec.so.1",
+            "native_paths": [
+              "/usr/lib/libmvec.so.1"
+            ],
+            "sha256": "aa626007ca6b7161517b280f6267a2c1079803f05136073a424ff640b50fe03b"
+          },
+          {
+            "apk_path": "usr/lib/libnsl.so.1",
+            "native_paths": [
+              "/usr/lib/libnsl.so.1"
+            ],
+            "sha256": "be9075f5733cd29f2accac17f7a900b6b595aec5b908cac3aab6d60e357d98d6"
+          },
+          {
+            "apk_path": "usr/lib/libnss_compat.so.2",
+            "native_paths": [
+              "/usr/lib/libnss_compat.so.2"
+            ],
+            "sha256": "ec344576297d78483992981a8566bfdfcc074fe2679fbaef2b976c168e56b39f"
+          },
+          {
+            "apk_path": "usr/lib/libnss_dns.so.2",
+            "native_paths": [
+              "/usr/lib/libnss_dns.so.2"
+            ],
+            "sha256": "5f13a4ea01b4c4c5f8c08e5c25052f05ee703c6ddfb9784395f806e7ed233ffe"
+          },
+          {
+            "apk_path": "usr/lib/libnss_files.so.2",
+            "native_paths": [
+              "/usr/lib/libnss_files.so.2"
+            ],
+            "sha256": "2e908daa66dca55f289c12e3bdd1767691d20d823519b5bec9dc46cec90407a9"
+          },
+          {
+            "apk_path": "usr/lib/libpthread.so.0",
+            "native_paths": [
+              "/usr/lib/libpthread.so.0"
+            ],
+            "sha256": "bc4a4d962c91b8899d600d788afdbf7a26948e9e0828a01a00c6f8cdc5485e92"
+          },
+          {
+            "apk_path": "usr/lib/libresolv.so.2",
+            "native_paths": [
+              "/usr/lib/libresolv.so.2"
+            ],
+            "sha256": "ec8b7f3f0d7e3715d9252868547dc579ee6cda36caa14b4b10945e19cdb761a5"
+          },
+          {
+            "apk_path": "usr/lib/librt.so.1",
+            "native_paths": [
+              "/usr/lib/librt.so.1"
+            ],
+            "sha256": "1b9866d089996cb5cb88435f98aea50ef58521768f3687d68249f7d6bd973d97"
+          },
+          {
+            "apk_path": "usr/lib/libthread_db.so.1",
+            "native_paths": [
+              "/usr/lib/libthread_db.so.1"
+            ],
+            "sha256": "b6e18fa1681b057489b3767e5b817f65cbdc3f22b59dbb0f16cf630f40c7a558"
+          },
+          {
+            "apk_path": "usr/lib/libutil.so.1",
+            "native_paths": [
+              "/usr/lib/libutil.so.1"
+            ],
+            "sha256": "caf218c7787c1a683e3b4a8f92fdde52455023d870b0174bba7a153b96f1a06a"
+          },
+          {
+            "apk_path": "var/lib/db/sbom/glibc-2.44-2.44-r19.spdx.json",
+            "native_paths": [
+              "/var/lib/db/sbom/glibc-2.44-2.44-r19.spdx.json"
+            ],
+            "sha256": "273e039f0cf2baebfb6b82f8d2d9462b63e1a3112dbb25d22d2ae4f33dbc4dbb"
+          }
+        ],
+        "origin": "glibc-2.44",
+        "package": "glibc-2.44",
+        "signature_verified": false,
+        "source_apk_sha256": "c674cadf778e5492a075e28beee2eee97bf4ec5c3496516701ba1c167f1a06f8",
+        "source_file": "amd64/glibc-2.44-source-2.44-r19.apk",
+        "source_manifest_files": 93,
+        "version": "2.44-r19"
+      },
+      {
+        "arch": "amd64",
+        "binary_apk_sha256": "89065dbd20ad17b589384709e05be7d02fdbd23bb22ff30e5f1289c29b707e47",
+        "license": "LGPL-2.1-or-later",
+        "native_payload_bindings": [
+          {
+            "apk_path": "usr/lib/locale/C.utf8/LC_ADDRESS",
+            "native_paths": [
+              "/usr/lib/locale/C.utf8/LC_ADDRESS"
+            ],
+            "sha256": "26e2800affab801cb36d4ff9625a95c3abceeda2b6553a7aecd0cfcf34c98099"
+          },
+          {
+            "apk_path": "usr/lib/locale/C.utf8/LC_COLLATE",
+            "native_paths": [
+              "/usr/lib/locale/C.utf8/LC_COLLATE"
+            ],
+            "sha256": "47a5f5359a8f324abc39d69a7f6241a2ac0e2fbbeae5b9c3a756e682b75d087b"
+          },
+          {
+            "apk_path": "usr/lib/locale/C.utf8/LC_CTYPE",
+            "native_paths": [
+              "/usr/lib/locale/C.utf8/LC_CTYPE"
+            ],
+            "sha256": "40680545df4f92443c15e7c6f51a7fdc9154ebedd9eff1ed5c48437039add365"
+          },
+          {
+            "apk_path": "usr/lib/locale/C.utf8/LC_IDENTIFICATION",
+            "native_paths": [
+              "/usr/lib/locale/C.utf8/LC_IDENTIFICATION"
+            ],
+            "sha256": "be5c6f4aa0cc2c05ab5ce3ed43c538cd7decbf97b42bc7c73f19414292f4dd4c"
+          },
+          {
+            "apk_path": "usr/lib/locale/C.utf8/LC_MEASUREMENT",
+            "native_paths": [
+              "/usr/lib/locale/C.utf8/LC_MEASUREMENT"
+            ],
+            "sha256": "bb14a6f2cbd5092a755e8f272079822d3e842620dd4542a8dfa1e5e72fc6115b"
+          },
+          {
+            "apk_path": "usr/lib/locale/C.utf8/LC_MESSAGES/SYS_LC_MESSAGES",
+            "native_paths": [
+              "/usr/lib/locale/C.utf8/LC_MESSAGES/SYS_LC_MESSAGES"
+            ],
+            "sha256": "f9ad02f1d8eba721d4cbd50c365b5c681c39aec008f90bfc2be2dc80bfbaddcb"
+          },
+          {
+            "apk_path": "usr/lib/locale/C.utf8/LC_MONETARY",
+            "native_paths": [
+              "/usr/lib/locale/C.utf8/LC_MONETARY"
+            ],
+            "sha256": "bfd9e9975443b834582493fe9a8d7aefcd989376789c17470a1e548aee76fd55"
+          },
+          {
+            "apk_path": "usr/lib/locale/C.utf8/LC_NAME",
+            "native_paths": [
+              "/usr/lib/locale/C.utf8/LC_NAME"
+            ],
+            "sha256": "14507aad9f806112e464b9ca94c93b2e4d759ddc612b5f87922d7cac7170697d"
+          },
+          {
+            "apk_path": "usr/lib/locale/C.utf8/LC_NUMERIC",
+            "native_paths": [
+              "/usr/lib/locale/C.utf8/LC_NUMERIC"
+            ],
+            "sha256": "f5976e6b3e6b24dfe03caad6a5b98d894d8110d8bd15507e690fd60fd3e04ab2"
+          },
+          {
+            "apk_path": "usr/lib/locale/C.utf8/LC_PAPER",
+            "native_paths": [
+              "/usr/lib/locale/C.utf8/LC_PAPER"
+            ],
+            "sha256": "cde048b81e2a026517cc707c906aebbd50f5ee3957b6f0c1c04699dffcb7c015"
+          },
+          {
+            "apk_path": "usr/lib/locale/C.utf8/LC_TELEPHONE",
+            "native_paths": [
+              "/usr/lib/locale/C.utf8/LC_TELEPHONE"
+            ],
+            "sha256": "f4caf0d12844219b65ba42edc7ec2f5ac1b2fc36a3c88c28887457275daca1ee"
+          },
+          {
+            "apk_path": "usr/lib/locale/C.utf8/LC_TIME",
+            "native_paths": [
+              "/usr/lib/locale/C.utf8/LC_TIME"
+            ],
+            "sha256": "0910b595d1d5d4e52cc0f415bbb1ff07c015d6860d34aae02505dd9973a63154"
+          },
+          {
+            "apk_path": "var/lib/db/sbom/glibc-2.44-locale-posix-2.44-r19.spdx.json",
+            "native_paths": [
+              "/var/lib/db/sbom/glibc-2.44-locale-posix-2.44-r19.spdx.json"
+            ],
+            "sha256": "0018be4852dfae18d1cc8eec274b0f23fa5f4661e982b89bd4ac542518a7353c"
+          }
+        ],
+        "origin": "glibc-2.44",
+        "package": "glibc-2.44-locale-posix",
+        "signature_verified": false,
+        "source_apk_sha256": "c674cadf778e5492a075e28beee2eee97bf4ec5c3496516701ba1c167f1a06f8",
+        "source_file": "amd64/glibc-2.44-source-2.44-r19.apk",
+        "source_manifest_files": 93,
+        "version": "2.44-r19"
+      },
+      {
+        "arch": "amd64",
+        "binary_apk_sha256": "b0523bda528d133c5783f454df07d2e1c106aa580ebef416d295c2a4a25fbcb1",
+        "license": "LGPL-2.1-or-later",
+        "native_payload_bindings": [
+          {
+            "apk_path": "etc/ld.so.conf",
+            "native_paths": [
+              "/etc/ld.so.conf"
+            ],
+            "sha256": "27d7ebd402e1b9a20fd3a0663ccc10e1b1feff2d9dfb1ad7dd12bb76cfe0880a"
+          },
+          {
+            "apk_path": "etc/ld.so.conf.d/libc.conf",
+            "native_paths": [
+              "/etc/ld.so.conf.d/libc.conf"
+            ],
+            "sha256": "bb79854205e3e21969d710c2a2b8ea262a7627852f2226cdfe1cb7c72feb7d2d"
+          },
+          {
+            "apk_path": "usr/lib/ld-linux-x86-64.so.2",
+            "native_paths": [
+              "/usr/lib/ld-linux-x86-64.so.2"
+            ],
+            "sha256": "e83a2d344cbc13bfb2e73ca964109bab1bdaed2e8ec8c347e1ed30ca28727d99"
+          },
+          {
+            "apk_path": "var/lib/db/sbom/ld-linux-2.44-2.44-r19.spdx.json",
+            "native_paths": [
+              "/var/lib/db/sbom/ld-linux-2.44-2.44-r19.spdx.json"
+            ],
+            "sha256": "dc689b8fb39fc347bbaa6a305c528778b19aa3440f573d8ce228664647f52b52"
+          }
+        ],
+        "origin": "glibc-2.44",
+        "package": "ld-linux-2.44",
+        "signature_verified": false,
+        "source_apk_sha256": "c674cadf778e5492a075e28beee2eee97bf4ec5c3496516701ba1c167f1a06f8",
+        "source_file": "amd64/glibc-2.44-source-2.44-r19.apk",
+        "source_manifest_files": 93,
+        "version": "2.44-r19"
+      },
+      {
+        "arch": "amd64",
+        "binary_apk_sha256": "12d9b6de31d372fe4a53d011ee824cc8481837d878c922a755d1952ec09457cf",
+        "license": "GPL-3.0-or-later WITH GCC-exception-3.1",
+        "native_payload_bindings": [
+          {
+            "apk_path": "usr/lib/libgcc_s.so.1",
+            "native_paths": [
+              "/usr/lib/libgcc_s.so.1"
+            ],
+            "sha256": "1ef27e1ac1c341c971db87c4ff0bed18b440d0787a351aafc09bcd9ae1fa866d"
+          },
+          {
+            "apk_path": "usr/lib/libgcc_s_asneeded.so",
+            "native_paths": [
+              "/usr/lib/libgcc_s_asneeded.so"
+            ],
+            "sha256": "10bc094393cfacd92e7683eff066803c7c5bfd51ac8ee8eb7b57847a4c9b3ebb"
+          },
+          {
+            "apk_path": "var/lib/db/sbom/libgcc-16.2.0-r4.spdx.json",
+            "native_paths": [
+              "/var/lib/db/sbom/libgcc-16.2.0-r4.spdx.json"
+            ],
+            "sha256": "0e5bf229286509f1f942b30e194207fbc51933421cf6c9399185dbdf5e7347e6"
+          }
+        ],
+        "origin": "gcc",
+        "package": "libgcc",
+        "signature_verified": false,
+        "source_apk_sha256": "12f55cbe6af7174f03460dc14d62c383a29e3e0da70fcda4cedac987592678af",
+        "source_file": "amd64/gcc-source-16.2.0-r4.apk",
+        "source_manifest_files": 11,
+        "version": "16.2.0-r4"
+      },
+      {
+        "arch": "amd64",
+        "binary_apk_sha256": "ad298916551a0bed10c24b1fadb89f88318f502d08e3097a7c30eb28b0d5d7fd",
+        "license": "GPL-3.0-or-later WITH GCC-exception-3.1",
+        "native_payload_bindings": [
+          {
+            "apk_path": "usr/lib/libstdc++.so.6.0.36",
+            "native_paths": [
+              "/usr/lib/libstdc++.so.6.0.36"
+            ],
+            "sha256": "9732327a915bbb6597c254b3013b91697851a4c79dfe5810338fda08bb5f9663"
+          },
+          {
+            "apk_path": "usr/lib/libstdc++.so.6.0.36-gdb.py",
+            "native_paths": [
+              "/usr/lib/libstdc++.so.6.0.36-gdb.py"
+            ],
+            "sha256": "ec78b521663d8f18c301230dee5d4c950d04b3c07a872b068ad67bbc5bb5893f"
+          },
+          {
+            "apk_path": "var/lib/db/sbom/libstdc++-16.2.0-r4.spdx.json",
+            "native_paths": [
+              "/var/lib/db/sbom/libstdc++-16.2.0-r4.spdx.json"
+            ],
+            "sha256": "80b9a8d89c190668abab2e70bfab807487842acc1ddb76702e61b35a1c1bc587"
+          }
+        ],
+        "origin": "gcc",
+        "package": "libstdc++",
+        "signature_verified": false,
+        "source_apk_sha256": "12f55cbe6af7174f03460dc14d62c383a29e3e0da70fcda4cedac987592678af",
+        "source_file": "amd64/gcc-source-16.2.0-r4.apk",
+        "source_manifest_files": 11,
+        "version": "16.2.0-r4"
+      },
+      {
+        "apk_payload_path": "usr/lib/libpcre2-8.so.0.16.1",
+        "arch": "amd64",
+        "binary_apk_sha256": "54073b77b86ce384a05f8796c3f4b116a01742703240e9040dffc0e1856a0ef0",
+        "binary_package": "libpcre2-8-0",
+        "legal_files": [
+          {
+            "file": "permissive-legal/PCRE2-LICENCE.md",
+            "sha256": "197d8a73ffee0d6b09adba2f9c677b5f5aede24edf89258a68e48248d010d811",
+            "source": "https://raw.githubusercontent.com/PCRE2Project/pcre2/6f9d7c1373262c541324a16a358785b33ef116cf/LICENCE.md"
+          },
+          {
+            "file": "permissive-legal/PCRE2-COPYING.txt",
+            "sha256": "99272c55f3dcfa07a8a7e15a5c1a33096e4727de74241d65fa049fccfdd59507",
+            "source": "https://raw.githubusercontent.com/PCRE2Project/pcre2/6f9d7c1373262c541324a16a358785b33ef116cf/COPYING"
+          },
+          {
+            "file": "permissive-legal/PCRE2-AUTHORS.md",
+            "sha256": "412ace3355a4d6a4d835c350a7df172903811eafda7b13500dacf58429ee757e",
+            "source": "https://raw.githubusercontent.com/PCRE2Project/pcre2/6f9d7c1373262c541324a16a358785b33ef116cf/AUTHORS.md"
+          },
+          {
+            "file": "permissive-legal/SLJIT-LICENSE.txt",
+            "sha256": "5f216505c0f6ea3273caec89e766eef93cdeb7bbb0c429f9360116d7c938feeb",
+            "source": "https://raw.githubusercontent.com/zherczeg/sljit/de0259c7aaf36aa40cba8014f3fad3edde9307f9/LICENSE"
+          }
+        ],
+        "native_path": "/usr/lib/libpcre2-8.so.0",
+        "native_sha256": "87f418abb6e9ce99dd4dc2ec6a1d3c64a1c090597898a25b8e3974a6a309147f",
+        "origin": "pcre2",
+        "package": "pcre2",
+        "recipient_notice_delivery_complete": false,
+        "signature_verified": false,
+        "source_kind": "permissive upstream original notices; exact native library APK; missing companion retained as 404, not a GPL source-completeness claim",
+        "version": "10.49-r3"
+      },
+      {
+        "arch": "amd64",
+        "binary_apk_sha256": "fd26a08c81e3aa25b95540ef12e1418e5d60efaa561ceee378e840eb52d980f6",
+        "license": "MIT",
+        "native_payload_bindings": [
+          {
+            "apk_path": "etc/host.conf",
+            "native_paths": [
+              "/etc/host.conf"
+            ],
+            "sha256": "380f5fe21d755923b44203b58ca3c8b9681c485d152bd5d7e3914f67d821d32a"
+          },
+          {
+            "apk_path": "etc/hosts",
+            "native_paths": [
+              "/etc/hosts"
+            ],
+            "sha256": "e3998dbe02b51dada33de87ae43d18a93ab6915b9e34f5a751bf2b9b25a55492"
+          },
+          {
+            "apk_path": "etc/nsswitch.conf",
+            "native_paths": [
+              "/etc/nsswitch.conf"
+            ],
+            "sha256": "b0e81dd0825cba9e39affd4c64f86e3ab983bb731789f19819215c0eadeab7be"
+          },
+          {
+            "apk_path": "etc/os-release",
+            "native_paths": [
+              "/etc/os-release"
+            ],
+            "sha256": "8209665b39efdb89514d7cadc50b7ffc3e64dff2cd05736cb04ea078a1a9a24a"
+          },
+          {
+            "apk_path": "etc/profile",
+            "native_paths": [
+              "/etc/profile"
+            ],
+            "sha256": "24f1f6128f240648abb57b5b4a6f05ddeb65c73090b75bf1c879ed95f969a741"
+          },
+          {
+            "apk_path": "etc/profile.d/locale.sh",
+            "native_paths": [
+              "/etc/profile.d/locale.sh"
+            ],
+            "sha256": "84eb9034099d759ff08e6da5a731cacfc63a319547ad0f1dfc1c64853aca93f2"
+          },
+          {
+            "apk_path": "etc/protocols",
+            "native_paths": [
+              "/etc/protocols"
+            ],
+            "sha256": "a90a2be9c2a88be6fbfc1fc73ba76f34698377bb19513e5de503dbb0bfe13be1"
+          },
+          {
+            "apk_path": "etc/secfixes.d/wolfi",
+            "native_paths": [
+              "/etc/secfixes.d/wolfi"
+            ],
+            "sha256": "fe0d31329e650f504c836dc259f5509cbfe6431920bf4b2b5b1d75dd02083145"
+          },
+          {
+            "apk_path": "etc/services",
+            "native_paths": [
+              "/etc/services"
+            ],
+            "sha256": "2a0b38b5fb03512134c9d9cf2e73a8ab4cbc3f6de95ee19dfe4b290268109493"
+          },
+          {
+            "apk_path": "etc/shells",
+            "native_paths": [
+              "/etc/shells"
+            ],
+            "sha256": "35fa7f9244d299e08104d223b43e92d746dadb7d7b2d7df6281a60f675b0237d"
+          },
+          {
+            "apk_path": "var/lib/db/sbom/wolfi-baselayout-20230201-r31.spdx.json",
+            "native_paths": [
+              "/var/lib/db/sbom/wolfi-baselayout-20230201-r31.spdx.json"
+            ],
+            "sha256": "d464e18896cfd32ff3609d27eb15628a31a3f7bb191f97abc0d1f72e5b11a776"
+          }
+        ],
+        "origin": "wolfi-baselayout",
+        "package": "wolfi-baselayout",
+        "signature_verified": false,
+        "source_apk_sha256": "a1da40cd4aed275f2111feffda51752a3c6890c65b84eea82e4794816debf111",
+        "source_file": "amd64/wolfi-baselayout-source-20230201-r31.apk",
+        "source_manifest_files": 12,
+        "version": "20230201-r31"
+      },
+      {
+        "apk_payload_path": "usr/lib/libz.so.1.3.2.1-motley",
+        "arch": "amd64",
+        "binary_apk_sha256": "947816167a61ca87fd927cc87bf64cb1dcad91553274c51c7afccfb4bac65a29",
+        "binary_package": "zlib",
+        "legal_files": [
+          {
+            "file": "permissive-legal/ZLIB-LICENSE.txt",
+            "sha256": "e32ff4e00d9d94930537635291da39e7e612703334bf6fde8c7f1686fe8a45a2",
+            "source": "https://raw.githubusercontent.com/madler/zlib/767c4c947852e143f582c85f14cf573411df1b35/LICENSE"
+          },
+          {
+            "file": "permissive-legal/ZLIB-README.txt",
+            "sha256": "717b18319152b2682049a3cafb9c17d30128cdc800f92442ef1b91fb4787f615",
+            "source": "https://raw.githubusercontent.com/madler/zlib/767c4c947852e143f582c85f14cf573411df1b35/README"
+          }
+        ],
+        "native_path": "/usr/lib/libz.so.1",
+        "native_sha256": "8fb1d32cf5f067eeb5d5030ff5c2ec17eafb2074b1ded82eed4f3fea21672a2f",
+        "origin": "zlib",
+        "package": "zlib",
+        "recipient_notice_delivery_complete": false,
+        "signature_verified": false,
+        "source_kind": "permissive upstream original notices; exact native library APK; missing companion retained as 404, not a GPL source-completeness claim",
+        "version": "1.3.2.1_rc20260921-r2"
+      },
+      {
+        "apk_payload_path": "etc/ssl/certs/ca-certificates.crt",
+        "arch": "arm64",
+        "binary_apk_sha256": "d2a458ae71b3f6f65302a8dd61c35f75f3eef87aeb5583a3f97523e99698cf49",
+        "binary_package": "ca-certificates-bundle",
+        "legal_files": [],
+        "native_path": "/etc/ssl/certs/ca-certificates.crt",
+        "native_sha256": "5961c0a3c65459931c023e0075c09733f09aea4ca439cb85bc4a08bb4f3f568b",
+        "origin": "ca-certificates",
+        "package": "ca-certificates-bundle",
+        "recipient_notice_delivery_complete": false,
+        "signature_verified": false,
+        "source_kind": "unaltered editable PEM source data actually delivered in native image; MPL-2.0/MIT text and source instructions remain mandatory",
+        "version": "20261020-r0"
+      },
+      {
+        "arch": "arm64",
+        "binary_apk_sha256": "86983783d33873702dabf7baa835bd2537f4af05147fbdf0503a0080bb7e3e22",
+        "license": "GPL-2.0-or-later AND ( Artistic-1.0-Perl OR GPL-1.0-or-later )",
+        "native_payload_bindings": [
+          {
+            "apk_path": "usr/bin/git",
+            "native_paths": [
+              "/usr/bin/git"
+            ],
+            "sha256": "82666900bdd659e6a98c6f6e46fc0119426cf8955a02c9b7b8375d4ad159f256"
+          }
+        ],
+        "origin": "git",
+        "package": "git",
+        "signature_verified": false,
+        "source_apk_sha256": "a70aa18ac051d67f3e21fbcd1fb738fbe757cfd6035d9e6687e19d5b99f1ae96",
+        "source_file": "arm64/git-source-2.56.1-r1.apk",
+        "source_manifest_files": 9,
+        "version": "2.56.1-r1"
+      },
+      {
+        "arch": "arm64",
+        "binary_apk_sha256": "92db726acaa1c95edfe75db8f11cefc17eafcd26dac03e922e3f4820d1d8ee41",
+        "license": "LGPL-2.1-or-later",
+        "native_payload_bindings": [
+          {
+            "apk_path": "etc/apk/commit_hooks.d/ldconfig-commit.sh",
+            "native_paths": [
+              "/etc/apk/commit_hooks.d/ldconfig-commit.sh"
+            ],
+            "sha256": "3b7637d6b5e83fe60045d8bd6155b971503ba03f447f3670062368da8916227e"
+          },
+          {
+            "apk_path": "etc/rpc",
+            "native_paths": [
+              "/etc/rpc"
+            ],
+            "sha256": "3b24a975dcde688434258566813a83ce256a4c73efd7a8a9c3998327b0b4de68"
+          },
+          {
+            "apk_path": "usr/bin/ldconfig",
+            "native_paths": [
+              "/usr/bin/ldconfig"
+            ],
+            "sha256": "e584134b399121d25d4cef922c2e3fe62ae49751c3973a2b8c50dd14e5d05a42"
+          },
+          {
+            "apk_path": "usr/lib/libBrokenLocale.so.1",
+            "native_paths": [
+              "/usr/lib/libBrokenLocale.so.1"
+            ],
+            "sha256": "1543cb80ca0993d0544bd260ab080a48d44f01b9fe962294f72e2f17d91fd7da"
+          },
+          {
+            "apk_path": "usr/lib/libanl.so.1",
+            "native_paths": [
+              "/usr/lib/libanl.so.1"
+            ],
+            "sha256": "29ab71558c6ea879fc765379a5b7302d4642098fcbee35b648b8eb5fce729ca1"
+          },
+          {
+            "apk_path": "usr/lib/libc.so.6",
+            "native_paths": [
+              "/usr/lib/libc.so.6"
+            ],
+            "sha256": "f5dcdf990008f4e8e27f52d0ec85bb689b86c40b0030fcb4281c92f324de3b63"
+          },
+          {
+            "apk_path": "usr/lib/libc_malloc_debug.so.0",
+            "native_paths": [
+              "/usr/lib/libc_malloc_debug.so.0"
+            ],
+            "sha256": "12b64aa5fe75f3d6abe96bb946cc32ecddd3c59410b1bbc6457bf1473c55c8b2"
+          },
+          {
+            "apk_path": "usr/lib/libdl.so.2",
+            "native_paths": [
+              "/usr/lib/libdl.so.2"
+            ],
+            "sha256": "315b9b339b97e813d63064e9daed8f6059b71608d84e11e838978b7226859169"
+          },
+          {
+            "apk_path": "usr/lib/libm.so.6",
+            "native_paths": [
+              "/usr/lib/libm.so.6"
+            ],
+            "sha256": "eeb1a6048ebfa143e5c7e9e0e4d8810e3847d6b009cd884e5ae4f01bcb2265eb"
+          },
+          {
+            "apk_path": "usr/lib/libmemusage.so",
+            "native_paths": [
+              "/usr/lib/libmemusage.so"
+            ],
+            "sha256": "aebc64cea533c8f3df83e2aa1fa92701b1c9af5c350f54fef30b6b32374fd665"
+          },
+          {
+            "apk_path": "usr/lib/libmvec.so.1",
+            "native_paths": [
+              "/usr/lib/libmvec.so.1"
+            ],
+            "sha256": "4660d0eb82aebdcc94209ec36babb31b207122a2e4fd0c5e5e77a3bf0556d3b9"
+          },
+          {
+            "apk_path": "usr/lib/libnsl.so.1",
+            "native_paths": [
+              "/usr/lib/libnsl.so.1"
+            ],
+            "sha256": "a50ee860db6f88f54ee5acce717c607f27a1a02f20e74b7355bf289882f9b09e"
+          },
+          {
+            "apk_path": "usr/lib/libnss_compat.so.2",
+            "native_paths": [
+              "/usr/lib/libnss_compat.so.2"
+            ],
+            "sha256": "b8ab07c924064516c38eeda5165a31afb97ac116597ffd5d6314e89c6fcc4c3a"
+          },
+          {
+            "apk_path": "usr/lib/libnss_dns.so.2",
+            "native_paths": [
+              "/usr/lib/libnss_dns.so.2"
+            ],
+            "sha256": "78964b231ec4c27121029bedb1414cfd105ad271ccf3712340eaeca9e789a86f"
+          },
+          {
+            "apk_path": "usr/lib/libnss_files.so.2",
+            "native_paths": [
+              "/usr/lib/libnss_files.so.2"
+            ],
+            "sha256": "8ce2fb69124a2f2607b3968fc7635cb80d36099e6326700099df156315dec824"
+          },
+          {
+            "apk_path": "usr/lib/libpthread.so.0",
+            "native_paths": [
+              "/usr/lib/libpthread.so.0"
+            ],
+            "sha256": "e98c54a87def6f4d09460c03d8cd886508f4a7dd29742d1144a2aa8839d228a5"
+          },
+          {
+            "apk_path": "usr/lib/libresolv.so.2",
+            "native_paths": [
+              "/usr/lib/libresolv.so.2"
+            ],
+            "sha256": "91473e90801f67f1ee5b6ca5a7df4c2f0fa078316e28bceaa08c498ce5918367"
+          },
+          {
+            "apk_path": "usr/lib/librt.so.1",
+            "native_paths": [
+              "/usr/lib/librt.so.1"
+            ],
+            "sha256": "9f962944a0ced424d005c6abeab01be1b72807bac14c1c30499bfba8552b3287"
+          },
+          {
+            "apk_path": "usr/lib/libthread_db.so.1",
+            "native_paths": [
+              "/usr/lib/libthread_db.so.1"
+            ],
+            "sha256": "8206b7fe9d8936ca981231fd406dd03c3240e3d6380ad74d81f60b8d87adc250"
+          },
+          {
+            "apk_path": "usr/lib/libutil.so.1",
+            "native_paths": [
+              "/usr/lib/libutil.so.1"
+            ],
+            "sha256": "f2cba2e64c09a850322679bcd0a49b8f07be238c9989040f3930d7afa645fdfb"
+          },
+          {
+            "apk_path": "var/lib/db/sbom/glibc-2.44-2.44-r19.spdx.json",
+            "native_paths": [
+              "/var/lib/db/sbom/glibc-2.44-2.44-r19.spdx.json"
+            ],
+            "sha256": "6e5a02777889fe27180d8d6528f8e65e93f1fb0ccc525f6b9ab7f9a0dd58456c"
+          }
+        ],
+        "origin": "glibc-2.44",
+        "package": "glibc-2.44",
+        "signature_verified": false,
+        "source_apk_sha256": "c58a9f3a2d6148af133027d07902d953c83ff45e23057df0ae9f25ff3fbd0273",
+        "source_file": "arm64/glibc-2.44-source-2.44-r19.apk",
+        "source_manifest_files": 93,
+        "version": "2.44-r19"
+      },
+      {
+        "arch": "arm64",
+        "binary_apk_sha256": "c61d7f8211ba21008f27e1e4b3b186f579da30f336145577ea1e03b15a01827e",
+        "license": "LGPL-2.1-or-later",
+        "native_payload_bindings": [
+          {
+            "apk_path": "usr/lib/locale/C.utf8/LC_ADDRESS",
+            "native_paths": [
+              "/usr/lib/locale/C.utf8/LC_ADDRESS"
+            ],
+            "sha256": "26e2800affab801cb36d4ff9625a95c3abceeda2b6553a7aecd0cfcf34c98099"
+          },
+          {
+            "apk_path": "usr/lib/locale/C.utf8/LC_COLLATE",
+            "native_paths": [
+              "/usr/lib/locale/C.utf8/LC_COLLATE"
+            ],
+            "sha256": "47a5f5359a8f324abc39d69a7f6241a2ac0e2fbbeae5b9c3a756e682b75d087b"
+          },
+          {
+            "apk_path": "usr/lib/locale/C.utf8/LC_CTYPE",
+            "native_paths": [
+              "/usr/lib/locale/C.utf8/LC_CTYPE"
+            ],
+            "sha256": "40680545df4f92443c15e7c6f51a7fdc9154ebedd9eff1ed5c48437039add365"
+          },
+          {
+            "apk_path": "usr/lib/locale/C.utf8/LC_IDENTIFICATION",
+            "native_paths": [
+              "/usr/lib/locale/C.utf8/LC_IDENTIFICATION"
+            ],
+            "sha256": "be5c6f4aa0cc2c05ab5ce3ed43c538cd7decbf97b42bc7c73f19414292f4dd4c"
+          },
+          {
+            "apk_path": "usr/lib/locale/C.utf8/LC_MEASUREMENT",
+            "native_paths": [
+              "/usr/lib/locale/C.utf8/LC_MEASUREMENT"
+            ],
+            "sha256": "bb14a6f2cbd5092a755e8f272079822d3e842620dd4542a8dfa1e5e72fc6115b"
+          },
+          {
+            "apk_path": "usr/lib/locale/C.utf8/LC_MESSAGES/SYS_LC_MESSAGES",
+            "native_paths": [
+              "/usr/lib/locale/C.utf8/LC_MESSAGES/SYS_LC_MESSAGES"
+            ],
+            "sha256": "f9ad02f1d8eba721d4cbd50c365b5c681c39aec008f90bfc2be2dc80bfbaddcb"
+          },
+          {
+            "apk_path": "usr/lib/locale/C.utf8/LC_MONETARY",
+            "native_paths": [
+              "/usr/lib/locale/C.utf8/LC_MONETARY"
+            ],
+            "sha256": "bfd9e9975443b834582493fe9a8d7aefcd989376789c17470a1e548aee76fd55"
+          },
+          {
+            "apk_path": "usr/lib/locale/C.utf8/LC_NAME",
+            "native_paths": [
+              "/usr/lib/locale/C.utf8/LC_NAME"
+            ],
+            "sha256": "14507aad9f806112e464b9ca94c93b2e4d759ddc612b5f87922d7cac7170697d"
+          },
+          {
+            "apk_path": "usr/lib/locale/C.utf8/LC_NUMERIC",
+            "native_paths": [
+              "/usr/lib/locale/C.utf8/LC_NUMERIC"
+            ],
+            "sha256": "f5976e6b3e6b24dfe03caad6a5b98d894d8110d8bd15507e690fd60fd3e04ab2"
+          },
+          {
+            "apk_path": "usr/lib/locale/C.utf8/LC_PAPER",
+            "native_paths": [
+              "/usr/lib/locale/C.utf8/LC_PAPER"
+            ],
+            "sha256": "cde048b81e2a026517cc707c906aebbd50f5ee3957b6f0c1c04699dffcb7c015"
+          },
+          {
+            "apk_path": "usr/lib/locale/C.utf8/LC_TELEPHONE",
+            "native_paths": [
+              "/usr/lib/locale/C.utf8/LC_TELEPHONE"
+            ],
+            "sha256": "f4caf0d12844219b65ba42edc7ec2f5ac1b2fc36a3c88c28887457275daca1ee"
+          },
+          {
+            "apk_path": "usr/lib/locale/C.utf8/LC_TIME",
+            "native_paths": [
+              "/usr/lib/locale/C.utf8/LC_TIME"
+            ],
+            "sha256": "0910b595d1d5d4e52cc0f415bbb1ff07c015d6860d34aae02505dd9973a63154"
+          },
+          {
+            "apk_path": "var/lib/db/sbom/glibc-2.44-locale-posix-2.44-r19.spdx.json",
+            "native_paths": [
+              "/var/lib/db/sbom/glibc-2.44-locale-posix-2.44-r19.spdx.json"
+            ],
+            "sha256": "c54bf6e714c43eb70778a427f35eb8569b2fd8f49cdd2e0a7da1c0117e86b103"
+          }
+        ],
+        "origin": "glibc-2.44",
+        "package": "glibc-2.44-locale-posix",
+        "signature_verified": false,
+        "source_apk_sha256": "c58a9f3a2d6148af133027d07902d953c83ff45e23057df0ae9f25ff3fbd0273",
+        "source_file": "arm64/glibc-2.44-source-2.44-r19.apk",
+        "source_manifest_files": 93,
+        "version": "2.44-r19"
+      },
+      {
+        "arch": "arm64",
+        "binary_apk_sha256": "def1ff9f13620d83e0b1bb9219c001c038702da4da05df1135e6c165f36af692",
+        "license": "LGPL-2.1-or-later",
+        "native_payload_bindings": [
+          {
+            "apk_path": "etc/ld.so.conf",
+            "native_paths": [
+              "/etc/ld.so.conf"
+            ],
+            "sha256": "27d7ebd402e1b9a20fd3a0663ccc10e1b1feff2d9dfb1ad7dd12bb76cfe0880a"
+          },
+          {
+            "apk_path": "etc/ld.so.conf.d/libc.conf",
+            "native_paths": [
+              "/etc/ld.so.conf.d/libc.conf"
+            ],
+            "sha256": "bb79854205e3e21969d710c2a2b8ea262a7627852f2226cdfe1cb7c72feb7d2d"
+          },
+          {
+            "apk_path": "usr/lib/ld-linux-aarch64.so.1",
+            "native_paths": [
+              "/usr/lib/ld-linux-aarch64.so.1"
+            ],
+            "sha256": "7081b3b1930272fda14d2d55301187ba3d96f75be1a6a0cb6c71cf09f4801a05"
+          },
+          {
+            "apk_path": "var/lib/db/sbom/ld-linux-2.44-2.44-r19.spdx.json",
+            "native_paths": [
+              "/var/lib/db/sbom/ld-linux-2.44-2.44-r19.spdx.json"
+            ],
+            "sha256": "f73b3ce9dc760676052b610cdbc9937339369092dd15e316591a2a4d78c1bb62"
+          }
+        ],
+        "origin": "glibc-2.44",
+        "package": "ld-linux-2.44",
+        "signature_verified": false,
+        "source_apk_sha256": "c58a9f3a2d6148af133027d07902d953c83ff45e23057df0ae9f25ff3fbd0273",
+        "source_file": "arm64/glibc-2.44-source-2.44-r19.apk",
+        "source_manifest_files": 93,
+        "version": "2.44-r19"
+      },
+      {
+        "arch": "arm64",
+        "binary_apk_sha256": "7d5a3fc3a9ee55bd299f1368812af89253e0ba4da5608269b4347cdacc732b53",
+        "license": "GPL-3.0-or-later WITH GCC-exception-3.1",
+        "native_payload_bindings": [
+          {
+            "apk_path": "usr/lib/libgcc_s.so.1",
+            "native_paths": [
+              "/usr/lib/libgcc_s.so.1"
+            ],
+            "sha256": "3cbdf7fca6aac470ee09d3e4509a8fd61c49d19f8b622ba1e9c6262f73dba61a"
+          },
+          {
+            "apk_path": "usr/lib/libgcc_s_asneeded.so",
+            "native_paths": [
+              "/usr/lib/libgcc_s_asneeded.so"
+            ],
+            "sha256": "10bc094393cfacd92e7683eff066803c7c5bfd51ac8ee8eb7b57847a4c9b3ebb"
+          },
+          {
+            "apk_path": "var/lib/db/sbom/libgcc-16.2.0-r4.spdx.json",
+            "native_paths": [
+              "/var/lib/db/sbom/libgcc-16.2.0-r4.spdx.json"
+            ],
+            "sha256": "63f6568604498640f269f03f59caf4093f9addd6dd270aa09651ebd5020fe1b5"
+          }
+        ],
+        "origin": "gcc",
+        "package": "libgcc",
+        "signature_verified": false,
+        "source_apk_sha256": "07564e47fb603301ee2cc0647a57ddb44363926a09233b85755178f22f0270e4",
+        "source_file": "arm64/gcc-source-16.2.0-r4.apk",
+        "source_manifest_files": 11,
+        "version": "16.2.0-r4"
+      },
+      {
+        "arch": "arm64",
+        "binary_apk_sha256": "32024a90b89fdf4e72a4aa7df0df5d7f8d180a485f47f3622639551e213d6179",
+        "license": "GPL-3.0-or-later WITH GCC-exception-3.1",
+        "native_payload_bindings": [
+          {
+            "apk_path": "usr/lib/libstdc++.so.6.0.36",
+            "native_paths": [
+              "/usr/lib/libstdc++.so.6.0.36"
+            ],
+            "sha256": "ee8691cb1b08c9e417e173ad399838635e4dffd8ef7bd58f2444f0cea7d09057"
+          },
+          {
+            "apk_path": "usr/lib/libstdc++.so.6.0.36-gdb.py",
+            "native_paths": [
+              "/usr/lib/libstdc++.so.6.0.36-gdb.py"
+            ],
+            "sha256": "ec78b521663d8f18c301230dee5d4c950d04b3c07a872b068ad67bbc5bb5893f"
+          },
+          {
+            "apk_path": "var/lib/db/sbom/libstdc++-16.2.0-r4.spdx.json",
+            "native_paths": [
+              "/var/lib/db/sbom/libstdc++-16.2.0-r4.spdx.json"
+            ],
+            "sha256": "b4ef534581ae178ff5ffa6785a26a12369ad4132f8b248951fb837b4bd77e117"
+          }
+        ],
+        "origin": "gcc",
+        "package": "libstdc++",
+        "signature_verified": false,
+        "source_apk_sha256": "07564e47fb603301ee2cc0647a57ddb44363926a09233b85755178f22f0270e4",
+        "source_file": "arm64/gcc-source-16.2.0-r4.apk",
+        "source_manifest_files": 11,
+        "version": "16.2.0-r4"
+      },
+      {
+        "apk_payload_path": "usr/lib/libpcre2-8.so.0.16.1",
+        "arch": "arm64",
+        "binary_apk_sha256": "0c17912d6cc6dd7f334b8c2c6382134b3623fe6b5f14938ff1aed430dc7628c4",
+        "binary_package": "libpcre2-8-0",
+        "legal_files": [
+          {
+            "file": "permissive-legal/PCRE2-LICENCE.md",
+            "sha256": "197d8a73ffee0d6b09adba2f9c677b5f5aede24edf89258a68e48248d010d811",
+            "source": "https://raw.githubusercontent.com/PCRE2Project/pcre2/6f9d7c1373262c541324a16a358785b33ef116cf/LICENCE.md"
+          },
+          {
+            "file": "permissive-legal/PCRE2-COPYING.txt",
+            "sha256": "99272c55f3dcfa07a8a7e15a5c1a33096e4727de74241d65fa049fccfdd59507",
+            "source": "https://raw.githubusercontent.com/PCRE2Project/pcre2/6f9d7c1373262c541324a16a358785b33ef116cf/COPYING"
+          },
+          {
+            "file": "permissive-legal/PCRE2-AUTHORS.md",
+            "sha256": "412ace3355a4d6a4d835c350a7df172903811eafda7b13500dacf58429ee757e",
+            "source": "https://raw.githubusercontent.com/PCRE2Project/pcre2/6f9d7c1373262c541324a16a358785b33ef116cf/AUTHORS.md"
+          },
+          {
+            "file": "permissive-legal/SLJIT-LICENSE.txt",
+            "sha256": "5f216505c0f6ea3273caec89e766eef93cdeb7bbb0c429f9360116d7c938feeb",
+            "source": "https://raw.githubusercontent.com/zherczeg/sljit/de0259c7aaf36aa40cba8014f3fad3edde9307f9/LICENSE"
+          }
+        ],
+        "native_path": "/usr/lib/libpcre2-8.so.0",
+        "native_sha256": "97d0496f9febacd633d6b8fe37d7a86649d1d421fedeaa571280a2f9f8430f92",
+        "origin": "pcre2",
+        "package": "pcre2",
+        "recipient_notice_delivery_complete": false,
+        "signature_verified": false,
+        "source_kind": "permissive upstream original notices; exact native library APK; missing companion retained as 404, not a GPL source-completeness claim",
+        "version": "10.49-r3"
+      },
+      {
+        "arch": "arm64",
+        "binary_apk_sha256": "c0952e61400170d6e9925d70be7d3c5161b266ac942818a992f71d94078c8571",
+        "license": "MIT",
+        "native_payload_bindings": [
+          {
+            "apk_path": "etc/host.conf",
+            "native_paths": [
+              "/etc/host.conf"
+            ],
+            "sha256": "380f5fe21d755923b44203b58ca3c8b9681c485d152bd5d7e3914f67d821d32a"
+          },
+          {
+            "apk_path": "etc/hosts",
+            "native_paths": [
+              "/etc/hosts"
+            ],
+            "sha256": "e3998dbe02b51dada33de87ae43d18a93ab6915b9e34f5a751bf2b9b25a55492"
+          },
+          {
+            "apk_path": "etc/nsswitch.conf",
+            "native_paths": [
+              "/etc/nsswitch.conf"
+            ],
+            "sha256": "b0e81dd0825cba9e39affd4c64f86e3ab983bb731789f19819215c0eadeab7be"
+          },
+          {
+            "apk_path": "etc/os-release",
+            "native_paths": [
+              "/etc/os-release"
+            ],
+            "sha256": "8209665b39efdb89514d7cadc50b7ffc3e64dff2cd05736cb04ea078a1a9a24a"
+          },
+          {
+            "apk_path": "etc/profile",
+            "native_paths": [
+              "/etc/profile"
+            ],
+            "sha256": "24f1f6128f240648abb57b5b4a6f05ddeb65c73090b75bf1c879ed95f969a741"
+          },
+          {
+            "apk_path": "etc/profile.d/locale.sh",
+            "native_paths": [
+              "/etc/profile.d/locale.sh"
+            ],
+            "sha256": "84eb9034099d759ff08e6da5a731cacfc63a319547ad0f1dfc1c64853aca93f2"
+          },
+          {
+            "apk_path": "etc/protocols",
+            "native_paths": [
+              "/etc/protocols"
+            ],
+            "sha256": "a90a2be9c2a88be6fbfc1fc73ba76f34698377bb19513e5de503dbb0bfe13be1"
+          },
+          {
+            "apk_path": "etc/secfixes.d/wolfi",
+            "native_paths": [
+              "/etc/secfixes.d/wolfi"
+            ],
+            "sha256": "fe0d31329e650f504c836dc259f5509cbfe6431920bf4b2b5b1d75dd02083145"
+          },
+          {
+            "apk_path": "etc/services",
+            "native_paths": [
+              "/etc/services"
+            ],
+            "sha256": "2a0b38b5fb03512134c9d9cf2e73a8ab4cbc3f6de95ee19dfe4b290268109493"
+          },
+          {
+            "apk_path": "etc/shells",
+            "native_paths": [
+              "/etc/shells"
+            ],
+            "sha256": "35fa7f9244d299e08104d223b43e92d746dadb7d7b2d7df6281a60f675b0237d"
+          },
+          {
+            "apk_path": "var/lib/db/sbom/wolfi-baselayout-20230201-r31.spdx.json",
+            "native_paths": [
+              "/var/lib/db/sbom/wolfi-baselayout-20230201-r31.spdx.json"
+            ],
+            "sha256": "917156d7cc8f457ff7529a165fc90695ba61b938b29cc4ace1266a8512191db1"
+          }
+        ],
+        "origin": "wolfi-baselayout",
+        "package": "wolfi-baselayout",
+        "signature_verified": false,
+        "source_apk_sha256": "902fc22a76f11e1a5a0cf9960196c91137fa5ece6d1bafca8126f3ff2b1bbabe",
+        "source_file": "arm64/wolfi-baselayout-source-20230201-r31.apk",
+        "source_manifest_files": 12,
+        "version": "20230201-r31"
+      },
+      {
+        "apk_payload_path": "usr/lib/libz.so.1.3.2.1-motley",
+        "arch": "arm64",
+        "binary_apk_sha256": "502aa515f6ae6622051cc36c45a8ef72a34466d7f0819207af94ba0471a2e6b3",
+        "binary_package": "zlib",
+        "legal_files": [
+          {
+            "file": "permissive-legal/ZLIB-LICENSE.txt",
+            "sha256": "e32ff4e00d9d94930537635291da39e7e612703334bf6fde8c7f1686fe8a45a2",
+            "source": "https://raw.githubusercontent.com/madler/zlib/767c4c947852e143f582c85f14cf573411df1b35/LICENSE"
+          },
+          {
+            "file": "permissive-legal/ZLIB-README.txt",
+            "sha256": "717b18319152b2682049a3cafb9c17d30128cdc800f92442ef1b91fb4787f615",
+            "source": "https://raw.githubusercontent.com/madler/zlib/767c4c947852e143f582c85f14cf573411df1b35/README"
+          }
+        ],
+        "native_path": "/usr/lib/libz.so.1",
+        "native_sha256": "aaada028e5e7a3c51489776d4bf85a40b003c7eed971ad0bfeae04f0ce55743d",
+        "origin": "zlib",
+        "package": "zlib",
+        "recipient_notice_delivery_complete": false,
+        "signature_verified": false,
+        "source_kind": "permissive upstream original notices; exact native library APK; missing companion retained as 404, not a GPL source-completeness claim",
+        "version": "1.3.2.1_rc20260921-r2"
+      }
+    ],
+    "recipient_delivery": "not-yet-implemented",
+    "redistribution_approved": false,
+    "schema": 1,
+    "signature_verification": "not-established; HTTPS/hash/native-byte-bound source observations only"
+  },
+  "observation_sha256": "dea1d687cb664ca4b00455b856d7bfa4273faea8917ef2d1684d0858f85d7513",
+  "original_legal_files": [
+    {
+      "bytes": 18765,
+      "sha256": "5b2198d1645f767585e8a88ac0499b04472164c0d2da22e75ecf97ef443ab32e",
+      "source": "Git v2.56.1 / COPYING; same bytes as fixed runtime license"
+    },
+    {
+      "bytes": 26419,
+      "sha256": "20e50fe7aae3e56378ebf0417d9de904f55a0e61e4df315333e632a4d3555d95",
+      "source": "Exact glibc source companion / upstream git438677ef498552b28c2060060c9e3947373f1e2c / COPYING.LESSERv2; COPYING.LIB is its symlink"
+    },
+    {
+      "bytes": 17984,
+      "sha256": "edaef632cbb643e4e7a221717a6c441a4c1a7c918e6e4d56debc3d8739b233f6",
+      "source": "Exact glibc source companion / upstream git438677ef498552b28c2060060c9e3947373f1e2c / COPYINGv2"
+    },
+    {
+      "bytes": 35149,
+      "sha256": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986",
+      "source": "Exact glibc source companion / upstream git438677ef498552b28c2060060c9e3947373f1e2c / COPYINGv3"
+    },
+    {
+      "bytes": 19665,
+      "sha256": "b22a69aa3f80a5201818c66cb0df0f25f9fa13cf5861b0093a058dbd12d50dce",
+      "source": "Exact glibc source companion / upstream git438677ef498552b28c2060060c9e3947373f1e2c / LICENSES; failed public mirror route not used"
+    },
+    {
+      "bytes": 35147,
+      "sha256": "8ceb4b9ee5adedde47b31e975c1d90c73ad27b6b165a1dcd80c7c545eb65b903",
+      "source": "GCC source git78d4ac73dd391005b895a6148cd9831e28e1208b / COPYING3"
+    },
+    {
+      "bytes": 3324,
+      "sha256": "9d6b43ce4d8de0c878bf16b54d8e7a10d9bd42b75178153e3af6a815bdc90f74",
+      "source": "GCC source git78d4ac73dd391005b895a6148cd9831e28e1208b / COPYING.RUNTIME"
+    },
+    {
+      "bytes": 4011,
+      "sha256": "197d8a73ffee0d6b09adba2f9c677b5f5aede24edf89258a68e48248d010d811",
+      "source": "PCRE2 source6f9d7c1373262c541324a16a358785b33ef116cf / LICENCE.md"
+    },
+    {
+      "bytes": 97,
+      "sha256": "99272c55f3dcfa07a8a7e15a5c1a33096e4727de74241d65fa049fccfdd59507",
+      "source": "PCRE2 source6f9d7c1373262c541324a16a358785b33ef116cf / COPYING"
+    },
+    {
+      "bytes": 4232,
+      "sha256": "412ace3355a4d6a4d835c350a7df172903811eafda7b13500dacf58429ee757e",
+      "source": "PCRE2 source6f9d7c1373262c541324a16a358785b33ef116cf / AUTHORS.md"
+    },
+    {
+      "bytes": 1444,
+      "sha256": "5f216505c0f6ea3273caec89e766eef93cdeb7bbb0c429f9360116d7c938feeb",
+      "source": "PCRE2 SLJIT gitlink de0259c7aaf36aa40cba8014f3fad3edde9307f9 / LICENSE"
+    },
+    {
+      "bytes": 1002,
+      "sha256": "e32ff4e00d9d94930537635291da39e7e612703334bf6fde8c7f1686fe8a45a2",
+      "source": "zlib source767c4c947852e143f582c85f14cf573411df1b35 / LICENSE"
+    },
+    {
+      "bytes": 5295,
+      "sha256": "717b18319152b2682049a3cafb9c17d30128cdc800f92442ef1b91fb4787f615",
+      "source": "zlib source767c4c947852e143f582c85f14cf573411df1b35 / README"
+    },
+    {
+      "bytes": 51021,
+      "sha256": "378fef9d3e685a2ad1168283453781a01a66bd8ccc7e261e490340712bf18af4",
+      "source": "original reviewed static base legal/source material"
+    }
+  ],
+  "redistribution_approved": false,
+  "schema": 1,
+  "source_archive_delivery": "required; not yet verified in built image",
+  "source_capture_run": 43753305153,
+  "source_capture_sha": "8f3e46e8f4919a106ef0040b5daf1502fc5c20d2"
+}

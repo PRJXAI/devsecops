@@ -8,6 +8,14 @@ A separate arm64 source derivative uses Git **2.56.1-r1** and glibc **2.44-r19**
 
 This observation covers only two packages on arm64, not all retained runtime packages or both architectures. Standalone APK verification reported **UNTRUSTED**, and the current-index fetch did not select those exact versions; neither result is relabeled signature authentication. Trust remains the HTTPS supplier plus selected native-byte identity and binary-bound source hashes, not independent rebuild proof. Complete source/notice/recipient arrangements and dual-native qualification are still required; redistribution remains unapproved.
 
+## Current source-delivery candidate — 2026-11-15
+
+The fixed dual-native observation now covers all ten retained runtime package identities on each architecture. Git/glibc/GCC/baselayout binary-bound companion manifests and their original files verify. CA is exact native editable PEM source form; PCRE2 and zlib use exact native library APKs plus their vendor-recipe-bound upstream original notices (including the pinned SLJIT gitlink). Missing CA/PCRE2/zlib companion routes remain documented failures, not invented source archives. This does not establish independent vendor reproducibility or standalone APK signature trust.
+
+The candidate now stages **four complete selected-architecture source APKs (~223 MiB)** alongside the executable, plus **227,530 bytes** of original native/base legal material and an exact source index. Fixed Rust code permits only those eight architecture-specific source hashes; GCC retrieval uses checked ≤64 MiB ranges. The image recipe copies only the four explicit filenames, read-only. A mandatory stopped-filesystem contract requires every original archive byte/size/mode, native notice and source index without extraction, under unchanged archive/member/header bounds. Missing/changed/linked/extra sources fail; source assembly is not a passing release receipt.
+
+Physical candidate image qualification, complete all-layer native inventory/SCA, current profiles and the full dual-native workflow are still required. Readiness remains closed and no current Gitleaks image is published. The index collection-time approval remains false; a future artifact-specific material review must not infer success from file availability or these packaging changes.
+
 ## What is now established
 
 Public APKs are available at `https://apk.cgr.dev/chainguard/{x86_64,aarch64}/...` and the Wolfi mirror. Earlier requests to `packages.cgr.dev` and private recipe GitHub URLs did not locate these bytes. Each captured APK includes `.PKGINFO` and its expanded `.melange.yaml`, including resolved build-package versions, source pins, build options and nested pipeline commands. These were read as data, never executed.

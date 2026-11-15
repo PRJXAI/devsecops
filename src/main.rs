@@ -8,6 +8,8 @@ mod contracts;
 mod coverage;
 mod filesystem;
 #[cfg(test)]
+mod gitleaks_native_material;
+#[cfg(test)]
 mod gitleaks_source_capture;
 mod grype_contract;
 mod notices;

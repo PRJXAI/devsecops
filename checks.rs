@@ -102,13 +102,16 @@ mod tests {
     }
 
     fn narrow_copy(args: &str, stages: &BTreeSet<String>, tool: &str) -> bool {
-        // These two files exist only in Rust's private, verified fixed-source
-        // context. The complete Gitleaks recipe is additionally hash-bound below.
+        // Only these exact public payload/legal/source files enter Rust's private
+        // verified context. The complete recipe is additionally hash-bound below.
         if tool == "gitleaks"
             && matches!(
                 args,
                 "--chmod=0555 candidate /usr/local/bin/gitleaks"
                     | "--chmod=0444 go-notices.txt /usr/share/licenses/gitleaks/GO-NOTICES.txt"
+                    | "--chmod=0444 native-notices.txt /usr/share/licenses/gitleaks/NATIVE-NOTICES.txt"
+                    | "--chmod=0444 source-index.json /usr/share/licenses/gitleaks/SOURCE-INDEX.json"
+                    | "--chmod=0444 sources/gcc-source-16.2.0-r4.apk sources/git-source-2.56.1-r1.apk sources/glibc-2.44-source-2.44-r19.apk sources/wolfi-baselayout-source-20230201-r31.apk /usr/share/licenses/gitleaks/corresponding-source/"
             )
         {
             return true;
@@ -587,7 +590,7 @@ mod tests {
     }
 
     fn notice_attributes(bytes: &[u8]) -> bool {
-        bytes == b"# Preserve original upstream legal bytes, including CRLF and whitespace.\n# The packaged bundles remain subject to exact byte/hash/mode validation.\nlicenses/scanners/syft-NOTICES.txt -text -whitespace\nlicenses/scanners/grype-NOTICES.txt -text -whitespace\nlicenses/scanners/STATIC-BASE-NOTICES.txt -text -whitespace\nlicenses/gitleaks-go-notices/files/current-1.27.4-NOTICES.txt -text -whitespace\n"
+        bytes == b"# Preserve original upstream legal bytes, including CRLF and whitespace.\n# The packaged bundles remain subject to exact byte/hash/mode validation.\nlicenses/scanners/syft-NOTICES.txt -text -whitespace\nlicenses/scanners/grype-NOTICES.txt -text -whitespace\nlicenses/scanners/STATIC-BASE-NOTICES.txt -text -whitespace\nlicenses/gitleaks-go-notices/files/current-1.27.4-NOTICES.txt -text -whitespace\nlicenses/gitleaks-runtime-NOTICES.txt -text -whitespace\n"
     }
 
     fn rust_glue_file(folder: &Path, relative: &Path) -> bool {
@@ -724,7 +727,7 @@ mod tests {
             .iter()
             .map(|b| format!("{b:02x}"))
             .collect::<String>()
-            == "7b7afb6f316a0562d11928e1ebc13becd138d078e7f537a76eee961e84fa7761"
+            == "cb02297c04344f39d27fb04f4b4321b6c0a143e27fd2406fc42ad94a61bd90ef"
             && instructions(bytes).is_some()
             && instructions(bytes) == instructions(reviewed)
     }
@@ -741,6 +744,12 @@ mod tests {
                 "COPY --chmod=0444 licenses/",
             ),
             ("USER 65532:65532", "USER 0"),
+            (
+                "COPY --chmod=0444 native-notices.txt",
+                "COPY --chmod=0444 arbitrary",
+            ),
+            ("sources/gcc-source-16.2.0-r4.apk", "sources/arbitrary.apk"),
+            ("sources/git-source-2.56.1-r1.apk", "sources/*.apk"),
             ("WORKDIR /tmp", "RUN [\"sh\",\"-c\",\"true\"]\nWORKDIR /tmp"),
         ] {
             assert!(!docker_policy(&text.replace(old, new), "gitleaks"));
@@ -1128,7 +1137,7 @@ mod tests {
         }
     }
     #[test]
-    fn notice_attributes_only_preserve_four_exact_legal_bundles() {
+    fn notice_attributes_only_preserve_five_exact_legal_bundles() {
         let original = include_bytes!(".gitattributes");
         assert!(notice_attributes(original));
         for extra in [

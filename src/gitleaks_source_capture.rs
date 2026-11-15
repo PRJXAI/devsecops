@@ -46,8 +46,10 @@ fn inspect(reader: impl Read) -> Result<Files> {
         if total > 1024 * 1024 * 1024 || hashes.len() >= 100_000 {
             return Err("source capture budget exceeded");
         }
-        let keep = matches!(name.as_str(), ".PKGINFO" | ".source.sha256")
-            || name.ends_with("/SOURCES.sha256");
+        let keep = matches!(
+            name.as_str(),
+            ".PKGINFO" | ".source.sha256" | ".melange.yaml"
+        ) || name.ends_with("/SOURCES.sha256");
         if keep && size > 1024 * 1024 {
             return Err("source control byte limit");
         }
@@ -429,20 +431,20 @@ fn collect_current_gitleaks_native_sources_and_profile() -> Result<()> {
             {
                 return Err("unreviewed native APK package coordinate");
             }
-            let binary_path = arch_output.join(format!("{name}-{version}.apk"));
+            // ELF annotations name the PCRE origin, not its exact binary subpackage.
+            let binary_name = if name == "pcre2" {
+                "libpcre2-8-0"
+            } else {
+                name
+            };
+            let binary_path = arch_output.join(format!("{binary_name}-{version}.apk"));
             let source_path = arch_output.join(format!("{origin}-source-{version}.apk"));
-            // CA's exact companion returned 404. Its editable PEM source form
-            // needs separate native-byte/legal review, not an invented companion.
-            if origin == "ca-certificates" {
-                observations.push(json!({"arch":arch,"package":name,"version":version,"origin":origin,"status":"BLOCKED: exact preferred-source/legal review pending; no source companion inferred"}));
-                package_count += 1;
-                continue;
-            }
+            let permissive_data = origin == "ca-certificates" || matches!(name, "pcre2" | "zlib");
             for (file, coordinate) in [
-                (&binary_path, format!("{name}-{version}")),
+                (&binary_path, format!("{binary_name}-{version}")),
                 (&source_path, format!("{origin}-source-{version}")),
             ] {
-                if file.exists() {
+                if file.exists() || (permissive_data && file == &source_path) {
                     continue;
                 }
                 if coordinate == "gcc-source-16.2.0-r4" {
@@ -476,10 +478,6 @@ fn collect_current_gitleaks_native_sources_and_profile() -> Result<()> {
                 driver.execute(command, 190, false, 0)?;
             }
             let binary = apk(&binary_path)?;
-            if !sources.contains_key(origin) {
-                sources.insert(origin.into(), apk(&source_path)?);
-            }
-            let source = &sources[origin];
             let info = std::str::from_utf8(
                 binary
                     .texts
@@ -488,7 +486,7 @@ fn collect_current_gitleaks_native_sources_and_profile() -> Result<()> {
             )
             .map_err(|_| "invalid package info")?;
             for line in [
-                format!("pkgname = {name}"),
+                format!("pkgname = {binary_name}"),
                 format!("pkgver = {version}"),
                 format!("origin = {origin}"),
                 format!("arch = {supplier_arch}"),
@@ -497,6 +495,127 @@ fn collect_current_gitleaks_native_sources_and_profile() -> Result<()> {
                     return Err("binary package identity differs from native capture");
                 }
             }
+            if permissive_data {
+                let selected = if name == "pcre2" {
+                    "/usr/lib/libpcre2-8.so.0"
+                } else if name == "zlib" {
+                    "/usr/lib/libz.so.1"
+                } else {
+                    "/etc/ssl/certs/ca-certificates.crt"
+                };
+                let (digest, _) = native_files
+                    .iter()
+                    .find(|(_, paths)| paths.iter().any(|path| path == selected))
+                    .ok_or("missing selected native source/data payload")?;
+                let (apk_path, _) = binary
+                    .hashes
+                    .iter()
+                    .find(|(_, observed)| *observed == digest)
+                    .ok_or("preferred-source native bytes differ from exact binary APK")?;
+                let mut legal_files = Vec::new();
+                if matches!(name, "pcre2" | "zlib") {
+                    let recipe = std::str::from_utf8(
+                        binary
+                            .texts
+                            .get(".melange.yaml")
+                            .ok_or("missing native PCRE recipe")?,
+                    )
+                    .map_err(|_| "invalid native PCRE recipe")?;
+                    let (commit, repository) = if name == "pcre2" {
+                        (
+                            "6f9d7c1373262c541324a16a358785b33ef116cf",
+                            "https://github.com/PCRE2Project/pcre2.git",
+                        )
+                    } else {
+                        (
+                            "767c4c947852e143f582c85f14cf573411df1b35",
+                            "https://github.com/madler/zlib",
+                        )
+                    };
+                    if !recipe.contains(&format!("expected-commit: {commit}"))
+                        || !recipe.contains(&format!("repository: {repository}"))
+                    {
+                        return Err("permissive native recipe attribution differs");
+                    }
+                    let legal_output = output.join("permissive-legal");
+                    if !legal_output.exists() {
+                        mkdir(&legal_output, false)?;
+                    }
+                    let inputs: &[(&str, &str, &str)] = if name == "pcre2" {
+                        &[
+                            (
+                                "PCRE2-LICENCE.md",
+                                "https://raw.githubusercontent.com/PCRE2Project/pcre2/6f9d7c1373262c541324a16a358785b33ef116cf/LICENCE.md",
+                                "197d8a73ffee0d6b09adba2f9c677b5f5aede24edf89258a68e48248d010d811",
+                            ),
+                            (
+                                "PCRE2-COPYING.txt",
+                                "https://raw.githubusercontent.com/PCRE2Project/pcre2/6f9d7c1373262c541324a16a358785b33ef116cf/COPYING",
+                                "99272c55f3dcfa07a8a7e15a5c1a33096e4727de74241d65fa049fccfdd59507",
+                            ),
+                            (
+                                "PCRE2-AUTHORS.md",
+                                "https://raw.githubusercontent.com/PCRE2Project/pcre2/6f9d7c1373262c541324a16a358785b33ef116cf/AUTHORS.md",
+                                "412ace3355a4d6a4d835c350a7df172903811eafda7b13500dacf58429ee757e",
+                            ),
+                            (
+                                "SLJIT-LICENSE.txt",
+                                "https://raw.githubusercontent.com/zherczeg/sljit/de0259c7aaf36aa40cba8014f3fad3edde9307f9/LICENSE",
+                                "5f216505c0f6ea3273caec89e766eef93cdeb7bbb0c429f9360116d7c938feeb",
+                            ),
+                        ]
+                    } else {
+                        &[
+                            (
+                                "ZLIB-LICENSE.txt",
+                                "https://raw.githubusercontent.com/madler/zlib/767c4c947852e143f582c85f14cf573411df1b35/LICENSE",
+                                "e32ff4e00d9d94930537635291da39e7e612703334bf6fde8c7f1686fe8a45a2",
+                            ),
+                            (
+                                "ZLIB-README.txt",
+                                "https://raw.githubusercontent.com/madler/zlib/767c4c947852e143f582c85f14cf573411df1b35/README",
+                                "717b18319152b2682049a3cafb9c17d30128cdc800f92442ef1b91fb4787f615",
+                            ),
+                        ]
+                    };
+                    for &(file, url, expected) in inputs {
+                        let path = legal_output.join(file);
+                        if !path.exists() {
+                            let mut command = std::process::Command::new("/usr/bin/curl");
+                            command
+                                .env_clear()
+                                .env("PATH", "/usr/bin:/bin")
+                                .args([
+                                    "--disable",
+                                    "--fail",
+                                    "--silent",
+                                    "--show-error",
+                                    "--proto",
+                                    "=https",
+                                    "--max-time",
+                                    "60",
+                                    "--max-filesize",
+                                    "1048576",
+                                    "--output",
+                                ])
+                                .arg(&path)
+                                .arg(url);
+                            driver.execute(command, 75, false, 0)?;
+                        }
+                        if hash(&path, 1024 * 1024)? != expected {
+                            return Err("permissive original legal bytes differ");
+                        }
+                        legal_files.push(json!({"file":format!("permissive-legal/{file}"),"source":url,"sha256":expected}));
+                    }
+                }
+                observations.push(json!({"arch":arch,"package":name,"binary_package":binary_name,"version":version,"origin":origin,"binary_apk_sha256":hash(&binary_path,128*1024*1024)?,"native_path":selected,"apk_payload_path":apk_path,"native_sha256":digest,"source_kind":if matches!(name, "pcre2" | "zlib") {"permissive upstream original notices; exact native library APK; missing companion retained as 404, not a GPL source-completeness claim"} else {"unaltered editable PEM source data actually delivered in native image; MPL-2.0/MIT text and source instructions remain mandatory"},"legal_files":legal_files,"signature_verified":false,"recipient_notice_delivery_complete":false}));
+                package_count += 1;
+                continue;
+            }
+            if !sources.contains_key(origin) {
+                sources.insert(origin.into(), apk(&source_path)?);
+            }
+            let source = &sources[origin];
             let manifest = binary
                 .texts
                 .get(".source.sha256")

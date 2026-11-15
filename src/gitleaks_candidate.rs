@@ -114,7 +114,7 @@ pub(crate) fn build_context(driver: &mut Driver) -> Result<PathBuf> {
     )?;
     write_new(
         &context.join(".dockerignore"),
-        b"*\n!Dockerfile\n!candidate\n!go-notices.txt\n",
+        b"*\n!Dockerfile\n!candidate\n!go-notices.txt\n!native-notices.txt\n!source-index.json\n!sources/\n!sources/*.apk\n",
         0o600,
     )?;
     write_new(
@@ -133,6 +133,7 @@ pub(crate) fn build_context(driver: &mut Driver) -> Result<PathBuf> {
         }),
     )?;
     result?;
+    super::gitleaks_runtime::install(driver, &context)?;
     Ok(context)
 }
 
@@ -566,7 +567,7 @@ fn validate(driver: &mut Driver, public: &Path, phase: &mut &'static str) -> Res
     )?;
     write_new(
         &context.join(".dockerignore"),
-        b"*\n!Dockerfile\n!candidate\n!go-notices.txt\n",
+        b"*\n!Dockerfile\n!candidate\n!go-notices.txt\n!native-notices.txt\n!source-index.json\n!sources/\n!sources/*.apk\n",
         0o600,
     )?;
     write_new(
@@ -575,6 +576,8 @@ fn validate(driver: &mut Driver, public: &Path, phase: &mut &'static str) -> Res
         0o444,
     )?;
     compile(driver, &context, phase)?;
+    *phase = "corresponding-source-delivery";
+    super::gitleaks_runtime::install(driver, &context)?;
     *phase = "candidate-image";
     let iid = driver.logs.join("gitleaks-candidate.iid");
     let mut build = Command::new("docker");
