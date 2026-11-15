@@ -5,7 +5,7 @@ COPY --chmod=0444 src/scanner_units.rs /scanner_units.rs
 RUN --network=none ["rustc", "--edition=2024", "-Dwarnings", "-Ctarget-feature=+crt-static", "/scanner_units.rs", "-o", "/scanner-units"]
 
 # Fixed released source plus reviewed dependency patch; advisory data stays external.
-FROM golang:1.27.4@sha256:5e8afd493a7124a8586e134d9b532731161d4b9becf9dee5a5956b107426f93d AS supplier
+FROM golang:1.27.4@sha256:5e8afd493a7124a8586e134d9b532731161d4b9becf9dee5a5956b107426f93d AS sources
 # Upstream tar.zst writer controls require the genuine compressor in the SDK.
 RUN ["apt-get", "update"]
 RUN ["apt-get", "install", "--no-install-recommends", "-y", "zstd"]
@@ -34,8 +34,11 @@ COPY --from=unit-gate /scanner-units /scanner-units
 RUN --network=none ["mkdir", "-p", "/src/grype/pkg/testdata/cache"]
 COPY --chown=65532:65532 tests/fixtures/grype-source-cache/image-simple.tar /src/grype/pkg/testdata/cache/stereoscope-fixture-image-simple-42ea0faabdf8f9815ba86da9e859efafbb1aef8cf6c6ecce9d62e26137b83880.tar
 RUN --network=none ["chmod", "0755", "/src/grype/pkg/testdata/cache"]
+# A separate bounded native phase must complete before linking the payload.
+FROM sources AS unit-tested
 RUN --mount=type=cache,id=devsecops-grype-go1274-user,target=/tmp/go-build,uid=65532,gid=65532,mode=0700,sharing=locked --network=none ["env", "CGO_ENABLED=1", "GOPROXY=off", "go", "test", "-race", "-count=1", "-p=1", "github.com/blakesmith/ar"]
 RUN --mount=type=cache,id=devsecops-grype-go1274-user,target=/tmp/go-build,uid=65532,gid=65532,mode=0700,sharing=locked --network=none ["env", "CGO_ENABLED=1", "GOPROXY=off", "/scanner-units", "grype"]
+FROM unit-tested AS supplier
 RUN --mount=type=cache,id=devsecops-grype-go1274-user,target=/tmp/go-build,uid=65532,gid=65532,mode=0700,sharing=locked --network=none ["go", "build", "-tags=containers_image_openpgp,exclude_graphdriver_btrfs", "-ldflags=-w -s -extldflags '-static' -X main.version=0.121.3 -X main.gitCommit=cd1f23eb50dfb52647090158f453c7359172591f -X main.buildDate=unknown -X main.gitDescription=v0.121.3-dependency-security.1", "-o", "/out/grype", "./cmd/grype"]
 
 FROM cgr.dev/chainguard/static:latest@sha256:fc42af33e643f20d08baf03cddcc1c02ba57052dfb02edb0d79f3fc47bcea8d9

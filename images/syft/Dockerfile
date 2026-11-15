@@ -11,7 +11,7 @@ WORKDIR /cache
 RUN ["/bin/oras", "pull", "ghcr.io/anchore/oss-cache/syft-test-fixture-cache@sha256:12e1cbf78a9834abc7cb750dc18355bdd85485f30b9f004d9f99b7eb32a6ea3c", "--output", "/cache"]
 
 # Fixed released source plus reviewed dependency patch; not an unmodified supplier binary.
-FROM golang:1.27.4@sha256:5e8afd493a7124a8586e134d9b532731161d4b9becf9dee5a5956b107426f93d AS supplier
+FROM golang:1.27.4@sha256:5e8afd493a7124a8586e134d9b532731161d4b9becf9dee5a5956b107426f93d AS sources
 # Permission-denial controls require non-root execution and genuine ZIP tools.
 RUN ["apt-get", "update"]
 RUN ["apt-get", "install", "--no-install-recommends", "-y", "zip"]
@@ -45,9 +45,12 @@ COPY --chown=65532:65532 tests/fixtures/syft-os-cache/not-rhel.tar /src/internal
 COPY --chown=65532:65532 tests/fixtures/syft-os-cache/rhel-manifests.tar /src/internal/os/testdata/cache/stereoscope-fixture-rhel_content_manifests-637e4cfac50d7b5122173d45aa8ac1ca7ff2c18b1994519f616b99da9c2f3d1f.tar
 COPY --chown=65532:65532 tests/fixtures/syft-os-cache/rhel-no-manifests.tar /src/internal/os/testdata/cache/stereoscope-fixture-rhel_no_manifests-5982583e26ad8209fb50063d2083d7e7894bb069cae67e65be9e54f271c1c35c.tar
 RUN --network=none ["chmod", "0755", "/src/internal/os/testdata/cache"]
+# A separate bounded native phase must complete before linking the payload.
+FROM sources AS unit-tested
 # Includes the fork's negative-member-size regression, not only Syft's own tests.
 RUN --mount=type=cache,id=devsecops-syft-go1274-user,target=/tmp/go-build,uid=65532,gid=65532,mode=0700,sharing=locked --network=none ["env", "CGO_ENABLED=1", "GOPROXY=off", "go", "test", "-race", "-count=1", "-p=1", "github.com/blakesmith/ar"]
 RUN --mount=type=cache,id=devsecops-syft-go1274-user,target=/tmp/go-build,uid=65532,gid=65532,mode=0700,sharing=locked --network=none ["env", "CGO_ENABLED=1", "GOPROXY=off", "/scanner-units", "syft"]
+FROM unit-tested AS supplier
 RUN --mount=type=cache,id=devsecops-syft-go1274-user,target=/tmp/go-build,uid=65532,gid=65532,mode=0700,sharing=locked --network=none ["go", "build", "-tags=containers_image_openpgp,exclude_graphdriver_btrfs", "-ldflags=-w -s -extldflags '-static' -X main.version=1.57.1 -X main.gitCommit=a0c0d3890a9d79421c403e8fcadec50a2e55bf21 -X main.buildDate=unknown -X main.gitDescription=v1.57.1-dependency-security.1", "-o", "/out/syft", "./cmd/syft"]
 
 FROM cgr.dev/chainguard/static:latest@sha256:fc42af33e643f20d08baf03cddcc1c02ba57052dfb02edb0d79f3fc47bcea8d9

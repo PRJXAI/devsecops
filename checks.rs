@@ -283,8 +283,8 @@ mod tests {
     fn scanner_source_recipe(text: &str, tool: &str) -> bool {
         use sha2::Digest;
         let expected = match tool {
-            "syft" => "3d4bc83c1da1ed35ba6e9616742f5171966c729b77b9aac42beb4cf876d54133",
-            "grype" => "2a031efd513106f57b389a291fbd904a354db871b49444824a14a4907587459f",
+            "syft" => "46053a2410701cfab37f63889439913080942fdddcd348f90c990d9b506f8946",
+            "grype" => "4624adabafe55447bb532c053825071a3f44b07d6db80b87d0a4c9ea5632019d",
             _ => return false,
         };
         let reviewed = match tool {
@@ -1255,6 +1255,33 @@ mod tests {
             &text.replace("\"kustomize\"]", "\"--to-command=sh\"]"),
             "kustomize"
         ));
+    }
+
+    #[test]
+    fn scanner_link_payload_depends_on_the_complete_offline_unit_stage() {
+        for tool in ["syft", "grype"] {
+            let text =
+                fs::read_to_string(root().join(format!("images/{tool}/Dockerfile"))).unwrap();
+            let units = text.find("FROM sources AS unit-tested\n").unwrap();
+            let ar = text.find("\"github.com/blakesmith/ar\"]").unwrap();
+            let suite = text
+                .find(&format!("\"/scanner-units\", \"{tool}\"]"))
+                .unwrap();
+            let supplier = text.find("FROM unit-tested AS supplier\n").unwrap();
+            let link = text.find("[\"go\", \"build\",").unwrap();
+            let payload = text.find("COPY --from=supplier /out/").unwrap();
+            assert!(
+                units < ar && ar < suite && suite < supplier && supplier < link && link < payload
+            );
+            assert!(
+                text[units..supplier]
+                    .lines()
+                    .filter(|line| line.starts_with("RUN "))
+                    .all(|line| {
+                        line.contains("--network=none") && line.contains("\"GOPROXY=off\"")
+                    })
+            );
+        }
     }
 
     #[test]

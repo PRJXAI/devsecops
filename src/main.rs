@@ -520,6 +520,36 @@ impl Driver {
         } else {
             format!("images/{tool}/Dockerfile")
         };
+        // Retrieval, upstream tests and final linking have separate bounded
+        // phases. Cold compiler/module work must not consume the test/link
+        // budget; none of these phases is optional or a release acceptance.
+        // Keep the existing 1200s command bound and the workflow's total bound.
+        if matches!(tool, "syft" | "grype") {
+            for phase in ["sources", "unit-tested"] {
+                println!("{tool}: bounded native {phase} phase");
+                let mut prepare = Command::new("docker");
+                prepare
+                    .env_remove("DOCKER_CONTEXT")
+                    .current_dir(&context)
+                    .args([
+                        "--host",
+                        &endpoint,
+                        "buildx",
+                        "build",
+                        "--builder",
+                        "default",
+                        "--output=type=cacheonly",
+                        "--platform",
+                        &platform,
+                        "--file",
+                        &dockerfile,
+                        "--target",
+                        phase,
+                        ".",
+                    ]);
+                self.execute(prepare, 1200, false, 0)?;
+            }
+        }
         // Bind Buildx's builtin Docker driver to the checked local endpoint;
         // inherited builder selection must not redirect work to another daemon.
         let mut build = Command::new("docker");
