@@ -1,21 +1,21 @@
 {
   "schema": 1,
-  "date": "2026-10-30",
-  "authorization": "Repository owner requested current-stack risk acceptance, image delivery and consumer adoption. This record documents the reviewed material basis; it is not legal certification or an independent supplier rebuild.",
+  "date": "2026-11-15",
+  "authorization": "Repository owner authorized remediation and publication of qualified replacements through existing manual gates, without expanded risk acceptance. This record reviews source/notice material, not legal certification or permission to skip native release gates.",
   "tools": ["syft", "grype"],
-  "supplier_scope": "Unmodified executables copied from the literal supplier digests in the two Dockerfiles; existing source labels and native module/compiler inventories reviewed. Supplier build authenticity is trusted, not established by unsigned hashes alone.",
+  "supplier_scope": "Fixed Syft 1.57.1 and Grype 0.121.3 source derivatives with actual resolved manifest patches, Go 1.27.4 and the sbomify/ar fix. Four unchanged native catalogs from run 43730804248 bind source merge tree d3b870dbb18148fcf71d0ea0986a2eed2b484872. Native dirty versions are retained; base-module legal attribution requires native VCS identity and checksum/origin verification. Prominent modified-distribution/source/patch notices precede verbatim upstream legal texts. Supplier/compiler authenticity remains trusted; independent bit reproducibility is not established.",
   "source_reproducibility_established": false,
-  "go_source_version": "go1.26.8",
-  "go_source_commit": "c293dd49cbe25e1fe8d97d94a5cb618e7b6d831e",
+  "go_source_version": "go1.27.4",
+  "go_source_commit": "7b2881024c95a11ddb86663a616340aa3a88b67f",
   "syft": {
-    "embedded_source_modules": 295,
-    "bundle_sha256": "5d56eacef92c66e40d44034914d53dc599f68542388aa91542e71cef8b88ac15",
-    "index_sha256": "dfdf399a8c2e6fb54c3a951897a3a50f250c9382592f56efa11a9eb6c1402457"
+    "embedded_source_modules": 297,
+    "bundle_sha256": "06bec637a9fab5fb511f91c22d1cfaf59f76340bc4d9aeb45f01f9468546b3be",
+    "index_sha256": "e992af627bb22709d4806a3dc90f54146e91f1a77bc9d521c955334fd3e1cbef"
   },
   "grype": {
-    "embedded_source_modules": 319,
-    "bundle_sha256": "2a1096158a1f761a9366ddd7b99dfb01bd50aa1eea1299d7d8f0e8e4397e86a2",
-    "index_sha256": "108158255404d532ee4616879680fd7b75a45ad643671c10f0d7c4f73f9517fd"
+    "embedded_source_modules": 320,
+    "bundle_sha256": "c94fabd9eb510f00c2281efeefdb7b402a6d65952fa46ef7f86c8fff135c2af7",
+    "index_sha256": "bab437c7f356b461bb92313c21d4905a136668db88a4c168b7e4033a67caf17a"
   },
   "static_base": {
     "image": "cgr.dev/chainguard/static:latest@sha256:fc42af33e643f20d08baf03cddcc1c02ba57052dfb02edb0d79f3fc47bcea8d9",

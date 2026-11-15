@@ -13,6 +13,8 @@ mod public_access;
 mod release;
 #[cfg(test)]
 mod runtime_probe;
+#[cfg(test)]
+mod scanner_profile_capture;
 
 use std::{
     fs::{self, DirBuilder, File, OpenOptions},

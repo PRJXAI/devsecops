@@ -1,3 +1,9 @@
+Modified distribution: syft 1.57.1-dependency-security.1, rebuilt by PRJXAI.
+Upstream source: https://github.com/anchore/syft/tree/a0c0d3890a9d79421c403e8fcadec50a2e55bf21
+Changes: dependency manifests patched for x/crypto 0.59.0, OpenTelemetry 1.47.0 and the sbomify/ar negative-member-size fix. Compiler: Go 1.27.4.
+Exact build recipe, modified manifests (patch), and source checksums: the org.opencontainers.image.revision source tree at https://github.com/PRJXAI/devsecops .
+Patch: patches/syft-1.57.1-security.patch.txt; SHA-256 795846bbf2ceb946b21c1ae8cf2583aeb441420cb1ea5b090058c51294ec7bb1. Upstream endorsement is not claimed; original terms are not relicensed.
+Native embedded versions are preserved in the source-attributed index, not rewritten as release tags.
 Third-party notices for syft. Original text follows each source heading.
 
 --- cel.dev/expr@v0.25.2 / LICENSE ---
@@ -3047,12 +3053,12 @@ THE SOFTWARE.
       same "printed page" as the copyright notice for easier
       identification within third-party archives.
 
---- github.com/ProtonMail/go-crypto@v1.4.1 / AUTHORS ---
+--- github.com/ProtonMail/go-crypto@v1.5.2 / AUTHORS ---
 # This source code refers to The Go Authors for copyright purposes.
 # The master list of authors is in the main Go distribution,
 # visible at https://tip.golang.org/AUTHORS.
 
---- github.com/ProtonMail/go-crypto@v1.4.1 / LICENSE ---
+--- github.com/ProtonMail/go-crypto@v1.5.2 / LICENSE ---
 Copyright (c) 2009 The Go Authors. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -3081,7 +3087,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
---- github.com/ProtonMail/go-crypto@v1.4.1 / PATENTS ---
+--- github.com/ProtonMail/go-crypto@v1.5.2 / PATENTS ---
 Additional IP Rights Grant (Patents)
 
 "This implementation" means the copyrightable works distributed by
@@ -3630,7 +3636,13 @@ This product includes software developed at ALRUX Inc.
    See the License for the specific language governing permissions and
    limitations under the License.
 
---- github.com/anchore/clio@v0.1.1 / LICENSE ---
+--- github.com/anchore/clio@v0.1.2 / COPYRIGHT ---
+Copyright (c) Anchore, Inc.
+
+See LICENSE for the full license text.
+See CONTRIBUTORS.md and git log for a full list of contributors.
+
+--- github.com/anchore/clio@v0.1.2 / LICENSE ---
                                  Apache License
                            Version 2.0, January 2004
                         http://www.apache.org/licenses/
@@ -5496,216 +5508,13 @@ COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
 IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
---- github.com/anchore/stereoscope@v0.3.4 / LICENSE ---
-                                 Apache License
-                           Version 2.0, January 2004
-                        http://www.apache.org/licenses/
-
-   TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION
-
-   1. Definitions.
-
-      "License" shall mean the terms and conditions for use, reproduction,
-      and distribution as defined by Sections 1 through 9 of this document.
-
-      "Licensor" shall mean the copyright owner or entity authorized by
-      the copyright owner that is granting the License.
-
-      "Legal Entity" shall mean the union of the acting entity and all
-      other entities that control, are controlled by, or are under common
-      control with that entity. For the purposes of this definition,
-      "control" means (i) the power, direct or indirect, to cause the
-      direction or management of such entity, whether by contract or
-      otherwise, or (ii) ownership of fifty percent (50%) or more of the
-      outstanding shares, or (iii) beneficial ownership of such entity.
-
-      "You" (or "Your") shall mean an individual or Legal Entity
-      exercising permissions granted by this License.
-
-      "Source" form shall mean the preferred form for making modifications,
-      including but not limited to software source code, documentation
-      source, and configuration files.
-
-      "Object" form shall mean any form resulting from mechanical
-      transformation or translation of a Source form, including but
-      not limited to compiled object code, generated documentation,
-      and conversions to other media types.
-
-      "Work" shall mean the work of authorship, whether in Source or
-      Object form, made available under the License, as indicated by a
-      copyright notice that is included in or attached to the work
-      (an example is provided in the Appendix below).
-
-      "Derivative Works" shall mean any work, whether in Source or Object
-      form, that is based on (or derived from) the Work and for which the
-      editorial revisions, annotations, elaborations, or other modifications
-      represent, as a whole, an original work of authorship. For the purposes
-      of this License, Derivative Works shall not include works that remain
-      separable from, or merely link (or bind by name) to the interfaces of,
-      the Work and Derivative Works thereof.
-
-      "Contribution" shall mean any work of authorship, including
-      the original version of the Work and any modifications or additions
-      to that Work or Derivative Works thereof, that is intentionally
-      submitted to Licensor for inclusion in the Work by the copyright owner
-      or by an individual or Legal Entity authorized to submit on behalf of
-      the copyright owner. For the purposes of this definition, "submitted"
-      means any form of electronic, verbal, or written communication sent
-      to the Licensor or its representatives, including but not limited to
-      communication on electronic mailing lists, source code control systems,
-      and issue tracking systems that are managed by, or on behalf of, the
-      Licensor for the purpose of discussing and improving the Work, but
-      excluding communication that is conspicuously marked or otherwise
-      designated in writing by the copyright owner as "Not a Contribution."
-
-      "Contributor" shall mean Licensor and any individual or Legal Entity
-      on behalf of whom a Contribution has been received by Licensor and
-      subsequently incorporated within the Work.
-
-   2. Grant of Copyright License. Subject to the terms and conditions of
-      this License, each Contributor hereby grants to You a perpetual,
-      worldwide, non-exclusive, no-charge, royalty-free, irrevocable
-      copyright license to reproduce, prepare Derivative Works of,
-      publicly display, publicly perform, sublicense, and distribute the
-      Work and such Derivative Works in Source or Object form.
-
-   3. Grant of Patent License. Subject to the terms and conditions of
-      this License, each Contributor hereby grants to You a perpetual,
-      worldwide, non-exclusive, no-charge, royalty-free, irrevocable
-      (except as stated in this section) patent license to make, have made,
-      use, offer to sell, sell, import, and otherwise transfer the Work,
-      where such license applies only to those patent claims licensable
-      by such Contributor that are necessarily infringed by their
-      Contribution(s) alone or by combination of their Contribution(s)
-      with the Work to which such Contribution(s) was submitted. If You
-      institute patent litigation against any entity (including a
-      cross-claim or counterclaim in a lawsuit) alleging that the Work
-      or a Contribution incorporated within the Work constitutes direct
-      or contributory patent infringement, then any patent licenses
-      granted to You under this License for that Work shall terminate
-      as of the date such litigation is filed.
-
-   4. Redistribution. You may reproduce and distribute copies of the
-      Work or Derivative Works thereof in any medium, with or without
-      modifications, and in Source or Object form, provided that You
-      meet the following conditions:
-
-      (a) You must give any other recipients of the Work or
-          Derivative Works a copy of this License; and
-
-      (b) You must cause any modified files to carry prominent notices
-          stating that You changed the files; and
-
-      (c) You must retain, in the Source form of any Derivative Works
-          that You distribute, all copyright, patent, trademark, and
-          attribution notices from the Source form of the Work,
-          excluding those notices that do not pertain to any part of
-          the Derivative Works; and
-
-      (d) If the Work includes a "NOTICE" text file as part of its
-          distribution, then any Derivative Works that You distribute must
-          include a readable copy of the attribution notices contained
-          within such NOTICE file, excluding those notices that do not
-          pertain to any part of the Derivative Works, in at least one
-          of the following places: within a NOTICE text file distributed
-          as part of the Derivative Works; within the Source form or
-          documentation, if provided along with the Derivative Works; or,
-          within a display generated by the Derivative Works, if and
-          wherever such third-party notices normally appear. The contents
-          of the NOTICE file are for informational purposes only and
-          do not modify the License. You may add Your own attribution
-          notices within Derivative Works that You distribute, alongside
-          or as an addendum to the NOTICE text from the Work, provided
-          that such additional attribution notices cannot be construed
-          as modifying the License.
-
-      You may add Your own copyright statement to Your modifications and
-      may provide additional or different license terms and conditions
-      for use, reproduction, or distribution of Your modifications, or
-      for any such Derivative Works as a whole, provided Your use,
-      reproduction, and distribution of the Work otherwise complies with
-      the conditions stated in this License.
-
-   5. Submission of Contributions. Unless You explicitly state otherwise,
-      any Contribution intentionally submitted for inclusion in the Work
-      by You to the Licensor shall be under the terms and conditions of
-      this License, without any additional terms or conditions.
-      Notwithstanding the above, nothing herein shall supersede or modify
-      the terms of any separate license agreement you may have executed
-      with Licensor regarding such Contributions.
-
-   6. Trademarks. This License does not grant permission to use the trade
-      names, trademarks, service marks, or product names of the Licensor,
-      except as required for reasonable and customary use in describing the
-      origin of the Work and reproducing the content of the NOTICE file.
-
-   7. Disclaimer of Warranty. Unless required by applicable law or
-      agreed to in writing, Licensor provides the Work (and each
-      Contributor provides its Contributions) on an "AS IS" BASIS,
-      WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
-      implied, including, without limitation, any warranties or conditions
-      of TITLE, NON-INFRINGEMENT, MERCHANTABILITY, or FITNESS FOR A
-      PARTICULAR PURPOSE. You are solely responsible for determining the
-      appropriateness of using or redistributing the Work and assume any
-      risks associated with Your exercise of permissions under this License.
-
-   8. Limitation of Liability. In no event and under no legal theory,
-      whether in tort (including negligence), contract, or otherwise,
-      unless required by applicable law (such as deliberate and grossly
-      negligent acts) or agreed to in writing, shall any Contributor be
-      liable to You for damages, including any direct, indirect, special,
-      incidental, or consequential damages of any character arising as a
-      result of this License or out of the use or inability to use the
-      Work (including but not limited to damages for loss of goodwill,
-      work stoppage, computer failure or malfunction, or any and all
-      other commercial damages or losses), even if such Contributor
-      has been advised of the possibility of such damages.
-
-   9. Accepting Warranty or Additional Liability. While redistributing
-      the Work or Derivative Works thereof, You may choose to offer,
-      and charge a fee for, acceptance of support, warranty, indemnity,
-      or other liability obligations and/or rights consistent with this
-      License. However, in accepting such obligations, You may act only
-      on Your own behalf and on Your sole responsibility, not on behalf
-      of any other Contributor, and only if You agree to indemnify,
-      defend, and hold each Contributor harmless for any liability
-      incurred by, or claims asserted against, such Contributor by reason
-      of your accepting any such warranty or additional liability.
-
-   END OF TERMS AND CONDITIONS
-
-   APPENDIX: How to apply the Apache License to your work.
-
-      To apply the Apache License to your work, attach the following
-      boilerplate notice, with the fields enclosed by brackets "[]"
-      replaced with your own identifying information. (Don't include
-      the brackets!)  The text should be enclosed in the appropriate
-      comment syntax for the file format. We also recommend that a
-      file or class name and description of purpose be included on the
-      same "printed page" as the copyright notice for easier
-      identification within third-party archives.
-
-   Copyright [yyyy] [name of copyright owner]
-
-   Licensed under the Apache License, Version 2.0 (the "License");
-   you may not use this file except in compliance with the License.
-   You may obtain a copy of the License at
-
-       http://www.apache.org/licenses/LICENSE-2.0
-
-   Unless required by applicable law or agreed to in writing, software
-   distributed under the License is distributed on an "AS IS" BASIS,
-   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-   See the License for the specific language governing permissions and
-   limitations under the License.
-
---- github.com/anchore/syft@v1.55.0 / COPYRIGHT ---
+--- github.com/anchore/stereoscope@v0.4.1 / COPYRIGHT ---
 Copyright (c) Anchore, Inc.
 
 See LICENSE for the full license text.
 See CONTRIBUTORS.md and git log for a full list of contributors.
 
---- github.com/anchore/syft@v1.55.0 / LICENSE ---
+--- github.com/anchore/stereoscope@v0.4.1 / LICENSE ---
                                  Apache License
                            Version 2.0, January 2004
                         http://www.apache.org/licenses/
@@ -5908,7 +5717,216 @@ See CONTRIBUTORS.md and git log for a full list of contributors.
    See the License for the specific language governing permissions and
    limitations under the License.
 
---- github.com/anchore/syft@v1.55.0 / cmd/syft/internal/options/license.go ---
+--- github.com/anchore/syft@v1.57.1 / COPYRIGHT ---
+Copyright (c) Anchore, Inc.
+
+See LICENSE for the full license text.
+See CONTRIBUTORS.md and git log for a full list of contributors.
+
+--- github.com/anchore/syft@v1.57.1 / LICENSE ---
+                                 Apache License
+                           Version 2.0, January 2004
+                        http://www.apache.org/licenses/
+
+   TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION
+
+   1. Definitions.
+
+      "License" shall mean the terms and conditions for use, reproduction,
+      and distribution as defined by Sections 1 through 9 of this document.
+
+      "Licensor" shall mean the copyright owner or entity authorized by
+      the copyright owner that is granting the License.
+
+      "Legal Entity" shall mean the union of the acting entity and all
+      other entities that control, are controlled by, or are under common
+      control with that entity. For the purposes of this definition,
+      "control" means (i) the power, direct or indirect, to cause the
+      direction or management of such entity, whether by contract or
+      otherwise, or (ii) ownership of fifty percent (50%) or more of the
+      outstanding shares, or (iii) beneficial ownership of such entity.
+
+      "You" (or "Your") shall mean an individual or Legal Entity
+      exercising permissions granted by this License.
+
+      "Source" form shall mean the preferred form for making modifications,
+      including but not limited to software source code, documentation
+      source, and configuration files.
+
+      "Object" form shall mean any form resulting from mechanical
+      transformation or translation of a Source form, including but
+      not limited to compiled object code, generated documentation,
+      and conversions to other media types.
+
+      "Work" shall mean the work of authorship, whether in Source or
+      Object form, made available under the License, as indicated by a
+      copyright notice that is included in or attached to the work
+      (an example is provided in the Appendix below).
+
+      "Derivative Works" shall mean any work, whether in Source or Object
+      form, that is based on (or derived from) the Work and for which the
+      editorial revisions, annotations, elaborations, or other modifications
+      represent, as a whole, an original work of authorship. For the purposes
+      of this License, Derivative Works shall not include works that remain
+      separable from, or merely link (or bind by name) to the interfaces of,
+      the Work and Derivative Works thereof.
+
+      "Contribution" shall mean any work of authorship, including
+      the original version of the Work and any modifications or additions
+      to that Work or Derivative Works thereof, that is intentionally
+      submitted to Licensor for inclusion in the Work by the copyright owner
+      or by an individual or Legal Entity authorized to submit on behalf of
+      the copyright owner. For the purposes of this definition, "submitted"
+      means any form of electronic, verbal, or written communication sent
+      to the Licensor or its representatives, including but not limited to
+      communication on electronic mailing lists, source code control systems,
+      and issue tracking systems that are managed by, or on behalf of, the
+      Licensor for the purpose of discussing and improving the Work, but
+      excluding communication that is conspicuously marked or otherwise
+      designated in writing by the copyright owner as "Not a Contribution."
+
+      "Contributor" shall mean Licensor and any individual or Legal Entity
+      on behalf of whom a Contribution has been received by Licensor and
+      subsequently incorporated within the Work.
+
+   2. Grant of Copyright License. Subject to the terms and conditions of
+      this License, each Contributor hereby grants to You a perpetual,
+      worldwide, non-exclusive, no-charge, royalty-free, irrevocable
+      copyright license to reproduce, prepare Derivative Works of,
+      publicly display, publicly perform, sublicense, and distribute the
+      Work and such Derivative Works in Source or Object form.
+
+   3. Grant of Patent License. Subject to the terms and conditions of
+      this License, each Contributor hereby grants to You a perpetual,
+      worldwide, non-exclusive, no-charge, royalty-free, irrevocable
+      (except as stated in this section) patent license to make, have made,
+      use, offer to sell, sell, import, and otherwise transfer the Work,
+      where such license applies only to those patent claims licensable
+      by such Contributor that are necessarily infringed by their
+      Contribution(s) alone or by combination of their Contribution(s)
+      with the Work to which such Contribution(s) was submitted. If You
+      institute patent litigation against any entity (including a
+      cross-claim or counterclaim in a lawsuit) alleging that the Work
+      or a Contribution incorporated within the Work constitutes direct
+      or contributory patent infringement, then any patent licenses
+      granted to You under this License for that Work shall terminate
+      as of the date such litigation is filed.
+
+   4. Redistribution. You may reproduce and distribute copies of the
+      Work or Derivative Works thereof in any medium, with or without
+      modifications, and in Source or Object form, provided that You
+      meet the following conditions:
+
+      (a) You must give any other recipients of the Work or
+          Derivative Works a copy of this License; and
+
+      (b) You must cause any modified files to carry prominent notices
+          stating that You changed the files; and
+
+      (c) You must retain, in the Source form of any Derivative Works
+          that You distribute, all copyright, patent, trademark, and
+          attribution notices from the Source form of the Work,
+          excluding those notices that do not pertain to any part of
+          the Derivative Works; and
+
+      (d) If the Work includes a "NOTICE" text file as part of its
+          distribution, then any Derivative Works that You distribute must
+          include a readable copy of the attribution notices contained
+          within such NOTICE file, excluding those notices that do not
+          pertain to any part of the Derivative Works, in at least one
+          of the following places: within a NOTICE text file distributed
+          as part of the Derivative Works; within the Source form or
+          documentation, if provided along with the Derivative Works; or,
+          within a display generated by the Derivative Works, if and
+          wherever such third-party notices normally appear. The contents
+          of the NOTICE file are for informational purposes only and
+          do not modify the License. You may add Your own attribution
+          notices within Derivative Works that You distribute, alongside
+          or as an addendum to the NOTICE text from the Work, provided
+          that such additional attribution notices cannot be construed
+          as modifying the License.
+
+      You may add Your own copyright statement to Your modifications and
+      may provide additional or different license terms and conditions
+      for use, reproduction, or distribution of Your modifications, or
+      for any such Derivative Works as a whole, provided Your use,
+      reproduction, and distribution of the Work otherwise complies with
+      the conditions stated in this License.
+
+   5. Submission of Contributions. Unless You explicitly state otherwise,
+      any Contribution intentionally submitted for inclusion in the Work
+      by You to the Licensor shall be under the terms and conditions of
+      this License, without any additional terms or conditions.
+      Notwithstanding the above, nothing herein shall supersede or modify
+      the terms of any separate license agreement you may have executed
+      with Licensor regarding such Contributions.
+
+   6. Trademarks. This License does not grant permission to use the trade
+      names, trademarks, service marks, or product names of the Licensor,
+      except as required for reasonable and customary use in describing the
+      origin of the Work and reproducing the content of the NOTICE file.
+
+   7. Disclaimer of Warranty. Unless required by applicable law or
+      agreed to in writing, Licensor provides the Work (and each
+      Contributor provides its Contributions) on an "AS IS" BASIS,
+      WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+      implied, including, without limitation, any warranties or conditions
+      of TITLE, NON-INFRINGEMENT, MERCHANTABILITY, or FITNESS FOR A
+      PARTICULAR PURPOSE. You are solely responsible for determining the
+      appropriateness of using or redistributing the Work and assume any
+      risks associated with Your exercise of permissions under this License.
+
+   8. Limitation of Liability. In no event and under no legal theory,
+      whether in tort (including negligence), contract, or otherwise,
+      unless required by applicable law (such as deliberate and grossly
+      negligent acts) or agreed to in writing, shall any Contributor be
+      liable to You for damages, including any direct, indirect, special,
+      incidental, or consequential damages of any character arising as a
+      result of this License or out of the use or inability to use the
+      Work (including but not limited to damages for loss of goodwill,
+      work stoppage, computer failure or malfunction, or any and all
+      other commercial damages or losses), even if such Contributor
+      has been advised of the possibility of such damages.
+
+   9. Accepting Warranty or Additional Liability. While redistributing
+      the Work or Derivative Works thereof, You may choose to offer,
+      and charge a fee for, acceptance of support, warranty, indemnity,
+      or other liability obligations and/or rights consistent with this
+      License. However, in accepting such obligations, You may act only
+      on Your own behalf and on Your sole responsibility, not on behalf
+      of any other Contributor, and only if You agree to indemnify,
+      defend, and hold each Contributor harmless for any liability
+      incurred by, or claims asserted against, such Contributor by reason
+      of your accepting any such warranty or additional liability.
+
+   END OF TERMS AND CONDITIONS
+
+   APPENDIX: How to apply the Apache License to your work.
+
+      To apply the Apache License to your work, attach the following
+      boilerplate notice, with the fields enclosed by brackets "[]"
+      replaced with your own identifying information. (Don't include
+      the brackets!)  The text should be enclosed in the appropriate
+      comment syntax for the file format. We also recommend that a
+      file or class name and description of purpose be included on the
+      same "printed page" as the copyright notice for easier
+      identification within third-party archives.
+
+   Copyright [yyyy] [name of copyright owner]
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+
+--- github.com/anchore/syft@v1.57.1 / cmd/syft/internal/options/license.go ---
 package options
 
 import (
@@ -5957,10 +5975,10 @@ func defaultLicenseConfig() licenseConfig {
 	}
 }
 
---- github.com/anchore/syft@v1.55.0 / cmd/syft/internal/test/integration/testdata/image-pkg-coverage/pkgs/var/db/pkg/app-containers/skopeo-1.5.1/LICENSE ---
+--- github.com/anchore/syft@v1.57.1 / cmd/syft/internal/test/integration/testdata/image-pkg-coverage/pkgs/var/db/pkg/app-containers/skopeo-1.5.1/LICENSE ---
 Apache-2.0 BSD BSD-2 CC-BY-SA-4.0 ISC MIT
 
---- github.com/anchore/syft@v1.55.0 / cmd/syft/internal/test/integration/testdata/npm-lock/node_modules/collapse-white-space/license ---
+--- github.com/anchore/syft@v1.57.1 / cmd/syft/internal/test/integration/testdata/npm-lock/node_modules/collapse-white-space/license ---
 (The MIT License)
 
 Copyright (c) 2015 Titus Wormer <tituswormer@gmail.com>
@@ -5984,7 +6002,7 @@ CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
 TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
---- github.com/anchore/syft@v1.55.0 / cmd/syft/internal/test/integration/testdata/npm-lock/node_modules/end-of-stream/LICENSE ---
+--- github.com/anchore/syft@v1.57.1 / cmd/syft/internal/test/integration/testdata/npm-lock/node_modules/end-of-stream/LICENSE ---
 The MIT License (MIT)
 
 Copyright (c) 2014 Mathias Buus
@@ -6006,7 +6024,7 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
---- github.com/anchore/syft@v1.55.0 / cmd/syft/internal/test/integration/testdata/npm-lock/node_modules/insert-css/LICENSE ---
+--- github.com/anchore/syft@v1.57.1 / cmd/syft/internal/test/integration/testdata/npm-lock/node_modules/insert-css/LICENSE ---
 This software is released under the MIT license:
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of
@@ -6026,7 +6044,7 @@ COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
 IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
---- github.com/anchore/syft@v1.55.0 / cmd/syft/internal/test/integration/testdata/npm-lock/node_modules/once/LICENSE ---
+--- github.com/anchore/syft@v1.57.1 / cmd/syft/internal/test/integration/testdata/npm-lock/node_modules/once/LICENSE ---
 The ISC License
 
 Copyright (c) Isaac Z. Schlueter and Contributors
@@ -6043,7 +6061,7 @@ WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
 ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR
 IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
---- github.com/anchore/syft@v1.55.0 / cmd/syft/internal/test/integration/testdata/npm-lock/node_modules/pump/LICENSE ---
+--- github.com/anchore/syft@v1.57.1 / cmd/syft/internal/test/integration/testdata/npm-lock/node_modules/pump/LICENSE ---
 The MIT License (MIT)
 
 Copyright (c) 2014 Mathias Buus
@@ -6065,7 +6083,7 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
---- github.com/anchore/syft@v1.55.0 / cmd/syft/internal/test/integration/testdata/npm-lock/node_modules/wrappy/LICENSE ---
+--- github.com/anchore/syft@v1.57.1 / cmd/syft/internal/test/integration/testdata/npm-lock/node_modules/wrappy/LICENSE ---
 The ISC License
 
 Copyright (c) Isaac Z. Schlueter and Contributors
@@ -6082,7 +6100,7 @@ WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
 ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR
 IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
---- github.com/anchore/syft@v1.55.0 / cmd/syft/internal/test/integration/testdata/yarn-lock/node_modules/async/LICENSE ---
+--- github.com/anchore/syft@v1.57.1 / cmd/syft/internal/test/integration/testdata/yarn-lock/node_modules/async/LICENSE ---
 Copyright (c) 2010-2018 Caolan McMahon
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -6103,7 +6121,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
---- github.com/anchore/syft@v1.55.0 / cmd/syft/internal/test/integration/testdata/yarn-lock/node_modules/merge-objects/LICENSE.md ---
+--- github.com/anchore/syft@v1.57.1 / cmd/syft/internal/test/integration/testdata/yarn-lock/node_modules/merge-objects/LICENSE.md ---
 Copyright (c) 2015 Oleksii Shevchenko <shevaroller@gmail.com> (http://shevaroller.me)
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -6123,7 +6141,7 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
---- github.com/anchore/syft@v1.55.0 / cmd/syft/internal/test/integration/testdata/yarn-lock/node_modules/resize-observer-polyfill/LICENSE ---
+--- github.com/anchore/syft@v1.57.1 / cmd/syft/internal/test/integration/testdata/yarn-lock/node_modules/resize-observer-polyfill/LICENSE ---
 The MIT License (MIT)
 
 Copyright (c) 2016 Denis Rul
@@ -6146,7 +6164,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
---- github.com/anchore/syft@v1.55.0 / cmd/syft/internal/test/integration/testdata/yarn-lock/node_modules/should-type/LICENSE ---
+--- github.com/anchore/syft@v1.57.1 / cmd/syft/internal/test/integration/testdata/yarn-lock/node_modules/should-type/LICENSE ---
 The MIT License (MIT)
 
 Copyright (c) 2014 
@@ -6170,7 +6188,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 
---- github.com/anchore/syft@v1.55.0 / cmd/syft/internal/test/integration/testdata/yarn-lock/packages/nested-package/node_modules/async/LICENSE ---
+--- github.com/anchore/syft@v1.57.1 / cmd/syft/internal/test/integration/testdata/yarn-lock/packages/nested-package/node_modules/async/LICENSE ---
 Copyright (c) 2010-2014 Caolan McMahon
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -6191,7 +6209,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
---- github.com/anchore/syft@v1.55.0 / internal/cmptest/license.go ---
+--- github.com/anchore/syft@v1.57.1 / internal/cmptest/license.go ---
 package cmptest
 
 import (
@@ -6219,7 +6237,7 @@ func LicenseComparerWithoutLocationLayer(x, y pkg.License) bool {
 	)
 }
 
---- github.com/anchore/syft@v1.55.0 / internal/spdxlicense/generate/license.go ---
+--- github.com/anchore/syft@v1.57.1 / internal/spdxlicense/generate/license.go ---
 package main
 
 import (
@@ -6351,7 +6369,7 @@ func versionPermutations(version []string) []string {
 	return perms.List()
 }
 
---- github.com/anchore/syft@v1.55.0 / internal/spdxlicense/generate/license_test.go ---
+--- github.com/anchore/syft@v1.57.1 / internal/spdxlicense/generate/license_test.go ---
 package main
 
 import (
@@ -6576,7 +6594,7 @@ func Test_findReplacementLicense(t *testing.T) {
 	}
 }
 
---- github.com/anchore/syft@v1.55.0 / internal/spdxlicense/generate/testdata/licenses.json ---
+--- github.com/anchore/syft@v1.57.1 / internal/spdxlicense/generate/testdata/licenses.json ---
 {
   "licenseListVersion": "3.20",
   "licenses": [
@@ -13321,7 +13339,7 @@ func Test_findReplacementLicense(t *testing.T) {
   ],
   "releaseDate": "2023-02-17"
 }
---- github.com/anchore/syft@v1.55.0 / internal/spdxlicense/license.go ---
+--- github.com/anchore/syft@v1.57.1 / internal/spdxlicense/license.go ---
 package spdxlicense
 
 import (
@@ -13430,7 +13448,7 @@ func stripScheme(url string) string {
 	return url
 }
 
---- github.com/anchore/syft@v1.55.0 / internal/spdxlicense/license_list.go ---
+--- github.com/anchore/syft@v1.57.1 / internal/spdxlicense/license_list.go ---
 // Code generated by go generate; DO NOT EDIT.
 // This file was generated using data from https://spdx.org/licenses/licenses.json
 package spdxlicense
@@ -15564,40 +15582,40 @@ var urlToLicense = map[string]string{
 	"raw.githubusercontent.com/NTIA/scos-sensor/refs/heads/master/LICENSE.md":                                        "NTIA-PD",
 	"raw.githubusercontent.com/OpenMDW/OpenMDW/refs/heads/main/1.0/LICENSE.openmdw":                                  "OpenMDW-1.0",
 	"raw.githubusercontent.com/blackhole89/notekit/master/data/fonts/Charter%20license.txt":                          "Bitstream-Charter",
-	"raw.githubusercontent.com/landtuna/open-mtools/6c04c2882eca7c4313ec267766ea53ac9bfe129b/mdump.c": "Informatica",
-	"raw.githubusercontent.com/landtuna/open-mtools/6c04c2882eca7c4313ec267766ea53ac9bfe129b/msend.c": "Informatica",
-	"rc.quest.com/topics/openssh/license.php#tcpwrappers":                                             "TCP-wrappers",
-	"research.cs.wisc.edu/condor/license.html#condor":                                                 "Condor-1.1",
-	"research.scea.com/scea_shared_source_license.html":                                               "SCEA",
-	"romanrm.net/mit-zero":                                                                                                                       "MIT-0",
-	"sam.zoy.org/wtfpl/COPYING":                                                                                                                  "WTFPL",
-	"scancode-licensedb.aboutcode.org/bsd-unchanged":                                                                                             "BSD-2-Clause-pos-unchanged",
-	"scripts.sil.org/cms/scripts/page.php?item_id=OFL10_web":                                                                                     "OFL-1.0-no-RFN",
-	"scripts.sil.org/cms/scripts/page.php?item_id=OFL_web":                                                                                       "OFL-1.1-no-RFN",
-	"slicer.org/LICENSE":                                                                                                                         "3D-Slicer-1.0",
-	"solderpad.org/licenses/SHL-0.5/":                                                                                                            "SHL-0.5",
-	"solderpad.org/licenses/SHL-0.51/":                                                                                                           "SHL-0.51",
-	"source.icu-project.org/repos/icu/icu/trunk/license.html":                                                                                    "ICU",
-	"sourceforge.net/p/buddy/gitcode/ci/master/tree/README":                                                                                      "Buddy",
-	"sourceforge.net/p/ctrio/git/ci/master/tree/README":                                                                                          "ISC-Veillard",
-	"sourceforge.net/p/mcj/xfig/ci/master/tree/src/Makefile.am":                                                                                  "Xfig",
-	"sourceforge.net/p/netpbm/code/HEAD/tree/super_stable/converter/other/pnmtorle.c":                                                            "URT-RLE",
-	"sourceforge.net/p/netpbm/code/HEAD/tree/super_stable/converter/other/rletopnm.c":                                                            "URT-RLE",
-	"sourceforge.net/p/netpbm/code/HEAD/tree/super_stable/converter/ppm/ppmtompeg/jrevdct.c#l1189":                                               "MPEG-SSG",
-	"sourceforge.net/p/netpbm/code/HEAD/tree/super_stable/editor/pnmstitch.c#l2":                                                                 "pnmstitch",
-	"sourceforge.net/p/netpbm/code/HEAD/tree/super_stable/netpbm.c#l8":                                                                           "HPND-Pbmplus",
-	"sourceforge.net/p/sbcl/sbcl/ci/master/tree/src/code/loop.lisp":                                                                              "LOOP",
-	"sourceforge.net/p/trustedqsl/tqsl/ci/master/tree/LICENSE.txt":                                                                               "TrustedQSL",
-	"sourceforge.net/p/xmedcon/code/ci/master/tree/libs/dicom/README":                                                                            "OFFIS",
-	"sourceforge.net/p/xmedcon/code/ci/master/tree/libs/ljpg/":                                                                                   "IJG-short",
-	"sourceforge.net/projects/sevenzip/files/LZMA%20SDK/":                                                                                        "LZMA-SDK-9.22",
-	"sources.debian.org/copyright/license/debianutils/4.11.2/":                                                                                   "SMAIL-GPL",
-	"sources.debian.org/src/openmpi/4.1.0-10/ompi/debuggers/msgq_interface.h/?hl=19#L19":                                                         "mpi-permissive",
-	"sources.gentoo.org/cgi-bin/viewvc.cgi/gentoo-x86/licenses/BitTorrent?r1=1.1&r2=1.1.1.1&diff_format=s":                                       "BitTorrent-1.0",
-	"sourceware.org/bzip2/1.0.5/bzip2-manual-1.0.5.html":                                                                                         "bzip2-1.0.6",
-	"sourceware.org/cgit/binutils-gdb/tree/include/coff/sym.h#n11":                                                                               "MIPS",
-	"sourceware.org/cgit/binutils-gdb/tree/include/coff/symconst.h#n11":                                                                          "ThirdEye",
-	"sourceware.org/cgit/valgrind/tree/mpi/libmpiwrap.c":                                                                                         "bzip2-1.0.6",
+	"raw.githubusercontent.com/landtuna/open-mtools/6c04c2882eca7c4313ec267766ea53ac9bfe129b/mdump.c":                "Informatica",
+	"raw.githubusercontent.com/landtuna/open-mtools/6c04c2882eca7c4313ec267766ea53ac9bfe129b/msend.c":                "Informatica",
+	"rc.quest.com/topics/openssh/license.php#tcpwrappers":                                                            "TCP-wrappers",
+	"research.cs.wisc.edu/condor/license.html#condor":                                                                "Condor-1.1",
+	"research.scea.com/scea_shared_source_license.html":                                                              "SCEA",
+	"romanrm.net/mit-zero":                                                                                           "MIT-0",
+	"sam.zoy.org/wtfpl/COPYING":                                                                                      "WTFPL",
+	"scancode-licensedb.aboutcode.org/bsd-unchanged":                                                                 "BSD-2-Clause-pos-unchanged",
+	"scripts.sil.org/cms/scripts/page.php?item_id=OFL10_web":                                                         "OFL-1.0-no-RFN",
+	"scripts.sil.org/cms/scripts/page.php?item_id=OFL_web":                                                           "OFL-1.1-no-RFN",
+	"slicer.org/LICENSE":                                                                                             "3D-Slicer-1.0",
+	"solderpad.org/licenses/SHL-0.5/":                                                                                "SHL-0.5",
+	"solderpad.org/licenses/SHL-0.51/":                                                                               "SHL-0.51",
+	"source.icu-project.org/repos/icu/icu/trunk/license.html":                                                        "ICU",
+	"sourceforge.net/p/buddy/gitcode/ci/master/tree/README":                                                          "Buddy",
+	"sourceforge.net/p/ctrio/git/ci/master/tree/README":                                                              "ISC-Veillard",
+	"sourceforge.net/p/mcj/xfig/ci/master/tree/src/Makefile.am":                                                      "Xfig",
+	"sourceforge.net/p/netpbm/code/HEAD/tree/super_stable/converter/other/pnmtorle.c":                                "URT-RLE",
+	"sourceforge.net/p/netpbm/code/HEAD/tree/super_stable/converter/other/rletopnm.c":                                "URT-RLE",
+	"sourceforge.net/p/netpbm/code/HEAD/tree/super_stable/converter/ppm/ppmtompeg/jrevdct.c#l1189":                   "MPEG-SSG",
+	"sourceforge.net/p/netpbm/code/HEAD/tree/super_stable/editor/pnmstitch.c#l2":                                     "pnmstitch",
+	"sourceforge.net/p/netpbm/code/HEAD/tree/super_stable/netpbm.c#l8":                                               "HPND-Pbmplus",
+	"sourceforge.net/p/sbcl/sbcl/ci/master/tree/src/code/loop.lisp":                                                  "LOOP",
+	"sourceforge.net/p/trustedqsl/tqsl/ci/master/tree/LICENSE.txt":                                                   "TrustedQSL",
+	"sourceforge.net/p/xmedcon/code/ci/master/tree/libs/dicom/README":                                                "OFFIS",
+	"sourceforge.net/p/xmedcon/code/ci/master/tree/libs/ljpg/":                                                       "IJG-short",
+	"sourceforge.net/projects/sevenzip/files/LZMA%20SDK/":                                                            "LZMA-SDK-9.22",
+	"sources.debian.org/copyright/license/debianutils/4.11.2/":                                                       "SMAIL-GPL",
+	"sources.debian.org/src/openmpi/4.1.0-10/ompi/debuggers/msgq_interface.h/?hl=19#L19":                             "mpi-permissive",
+	"sources.gentoo.org/cgi-bin/viewvc.cgi/gentoo-x86/licenses/BitTorrent?r1=1.1&r2=1.1.1.1&diff_format=s":           "BitTorrent-1.0",
+	"sourceware.org/bzip2/1.0.5/bzip2-manual-1.0.5.html":                                                             "bzip2-1.0.6",
+	"sourceware.org/cgit/binutils-gdb/tree/include/coff/sym.h#n11":                                                   "MIPS",
+	"sourceware.org/cgit/binutils-gdb/tree/include/coff/symconst.h#n11":                                              "ThirdEye",
+	"sourceware.org/cgit/valgrind/tree/mpi/libmpiwrap.c":                                                             "bzip2-1.0.6",
 	"sourceware.org/git/?p=binutils-gdb.git;a=blob;f=libiberty/strcasecmp.c;h=131d81c2ce7881fa48c363dc5bf5fb302c61ce0b;hb=HEAD":                  "BSD-4.3RENO",
 	"sourceware.org/git/?p=binutils-gdb.git;a=blob;f=readline/readline/support/wcwidth.c;h=0f5ec995796f4813abbcf4972aec0378ab74722a;hb=HEAD#l55": "HPND-Markus-Kuhn",
 	"sourceware.org/git/?p=bzip2.git;a=blob;f=LICENSE;hb=bzip2-1.0.6":                                                                            "bzip2-1.0.6",
@@ -15831,7 +15849,7 @@ var urlToLicense = map[string]string{
 	"www.zlib.net/zlib_license.html":                                                                     "Zlib",
 }
 
---- github.com/anchore/syft@v1.55.0 / internal/spdxlicense/license_list_test.go ---
+--- github.com/anchore/syft@v1.57.1 / internal/spdxlicense/license_list_test.go ---
 package spdxlicense
 
 import (
@@ -15850,7 +15868,7 @@ func TestLicenceListIDs(t *testing.T) {
 	assert.NotEmpty(t, Version)
 }
 
---- github.com/anchore/syft@v1.55.0 / internal/spdxlicense/license_test.go ---
+--- github.com/anchore/syft@v1.57.1 / internal/spdxlicense/license_test.go ---
 package spdxlicense
 
 import (
@@ -15937,7 +15955,7 @@ func TestSPDXIDRecognition(t *testing.T) {
 	}
 }
 
---- github.com/anchore/syft@v1.55.0 / internal/spdxlicense/license_url_test.go ---
+--- github.com/anchore/syft@v1.57.1 / internal/spdxlicense/license_url_test.go ---
 package spdxlicense
 
 import (
@@ -16216,7 +16234,7 @@ func TestLicenseByURL_DeprecatedLicenses(t *testing.T) {
 	}
 }
 
---- github.com/anchore/syft@v1.55.0 / syft/cataloging/license.go ---
+--- github.com/anchore/syft@v1.57.1 / syft/cataloging/license.go ---
 package cataloging
 
 import (
@@ -16247,7 +16265,7 @@ func DefaultLicenseConfig() LicenseConfig {
 	}
 }
 
---- github.com/anchore/syft@v1.55.0 / syft/file/license.go ---
+--- github.com/anchore/syft@v1.57.1 / syft/file/license.go ---
 package file
 
 import (
@@ -16297,7 +16315,7 @@ func NewLicense(value string) License {
 	}
 }
 
---- github.com/anchore/syft@v1.55.0 / syft/format/internal/cyclonedxutil/helpers/licenses.go ---
+--- github.com/anchore/syft@v1.57.1 / syft/format/internal/cyclonedxutil/helpers/licenses.go ---
 package helpers
 
 import (
@@ -16539,7 +16557,7 @@ func isBalanced(expression string) bool {
 	return count == 0
 }
 
---- github.com/anchore/syft@v1.55.0 / syft/format/internal/cyclonedxutil/helpers/licenses_test.go ---
+--- github.com/anchore/syft@v1.57.1 / syft/format/internal/cyclonedxutil/helpers/licenses_test.go ---
 package helpers
 
 import (
@@ -16857,7 +16875,7 @@ func TestDecodeLicenses(t *testing.T) {
 	}
 }
 
---- github.com/anchore/syft@v1.55.0 / syft/format/internal/spdxutil/helpers/license.go ---
+--- github.com/anchore/syft@v1.57.1 / syft/format/internal/spdxutil/helpers/license.go ---
 package helpers
 
 import (
@@ -17021,7 +17039,7 @@ func (s *SPDXOtherLicenseSet) ToSlice() []spdx.OtherLicense {
 	return values
 }
 
---- github.com/anchore/syft@v1.55.0 / syft/format/internal/spdxutil/helpers/license_test.go ---
+--- github.com/anchore/syft@v1.57.1 / syft/format/internal/spdxutil/helpers/license_test.go ---
 package helpers
 
 import (
@@ -17271,7 +17289,7 @@ func TestCreateSPDXLicenseAndGenerateLicenseID(t *testing.T) {
 	}
 }
 
---- github.com/anchore/syft@v1.55.0 / syft/license/license.go ---
+--- github.com/anchore/syft@v1.57.1 / syft/license/license.go ---
 // package license provides common methods for working with SPDX license data
 package license
 
@@ -17347,7 +17365,7 @@ func ParseExpression(expression string) (ex string, err error) {
 	return expression, nil
 }
 
---- github.com/anchore/syft@v1.55.0 / syft/license/license_test.go ---
+--- github.com/anchore/syft@v1.57.1 / syft/license/license_test.go ---
 package license
 
 import "testing"
@@ -17396,7 +17414,7 @@ func TestParseExpression(t *testing.T) {
 	}
 }
 
---- github.com/anchore/syft@v1.55.0 / syft/pkg/cataloger/debian/testdata/glob-paths/usr/share/doc/libpam-runtime/copyright ---
+--- github.com/anchore/syft@v1.57.1 / syft/pkg/cataloger/debian/testdata/glob-paths/usr/share/doc/libpam-runtime/copyright ---
 Format: http://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
 Upstream-Name: auditd
 Source: https://people.redhat.com/sgrubb/audit/
@@ -17441,7 +17459,7 @@ License: GPL-2
  On Debian systems, the complete text of the GNU General
  Public License can be found in `/usr/share/common-licenses/GPL-1'.
 
---- github.com/anchore/syft@v1.55.0 / syft/pkg/cataloger/debian/testdata/image-distroless-deb/usr/share/doc/libsqlite3-0/copyright ---
+--- github.com/anchore/syft@v1.57.1 / syft/pkg/cataloger/debian/testdata/image-distroless-deb/usr/share/doc/libsqlite3-0/copyright ---
 Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
 Upstream-Name: sqlite3
 Source: https://www.sqlite.org/cgi/src/dir?ci=trunk
@@ -17473,7 +17491,7 @@ License: GPL-2+
  On Debian systems, the full text of the GNU General Public License
  version 2 can be found in the file `/usr/share/common-licenses/GPL-2'.
 
---- github.com/anchore/syft@v1.55.0 / syft/pkg/cataloger/debian/testdata/image-dpkg/usr/share/doc/libpam-runtime/copyright ---
+--- github.com/anchore/syft@v1.57.1 / syft/pkg/cataloger/debian/testdata/image-dpkg/usr/share/doc/libpam-runtime/copyright ---
 Format: http://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
 Upstream-Name: auditd
 Source: https://people.redhat.com/sgrubb/audit/
@@ -17518,7 +17536,7 @@ License: GPL-2
  On Debian systems, the complete text of the GNU General
  Public License can be found in `/usr/share/common-licenses/GPL-1'.
 
---- github.com/anchore/syft@v1.55.0 / syft/pkg/cataloger/gentoo/license.go ---
+--- github.com/anchore/syft@v1.57.1 / syft/pkg/cataloger/gentoo/license.go ---
 package gentoo
 
 import (
@@ -17592,7 +17610,7 @@ func extractLicenses(resolver file.Resolver, closestLocation *file.Location, rea
 	if err := scanner.Err(); err != nil {
 		fields := []any{"error", err}
 		if closestLocation != nil {
-			fields = append(fields, "path", closestLocation.RealPath)
+			fields = append(fields, "path", closestLocation.FullNestedPath())
 		}
 		log.WithFields(fields...).Debug("failed to fully read portage LICENSE")
 	}
@@ -17636,9 +17654,9 @@ func readLicenseGroups(resolver file.Resolver, closestLocation *file.Location) m
 	}
 
 	groupReader, err := resolver.FileContentsByLocation(*groupLocation)
-	defer internal.CloseAndLogError(groupReader, groupLocation.RealPath)
+	defer internal.CloseAndLogError(groupReader, groupLocation.FullNestedPath())
 	if err != nil {
-		log.WithFields("path", groupLocation.RealPath, "error", err).Debug("failed to fetch portage LICENSE")
+		log.WithFields("path", groupLocation.FullNestedPath(), "error", err).Debug("failed to fetch portage LICENSE")
 		return nil
 	}
 
@@ -17648,7 +17666,7 @@ func readLicenseGroups(resolver file.Resolver, closestLocation *file.Location) m
 
 	licenseGroups, err = parseLicenseGroups(groupReader)
 	if err != nil {
-		log.WithFields("path", groupLocation.RealPath, "error", err).Debug("failed to parse portage LICENSE")
+		log.WithFields("path", groupLocation.FullNestedPath(), "error", err).Debug("failed to parse portage LICENSE")
 	}
 
 	return licenseGroups
@@ -17775,7 +17793,7 @@ func expandLicenses(currentGroup string, rawGroups, expanded map[string][]string
 	return result, nil
 }
 
---- github.com/anchore/syft@v1.55.0 / syft/pkg/cataloger/gentoo/license_test.go ---
+--- github.com/anchore/syft@v1.57.1 / syft/pkg/cataloger/gentoo/license_test.go ---
 package gentoo
 
 import (
@@ -17989,10 +18007,10 @@ func TestParseLicenseGroups_hostileInput(t *testing.T) {
 	assert.Equal(t, []string{"MIT"}, groups["G64"])
 }
 
---- github.com/anchore/syft@v1.55.0 / syft/pkg/cataloger/gentoo/testdata/layout/var/db/pkg/app-containers/skopeo-1.5.1/LICENSE ---
+--- github.com/anchore/syft@v1.57.1 / syft/pkg/cataloger/gentoo/testdata/layout/var/db/pkg/app-containers/skopeo-1.5.1/LICENSE ---
 Apache-2.0 BSD BSD-2 CC-BY-SA-4.0 ISC MIT
 
---- github.com/anchore/syft@v1.55.0 / syft/pkg/cataloger/gentoo/testdata/layout-license-groups/etc/portage/license_groups ---
+--- github.com/anchore/syft@v1.57.1 / syft/pkg/cataloger/gentoo/testdata/layout-license-groups/etc/portage/license_groups ---
 # The FSF-APPROVED group includes the entire GPL-COMPATIBLE group and more.
 FSF-APPROVED @GPL-COMPATIBLE Apache-1.1 BSD-4 MPL-1.0 MPL-1.1 PSF-2.0
 # The GPL-COMPATIBLE group includes all licenses compatible with the GNU GPL.
@@ -18001,10 +18019,10 @@ GPL-COMPATIBLE Apache-2.0 BSD BSD-2 GPL-2 GPL-3 LGPL-2.1 LGPL-3 X11 ZLIB
 GROUP1 Apache-2.0 @BSD-COMPATIBLE CC-BY-SA-4.0
 BSD-COMPATIBLE BSD BSD-2
 MIT-LIKE ISC MIT
---- github.com/anchore/syft@v1.55.0 / syft/pkg/cataloger/gentoo/testdata/layout-license-groups/var/db/pkg/app-containers/skopeo-1.5.1/LICENSE ---
+--- github.com/anchore/syft@v1.57.1 / syft/pkg/cataloger/gentoo/testdata/layout-license-groups/var/db/pkg/app-containers/skopeo-1.5.1/LICENSE ---
 @GROUP1 @MIT-LIKE
 
---- github.com/anchore/syft@v1.55.0 / syft/pkg/cataloger/golang/license_finder.go ---
+--- github.com/anchore/syft@v1.57.1 / syft/pkg/cataloger/golang/license_finder.go ---
 package golang
 
 import (
@@ -18158,7 +18176,7 @@ func findLicensesInDir(dir string, fs afero.Fs) ([]string, error) {
 	return out, nil
 }
 
---- github.com/anchore/syft@v1.55.0 / syft/pkg/cataloger/golang/license_finder_test.go ---
+--- github.com/anchore/syft@v1.57.1 / syft/pkg/cataloger/golang/license_finder_test.go ---
 package golang
 
 import (
@@ -18404,7 +18422,7 @@ func winAbs(p string) string {
 	return filepath.Join(`C:\`, filepath.FromSlash(p))
 }
 
---- github.com/anchore/syft@v1.55.0 / syft/pkg/cataloger/golang/licenses.go ---
+--- github.com/anchore/syft@v1.57.1 / syft/pkg/cataloger/golang/licenses.go ---
 package golang
 
 import (
@@ -18646,13 +18664,13 @@ func (c *goLicenseResolver) findLicensesInSource(ctx context.Context, resolver f
 
 func (c *goLicenseResolver) parseLicenseFromLocation(ctx context.Context, l file.Location, resolver file.Resolver) ([]pkg.License, error) {
 	var out []pkg.License
-	fileName := path.Base(l.RealPath)
+	fileName := path.Base(l.FullNestedPath())
 	if licenses.IsLicenseFile(fileName) {
 		contents, err := resolver.FileContentsByLocation(l)
 		if err != nil {
 			return nil, err
 		}
-		defer internal.CloseAndLogError(contents, l.RealPath)
+		defer internal.CloseAndLogError(contents, l.FullNestedPath())
 		out = pkg.NewLicensesFromReadCloserWithContext(ctx, file.NewLocationReadCloser(l, contents))
 	}
 	return out, nil
@@ -18851,7 +18869,7 @@ func (l noLicensesFound) Error() string {
 
 var _ error = (*noLicensesFound)(nil)
 
---- github.com/anchore/syft@v1.55.0 / syft/pkg/cataloger/golang/licenses_test.go ---
+--- github.com/anchore/syft@v1.57.1 / syft/pkg/cataloger/golang/licenses_test.go ---
 package golang
 
 import (
@@ -19266,7 +19284,7 @@ func mustContentsFromLocation(t *testing.T, loc file.Location, offset ...int) st
 	return string(contents[start:end])
 }
 
---- github.com/anchore/syft@v1.55.0 / syft/pkg/cataloger/golang/testdata/licenses/pkg/mod/github.com/!cap!o!r!g/!cap!project@v4.111.5/LICENSE.txt ---
+--- github.com/anchore/syft@v1.57.1 / syft/pkg/cataloger/golang/testdata/licenses/pkg/mod/github.com/!cap!o!r!g/!cap!project@v4.111.5/LICENSE.txt ---
 The MIT License (MIT)
 
 Copyright (c) 2014 Someone Cool <someone@cool.net.com.exe>
@@ -19288,7 +19306,7 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
---- github.com/anchore/syft@v1.55.0 / syft/pkg/cataloger/golang/testdata/licenses/pkg/mod/github.com/someorg/somename@v0.3.2/LICENSE ---
+--- github.com/anchore/syft@v1.57.1 / syft/pkg/cataloger/golang/testdata/licenses/pkg/mod/github.com/someorg/somename@v0.3.2/LICENSE ---
                                  Apache License
                            Version 2.0, January 2004
                         http://www.apache.org/licenses/
@@ -19491,7 +19509,7 @@ THE SOFTWARE.
    See the License for the specific language governing permissions and
    limitations under the License.
 
---- github.com/anchore/syft@v1.55.0 / syft/pkg/cataloger/golang/testdata/licenses/pkg/mod/github.com/someorg/strangelicense@v1.2.3/LiCeNsE.tXt ---
+--- github.com/anchore/syft@v1.57.1 / syft/pkg/cataloger/golang/testdata/licenses/pkg/mod/github.com/someorg/strangelicense@v1.2.3/LiCeNsE.tXt ---
                                  Apache License
                            Version 2.0, January 2004
                         http://www.apache.org/licenses/
@@ -19694,7 +19712,7 @@ THE SOFTWARE.
    See the License for the specific language governing permissions and
    limitations under the License.
 
---- github.com/anchore/syft@v1.55.0 / syft/pkg/cataloger/golang/testdata/licenses-vendor/github.com/!cap!o!r!g/!cap!project/LICENSE.txt ---
+--- github.com/anchore/syft@v1.57.1 / syft/pkg/cataloger/golang/testdata/licenses-vendor/github.com/!cap!o!r!g/!cap!project/LICENSE.txt ---
 The MIT License (MIT)
 
 Copyright (c) 2014 Someone Cool <someone@cool.net.com.exe>
@@ -19716,7 +19734,7 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
---- github.com/anchore/syft@v1.55.0 / syft/pkg/cataloger/golang/testdata/licenses-vendor/github.com/someorg/somename/LICENSE ---
+--- github.com/anchore/syft@v1.57.1 / syft/pkg/cataloger/golang/testdata/licenses-vendor/github.com/someorg/somename/LICENSE ---
                                  Apache License
                            Version 2.0, January 2004
                         http://www.apache.org/licenses/
@@ -19919,7 +19937,7 @@ THE SOFTWARE.
    See the License for the specific language governing permissions and
    limitations under the License.
 
---- github.com/anchore/syft@v1.55.0 / syft/pkg/cataloger/golang/testdata/licenses-vendor/github.com/someorg/strangelicense/LiCeNsE.tXt ---
+--- github.com/anchore/syft@v1.57.1 / syft/pkg/cataloger/golang/testdata/licenses-vendor/github.com/someorg/strangelicense/LiCeNsE.tXt ---
                                  Apache License
                            Version 2.0, January 2004
                         http://www.apache.org/licenses/
@@ -20122,7 +20140,7 @@ THE SOFTWARE.
    See the License for the specific language governing permissions and
    limitations under the License.
 
---- github.com/anchore/syft@v1.55.0 / syft/pkg/cataloger/golang/testdata/repo/LICENSE ---
+--- github.com/anchore/syft@v1.57.1 / syft/pkg/cataloger/golang/testdata/repo/LICENSE ---
 Copyright (c) 2022
 Acme, inc.
 
@@ -20131,7 +20149,7 @@ Redistribution and use in source and binary forms, with or without modification,
 Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
 THIS SOFTWARE IS PROVIDED BY [Name of Organization] “AS IS” AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL [Name of Organisation] BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
---- github.com/anchore/syft@v1.55.0 / syft/pkg/cataloger/internal/licenses/testdata/LICENSE ---
+--- github.com/anchore/syft@v1.57.1 / syft/pkg/cataloger/internal/licenses/testdata/LICENSE ---
 Copyright 2025 Some Place, Inc.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the “Software”), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
@@ -20140,7 +20158,7 @@ The above copyright notice and this permission notice shall be included in all c
 
 THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
---- github.com/anchore/syft@v1.55.0 / syft/pkg/cataloger/javascript/license.go ---
+--- github.com/anchore/syft@v1.57.1 / syft/pkg/cataloger/javascript/license.go ---
 package javascript
 
 import (
@@ -20195,7 +20213,7 @@ func (lr *javascriptLicenseResolver) getLicensesFromRemote(packageName string, p
 	})
 }
 
---- github.com/anchore/syft@v1.55.0 / syft/pkg/cataloger/javascript/license_test.go ---
+--- github.com/anchore/syft@v1.57.1 / syft/pkg/cataloger/javascript/license_test.go ---
 package javascript
 
 import (
@@ -20404,7 +20422,7 @@ func TestJavascriptLicenseResolver_getLicenses(t *testing.T) {
 	}
 }
 
---- github.com/anchore/syft@v1.55.0 / syft/pkg/cataloger/python/license.go ---
+--- github.com/anchore/syft@v1.57.1 / syft/pkg/cataloger/python/license.go ---
 package python
 
 import (
@@ -20528,7 +20546,7 @@ func getLicenseFromPypiRegistry(baseURL, packageName, version string) (string, e
 	return license, nil
 }
 
---- github.com/anchore/syft@v1.55.0 / syft/pkg/cataloger/python/license_test.go ---
+--- github.com/anchore/syft@v1.57.1 / syft/pkg/cataloger/python/license_test.go ---
 package python
 
 import (
@@ -20707,7 +20725,7 @@ func setupPypiRegistry() (mux *http.ServeMux, serverURL string, teardown func())
 	return mux, server.URL, server.Close
 }
 
---- github.com/anchore/syft@v1.55.0 / syft/pkg/cataloger/python/testdata/site-packages/license/with-license-file-declared.dist-info/LICENSE.txt ---
+--- github.com/anchore/syft@v1.57.1 / syft/pkg/cataloger/python/testdata/site-packages/license/with-license-file-declared.dist-info/LICENSE.txt ---
 Copyright 2010 Pallets
 
 Redistribution and use in source and binary forms, with or without
@@ -20737,7 +20755,7 @@ LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
 NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
---- github.com/anchore/syft@v1.55.0 / syft/pkg/cataloger/python/testdata/site-packages/license/without-license-file-declared.dist-info/LICENSE.txt ---
+--- github.com/anchore/syft@v1.57.1 / syft/pkg/cataloger/python/testdata/site-packages/license/without-license-file-declared.dist-info/LICENSE.txt ---
 Copyright 2010 Pallets
 
 Redistribution and use in source and binary forms, with or without
@@ -20767,7 +20785,7 @@ LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
 NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
---- github.com/anchore/syft@v1.55.0 / syft/pkg/cataloger/python/testdata/site-packages/nested/dist-name/dist-info/LICENSE.txt ---
+--- github.com/anchore/syft@v1.57.1 / syft/pkg/cataloger/python/testdata/site-packages/nested/dist-name/dist-info/LICENSE.txt ---
 Copyright 2010 Pallets
 
 Redistribution and use in source and binary forms, with or without
@@ -20797,7 +20815,7 @@ LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
 NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
---- github.com/anchore/syft@v1.55.0 / syft/pkg/license.go ---
+--- github.com/anchore/syft@v1.57.1 / syft/pkg/license.go ---
 package pkg
 
 import (
@@ -21057,7 +21075,7 @@ func (b *licenseBuilder) WithURLs(urls ...string) *licenseBuilder {
 
 func (b *licenseBuilder) WithLocations(locations ...file.Location) *licenseBuilder {
 	for _, loc := range locations {
-		if loc.Path() != "" {
+		if loc.RealPath != "" {
 			b.locations = append(b.locations, loc)
 		}
 	}
@@ -21223,7 +21241,7 @@ func sha256HexFromString(s string) string {
 	return hex.EncodeToString(hash[:])
 }
 
---- github.com/anchore/syft@v1.55.0 / syft/pkg/license_deprecated.go ---
+--- github.com/anchore/syft@v1.57.1 / syft/pkg/license_deprecated.go ---
 package pkg
 
 import (
@@ -21337,7 +21355,7 @@ func NewLicenseFromFields(value, url string, location *file.Location) License {
 	return l
 }
 
---- github.com/anchore/syft@v1.55.0 / syft/pkg/license_set.go ---
+--- github.com/anchore/syft@v1.57.1 / syft/pkg/license_set.go ---
 package pkg
 
 import (
@@ -21451,7 +21469,7 @@ func (s LicenseSet) Empty() bool {
 	return len(s.set) < 1
 }
 
---- github.com/anchore/syft@v1.55.0 / syft/pkg/license_set_test.go ---
+--- github.com/anchore/syft@v1.57.1 / syft/pkg/license_set_test.go ---
 package pkg
 
 import (
@@ -21518,16 +21536,16 @@ func TestLicenseSet_Add(t *testing.T) {
 		{
 			name: "deduplicate licenses with locations",
 			licenses: []License{
-				NewLicenseFromLocationsWithContext(ctx, "MIT", file.NewLocationFromCoordinates(file.Coordinates{RealPath: "/place", FileSystemID: "1"})),
-				NewLicenseFromLocationsWithContext(ctx, "MIT", file.NewLocationFromCoordinates(file.Coordinates{RealPath: "/place", FileSystemID: "1"})),
-				NewLicenseFromLocationsWithContext(ctx, "MIT", file.NewLocationFromCoordinates(file.Coordinates{RealPath: "/place", FileSystemID: "2"})),
+				NewLicenseFromLocationsWithContext(ctx, "MIT", file.NewLocationFromCoordinates(file.NewCoordinates("/place", "1"))),
+				NewLicenseFromLocationsWithContext(ctx, "MIT", file.NewLocationFromCoordinates(file.NewCoordinates("/place", "1"))),
+				NewLicenseFromLocationsWithContext(ctx, "MIT", file.NewLocationFromCoordinates(file.NewCoordinates("/place", "2"))),
 			},
 			want: []License{
 				NewLicenseFromLocationsWithContext(
 					ctx,
 					"MIT",
-					file.NewLocationFromCoordinates(file.Coordinates{RealPath: "/place", FileSystemID: "1"}),
-					file.NewLocationFromCoordinates(file.Coordinates{RealPath: "/place", FileSystemID: "2"}),
+					file.NewLocationFromCoordinates(file.NewCoordinates("/place", "1")),
+					file.NewLocationFromCoordinates(file.NewCoordinates("/place", "2")),
 				),
 			},
 		},
@@ -21535,15 +21553,15 @@ func TestLicenseSet_Add(t *testing.T) {
 			name: "same licenses with different locations",
 			licenses: []License{
 				NewLicenseWithContext(ctx, "MIT"),
-				NewLicenseFromLocationsWithContext(ctx, "MIT", file.NewLocationFromCoordinates(file.Coordinates{RealPath: "/place", FileSystemID: "2"})),
-				NewLicenseFromLocationsWithContext(ctx, "MIT", file.NewLocationFromCoordinates(file.Coordinates{RealPath: "/place", FileSystemID: "1"})),
+				NewLicenseFromLocationsWithContext(ctx, "MIT", file.NewLocationFromCoordinates(file.NewCoordinates("/place", "2"))),
+				NewLicenseFromLocationsWithContext(ctx, "MIT", file.NewLocationFromCoordinates(file.NewCoordinates("/place", "1"))),
 			},
 			want: []License{
 				NewLicenseFromLocationsWithContext(
 					ctx,
 					"MIT",
-					file.NewLocationFromCoordinates(file.Coordinates{RealPath: "/place", FileSystemID: "1"}),
-					file.NewLocationFromCoordinates(file.Coordinates{RealPath: "/place", FileSystemID: "2"}),
+					file.NewLocationFromCoordinates(file.NewCoordinates("/place", "1")),
+					file.NewLocationFromCoordinates(file.NewCoordinates("/place", "2")),
 				),
 			},
 		},
@@ -21653,7 +21671,7 @@ func readFileAsString(filepath string) string {
 	return string(data)
 }
 
---- github.com/anchore/syft@v1.55.0 / syft/pkg/license_test.go ---
+--- github.com/anchore/syft@v1.57.1 / syft/pkg/license_test.go ---
 package pkg
 
 import (
@@ -21973,7 +21991,7 @@ func TestLicenseConstructors(t *testing.T) {
 	}
 }
 
---- github.com/anchore/syft@v1.55.0 / syft/pkg/license_url_enrichment_test.go ---
+--- github.com/anchore/syft@v1.57.1 / syft/pkg/license_url_enrichment_test.go ---
 package pkg
 
 import (
@@ -22155,7 +22173,7 @@ func TestNewLicenseFromURLsWithContext_URLEnrichment(t *testing.T) {
 	}
 }
 
---- github.com/anchore/syft@v1.55.0 / test/cli/license_test.go ---
+--- github.com/anchore/syft@v1.57.1 / test/cli/license_test.go ---
 package cli
 
 import "testing"
@@ -22213,7 +22231,7 @@ func Test_Licenses(t *testing.T) {
 	}
 }
 
---- github.com/andybalholm/brotli@v1.2.0 / LICENSE ---
+--- github.com/andybalholm/brotli@v1.2.8 / LICENSE ---
 Copyright (c) 2009, 2010, 2013-2016 by the Brotli Authors.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -22233,6 +22251,35 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
+
+--- github.com/andybalholm/brotli@v1.2.8 / flate/LICENSE ---
+Copyright (c) 2009 The Go Authors. All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are
+met:
+
+   * Redistributions of source code must retain the above copyright
+notice, this list of conditions and the following disclaimer.
+   * Redistributions in binary form must reproduce the above
+copyright notice, this list of conditions and the following disclaimer
+in the documentation and/or other materials provided with the
+distribution.
+   * Neither the name of Google Inc. nor the names of its
+contributors may be used to endorse or promote products derived from
+this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+"AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 --- github.com/apparentlymart/go-textseg/v15@v15.0.0 / LICENSE ---
 Copyright (c) 2017 Martin Atkins
@@ -22330,6 +22377,68 @@ Except as contained in this notice, the name of a copyright holder
 shall not be used in advertising or otherwise to promote the sale,
 use or other dealings in these Data Files or Software without prior
 written authorization of the copyright holder.
+
+--- github.com/apparentlymart/go-textseg/v17@v17.0.1 / LICENSE ---
+Copyright (c) 2017 Martin Atkins
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+--- github.com/apparentlymart/go-textseg/v17@v17.0.1 / textseg/internal/charprops/ucd/license.txt ---
+UNICODE LICENSE V3
+
+COPYRIGHT AND PERMISSION NOTICE
+
+Copyright © 1991-2026 Unicode, Inc.
+
+NOTICE TO USER: Carefully read the following legal agreement. BY
+DOWNLOADING, INSTALLING, COPYING OR OTHERWISE USING DATA FILES, AND/OR
+SOFTWARE, YOU UNEQUIVOCALLY ACCEPT, AND AGREE TO BE BOUND BY, ALL OF THE
+TERMS AND CONDITIONS OF THIS AGREEMENT. IF YOU DO NOT AGREE, DO NOT
+DOWNLOAD, INSTALL, COPY, DISTRIBUTE OR USE THE DATA FILES OR SOFTWARE.
+
+Permission is hereby granted, free of charge, to any person obtaining a
+copy of data files and any associated documentation (the "Data Files") or
+software and any associated documentation (the "Software") to deal in the
+Data Files or Software without restriction, including without limitation
+the rights to use, copy, modify, merge, publish, distribute, and/or sell
+copies of the Data Files or Software, and to permit persons to whom the
+Data Files or Software are furnished to do so, provided that either (a)
+this copyright and permission notice appear with all copies of the Data
+Files or Software, or (b) this copyright and permission notice appear in
+associated Documentation.
+
+THE DATA FILES AND SOFTWARE ARE PROVIDED "AS IS", WITHOUT WARRANTY OF ANY
+KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF
+THIRD PARTY RIGHTS.
+
+IN NO EVENT SHALL THE COPYRIGHT HOLDER OR HOLDERS INCLUDED IN THIS NOTICE
+BE LIABLE FOR ANY CLAIM, OR ANY SPECIAL INDIRECT OR CONSEQUENTIAL DAMAGES,
+OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS,
+WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION,
+ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THE DATA
+FILES OR SOFTWARE.
+
+Except as contained in this notice, the name of a copyright holder shall
+not be used in advertising or otherwise to promote the sale, use or other
+dealings in these Data Files or Software without prior written
+authorization of the copyright holder.
 
 --- github.com/aquasecurity/go-pep440-version@v0.0.1 / LICENSE ---
                                  Apache License
@@ -26556,29 +26665,6 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
---- github.com/becheran/wildmatch-go@v1.0.0 / LICENSE ---
-MIT License
-
-Copyright (c) 2021 Armin Becher
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-
 --- github.com/bgentry/go-netrc@v0.0.0-20140422174119-9fd32a8b3d3d / LICENSE ---
 Original version Copyright © 2010 Fazlul Shahriar <fshahriar@gmail.com>. Newer
 portions Copyright © 2014 Blake Gentry <blakesgentry@gmail.com>.
@@ -26804,29 +26890,7 @@ THE SOFTWARE.
    See the License for the specific language governing permissions and
    limitations under the License.
 
---- github.com/blakesmith/ar@v0.0.0-20190502131153-809d4375e1fb / COPYING ---
-Copyright (c) 2013 Blake Smith <blakesmith0@gmail.com>
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-THE SOFTWARE.
-
-
---- github.com/bmatcuk/doublestar/v4@v4.10.2 / LICENSE ---
+--- github.com/bmatcuk/doublestar/v4@v4.10.4 / LICENSE ---
 The MIT License (MIT)
 
 Copyright (c) 2014 Bob Matcuk
@@ -27682,7 +27746,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
    See the License for the specific language governing permissions and
    limitations under the License.
 
---- github.com/containerd/containerd/v2@v2.4.1 / LICENSE ---
+--- github.com/containerd/containerd/v2@v2.4.2 / LICENSE ---
 
                                  Apache License
                            Version 2.0, January 2004
@@ -27875,7 +27939,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
    See the License for the specific language governing permissions and
    limitations under the License.
 
---- github.com/containerd/containerd/v2@v2.4.1 / NOTICE ---
+--- github.com/containerd/containerd/v2@v2.4.2 / NOTICE ---
 Docker
 Copyright 2012-2015 Docker, Inc.
 
@@ -29489,7 +29553,7 @@ Xiaodong Ye <xiaodongy@vmware.com>
    See the License for the specific language governing permissions and
    limitations under the License.
 
---- github.com/containerd/stargz-snapshotter/estargz@v0.18.2 / LICENSE ---
+--- github.com/containerd/stargz-snapshotter/estargz@v0.19.0 / LICENSE ---
 
                                  Apache License
                            Version 2.0, January 2004
@@ -31596,7 +31660,7 @@ Exhibit B - "Incompatible With Secondary Licenses" Notice
   This Source Code Form is "Incompatible With Secondary Licenses", as
   defined by the Mozilla Public License, v. 2.0.
 
---- github.com/deitch/magic@v0.0.0-20230404182410-1ff89d7342da / LICENSE ---
+--- github.com/deitch/magic@v1.0.0 / LICENSE ---
    Copyright 2023 Avi Deitcher
 
    Licensed under the Apache License, Version 2.0 (the "License");
@@ -31838,7 +31902,7 @@ Apache License
    limitations under the License.
 
 
---- github.com/docker/cli@v29.8.2+incompatible / AUTHORS ---
+--- github.com/docker/cli@v29.9.2+incompatible / AUTHORS ---
 # File @generated by scripts/docs/generate-authors.sh. DO NOT EDIT.
 # This file lists all contributors to the repository.
 # See scripts/docs/generate-authors.sh to make modifications.
@@ -32814,7 +32878,7 @@ Zhuo Zhi <h.dwwwwww@gmail.com>
 徐俊杰 <paco.xu@daocloud.io>
 林博仁 Buo-ren Lin <Buo.Ren.Lin@gmail.com>
 
---- github.com/docker/cli@v29.8.2+incompatible / LICENSE ---
+--- github.com/docker/cli@v29.9.2+incompatible / LICENSE ---
 
                                  Apache License
                            Version 2.0, January 2004
@@ -33007,7 +33071,7 @@ Zhuo Zhi <h.dwwwwww@gmail.com>
    See the License for the specific language governing permissions and
    limitations under the License.
 
---- github.com/docker/cli@v29.8.2+incompatible / NOTICE ---
+--- github.com/docker/cli@v29.9.2+incompatible / NOTICE ---
 Docker
 Copyright 2012-2017 Docker, Inc.
 
@@ -33028,7 +33092,7 @@ For more information, see https://www.bis.doc.gov
 
 See also https://www.apache.org/dev/crypto.html and/or seek legal counsel.
 
---- github.com/docker/cli@v29.8.2+incompatible / cli/connhelper/internal/syntax/LICENSE ---
+--- github.com/docker/cli@v29.9.2+incompatible / cli/connhelper/internal/syntax/LICENSE ---
 Copyright (c) 2016, Daniel Martí. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -33057,7 +33121,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
---- github.com/docker/docker-credential-helpers@v0.9.8 / LICENSE ---
+--- github.com/docker/docker-credential-helpers@v0.9.10 / LICENSE ---
 Copyright (c) 2016 David Calavera
 
 Permission is hereby granted, free of charge, to any person obtaining
@@ -33079,7 +33143,7 @@ CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
 TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
---- github.com/docker/go-connections@v0.8.1 / LICENSE ---
+--- github.com/docker/go-connections@v0.8.2 / LICENSE ---
 
                                  Apache License
                            Version 2.0, January 2004
@@ -34270,7 +34334,7 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
---- github.com/gabriel-vasile/mimetype@v1.4.15 / LICENSE ---
+--- github.com/gabriel-vasile/mimetype@v1.4.16 / LICENSE ---
 MIT License
 
 Copyright (c) 2018 Gabriel Vasile
@@ -34293,7 +34357,20 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
---- github.com/github/go-spdx/v2@v2.7.1 / LICENSE ---
+--- github.com/github/go-spdx/v2@v2.8.0 / .github/instructions/license-range-review.instructions.md ---
+---
+description: "Use when reviewing generated SPDX license range changes, especially additions or removals of complete license range families."
+applyTo: "spdxexp/spdxlicenses/license_ranges.go"
+---
+
+# License Range Family Review
+
+- Treat the addition or removal of a complete license range family as requiring human review.
+- Always leave an inline review comment on the added or removed family block, or on the nearest changed line when the family was removed. Start the comment with **Human review required: license range family changed** and identify the family.
+- Ask the human reviewer to verify that the family change is intended and that its version grouping and ordering are correct.
+- Compare the diff with the **License range families** summary in the pull request description and report any discrepancy.
+- Do not leave this comment for a version added to or removed from an existing family unless the grouping or ordering is incorrect.
+--- github.com/github/go-spdx/v2@v2.8.0 / LICENSE ---
 MIT License
 
 Copyright (c) 2022 GitHub
@@ -34316,7 +34393,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
---- github.com/github/go-spdx/v2@v2.7.1 / cmd/license.go ---
+--- github.com/github/go-spdx/v2@v2.8.0 / cmd/license.go ---
 package main
 
 import (
@@ -34343,11 +34420,9 @@ type License struct {
 	IsOsiApproved   bool     `json:"isOsiApproved"`
 }
 
-// extractLicenseIDs reads the official licenses.json file copied from spdx/license-list-data
-// and writes two files, license_ids.json and deprecated_license_ids.json, containing just
-// the license IDs and deprecated license IDs, respectively.  It returns an error if it
-// encounters one.
-func extractLicenseIDs() error {
+// extractLicenses reads the official licenses.json file copied from spdx/license-list-data
+// and generates the active license, deprecated license, and license range Go files.
+func extractLicenses() error {
 	// open file
 	file, err := os.Open("licenses.json")
 	if err != nil {
@@ -34375,12 +34450,18 @@ func extractLicenseIDs() error {
 	}
 
 	// generate the GetLicenses() function in get_licenses.go
-	getLicensesContents := []byte(`package spdxlicenses
+	getLicensesContents := fmt.Appendf(nil, `package spdxlicenses
 
 // Code generated by go-spdx cmd/license.go. DO NOT EDIT.
 // Source: https://github.com/spdx/license-list-data specifies official SPDX license list.
 
 import "strings"
+
+// LicenseListVersion returns the SPDX License List version from which the
+// generated license IDs were sourced.
+func LicenseListVersion() string {
+	return %q
+}
 
 // IsActiveLicense does a case-insensitive lookup for the license id in the active licenses map.
 // It returns true and the case-sensitive ID if found, otherwise false and the original id.
@@ -34404,7 +34485,7 @@ func GetLicensesMap() map[string]string {
 // GetLicenses returns a slice of active license IDs.
 func GetLicenses() []string {
 	return []string{
-`)
+`, licenseData.Version)
 	for _, id := range activeLicenseIDs {
 		getLicensesContents = append(getLicensesContents, `		"`+id+`",
 `...)
@@ -34494,12 +34575,16 @@ func GetDeprecated() []string {
 	}
 	fmt.Println("Writing `../spdxexp/spdxlicenses/get_deprecated.go`... COMPLETE")
 
+	if err := generateLicenseRanges(licenseData.Licenses, "../spdxexp/spdxlicenses/license_ranges.go"); err != nil {
+		return fmt.Errorf("generate license ranges: %w", err)
+	}
+
 	return nil
 }
 
---- github.com/github/go-spdx/v2@v2.7.1 / cmd/license_ids.json ---
+--- github.com/github/go-spdx/v2@v2.8.0 / cmd/license_ids.json ---
 ["0BSD","AAL","Abstyles","Adobe-2006","Adobe-Glyph","ADSL","AFL-1.1","AFL-1.2","AFL-2.0","AFL-2.1","AFL-3.0","Afmparse","AGPL-1.0-only","AGPL-1.0-or-later","AGPL-3.0-only","AGPL-3.0-or-later","Aladdin","AMDPLPA","AML","AMPAS","ANTLR-PD","ANTLR-PD-fallback","Apache-1.0","Apache-1.1","Apache-2.0","APAFML","APL-1.0","App-s2p","APSL-1.0","APSL-1.1","APSL-1.2","APSL-2.0","Arphic-1999","Artistic-1.0","Artistic-1.0-cl8","Artistic-1.0-Perl","Artistic-2.0","Baekmuk","Bahyph","Barr","Beerware","Bitstream-Charter","Bitstream-Vera","BitTorrent-1.0","BitTorrent-1.1","blessing","BlueOak-1.0.0","Borceux","BSD-1-Clause","BSD-2-Clause","BSD-2-Clause-Patent","BSD-2-Clause-Views","BSD-3-Clause","BSD-3-Clause-Attribution","BSD-3-Clause-Clear","BSD-3-Clause-LBNL","BSD-3-Clause-Modification","BSD-3-Clause-No-Military-License","BSD-3-Clause-No-Nuclear-License","BSD-3-Clause-No-Nuclear-License-2014","BSD-3-Clause-No-Nuclear-Warranty","BSD-3-Clause-Open-MPI","BSD-4-Clause","BSD-4-Clause-Shortened","BSD-4-Clause-UC","BSD-Protection","BSD-Source-Code","BSL-1.0","BUSL-1.1","bzip2-1.0.6","C-UDA-1.0","CAL-1.0","CAL-1.0-Combined-Work-Exception","Caldera","CATOSL-1.1","CC-BY-1.0","CC-BY-2.0","CC-BY-2.5","CC-BY-2.5-AU","CC-BY-3.0","CC-BY-3.0-AT","CC-BY-3.0-DE","CC-BY-3.0-IGO","CC-BY-3.0-NL","CC-BY-3.0-US","CC-BY-4.0","CC-BY-NC-1.0","CC-BY-NC-2.0","CC-BY-NC-2.5","CC-BY-NC-3.0","CC-BY-NC-3.0-DE","CC-BY-NC-4.0","CC-BY-NC-ND-1.0","CC-BY-NC-ND-2.0","CC-BY-NC-ND-2.5","CC-BY-NC-ND-3.0","CC-BY-NC-ND-3.0-DE","CC-BY-NC-ND-3.0-IGO","CC-BY-NC-ND-4.0","CC-BY-NC-SA-1.0","CC-BY-NC-SA-2.0","CC-BY-NC-SA-2.0-DE","CC-BY-NC-SA-2.0-FR","CC-BY-NC-SA-2.0-UK","CC-BY-NC-SA-2.5","CC-BY-NC-SA-3.0","CC-BY-NC-SA-3.0-DE","CC-BY-NC-SA-3.0-IGO","CC-BY-NC-SA-4.0","CC-BY-ND-1.0","CC-BY-ND-2.0","CC-BY-ND-2.5","CC-BY-ND-3.0","CC-BY-ND-3.0-DE","CC-BY-ND-4.0","CC-BY-SA-1.0","CC-BY-SA-2.0","CC-BY-SA-2.0-UK","CC-BY-SA-2.1-JP","CC-BY-SA-2.5","CC-BY-SA-3.0","CC-BY-SA-3.0-AT","CC-BY-SA-3.0-DE","CC-BY-SA-4.0","CC-PDDC","CC0-1.0","CDDL-1.0","CDDL-1.1","CDL-1.0","CDLA-Permissive-1.0","CDLA-Permissive-2.0","CDLA-Sharing-1.0","CECILL-1.0","CECILL-1.1","CECILL-2.0","CECILL-2.1","CECILL-B","CECILL-C","CERN-OHL-1.1","CERN-OHL-1.2","CERN-OHL-P-2.0","CERN-OHL-S-2.0","CERN-OHL-W-2.0","checkmk","ClArtistic","CNRI-Jython","CNRI-Python","CNRI-Python-GPL-Compatible","COIL-1.0","Community-Spec-1.0","Condor-1.1","copyleft-next-0.3.0","copyleft-next-0.3.1","CPAL-1.0","CPL-1.0","CPOL-1.02","Crossword","CrystalStacker","CUA-OPL-1.0","Cube","curl","D-FSL-1.0","diffmark","DL-DE-BY-2.0","DOC","Dotseqn","DRL-1.0","DSDP","dvipdfm","ECL-1.0","ECL-2.0","EFL-1.0","EFL-2.0","eGenix","Elastic-2.0","Entessa","EPICS","EPL-1.0","EPL-2.0","ErlPL-1.1","etalab-2.0","EUDatagrid","EUPL-1.0","EUPL-1.1","EUPL-1.2","Eurosym","Fair","FDK-AAC","Frameworx-1.0","FreeBSD-DOC","FreeImage","FSFAP","FSFUL","FSFULLR","FSFULLRWD","FTL","GD","GFDL-1.1-invariants-only","GFDL-1.1-invariants-or-later","GFDL-1.1-no-invariants-only","GFDL-1.1-no-invariants-or-later","GFDL-1.1-only","GFDL-1.1-or-later","GFDL-1.2-invariants-only","GFDL-1.2-invariants-or-later","GFDL-1.2-no-invariants-only","GFDL-1.2-no-invariants-or-later","GFDL-1.2-only","GFDL-1.2-or-later","GFDL-1.3-invariants-only","GFDL-1.3-invariants-or-later","GFDL-1.3-no-invariants-only","GFDL-1.3-no-invariants-or-later","GFDL-1.3-only","GFDL-1.3-or-later","Giftware","GL2PS","Glide","Glulxe","GLWTPL","gnuplot","GPL-1.0-only","GPL-1.0-or-later","GPL-2.0-only","GPL-2.0-or-later","GPL-3.0-only","GPL-3.0-or-later","Graphics-Gems","gSOAP-1.3b","HaskellReport","Hippocratic-2.1","HPND","HPND-export-US","HPND-sell-variant","HTMLTIDY","IBM-pibs","ICU","IJG","IJG-short","ImageMagick","iMatix","Imlib2","Info-ZIP","Intel","Intel-ACPI","Interbase-1.0","IPA","IPL-1.0","ISC","Jam","JasPer-2.0","JPNIC","JSON","Knuth-CTAN","LAL-1.2","LAL-1.3","Latex2e","Leptonica","LGPL-2.0-only","LGPL-2.0-or-later","LGPL-2.1-only","LGPL-2.1-or-later","LGPL-3.0-only","LGPL-3.0-or-later","LGPLLR","Libpng","libpng-2.0","libselinux-1.0","libtiff","libutil-David-Nugent","LiLiQ-P-1.1","LiLiQ-R-1.1","LiLiQ-Rplus-1.1","Linux-man-pages-copyleft","Linux-OpenIB","LOOP","LPL-1.0","LPL-1.02","LPPL-1.0","LPPL-1.1","LPPL-1.2","LPPL-1.3a","LPPL-1.3c","LZMA-SDK-9.11-to-9.20","LZMA-SDK-9.22","MakeIndex","Minpack","MirOS","MIT","MIT-0","MIT-advertising","MIT-CMU","MIT-enna","MIT-feh","MIT-Modern-Variant","MIT-open-group","MIT-Wu","MITNFA","Motosoto","mpi-permissive","mpich2","MPL-1.0","MPL-1.1","MPL-2.0","MPL-2.0-no-copyleft-exception","mplus","MS-LPL","MS-PL","MS-RL","MTLL","MulanPSL-1.0","MulanPSL-2.0","Multics","Mup","NAIST-2003","NASA-1.3","Naumen","NBPL-1.0","NCGL-UK-2.0","NCSA","Net-SNMP","NetCDF","Newsletr","NGPL","NICTA-1.0","NIST-PD","NIST-PD-fallback","NLOD-1.0","NLOD-2.0","NLPL","Nokia","NOSL","Noweb","NPL-1.0","NPL-1.1","NPOSL-3.0","NRL","NTP","NTP-0","O-UDA-1.0","OCCT-PL","OCLC-2.0","ODbL-1.0","ODC-By-1.0","OFL-1.0","OFL-1.0-no-RFN","OFL-1.0-RFN","OFL-1.1","OFL-1.1-no-RFN","OFL-1.1-RFN","OGC-1.0","OGDL-Taiwan-1.0","OGL-Canada-2.0","OGL-UK-1.0","OGL-UK-2.0","OGL-UK-3.0","OGTSL","OLDAP-1.1","OLDAP-1.2","OLDAP-1.3","OLDAP-1.4","OLDAP-2.0","OLDAP-2.0.1","OLDAP-2.1","OLDAP-2.2","OLDAP-2.2.1","OLDAP-2.2.2","OLDAP-2.3","OLDAP-2.4","OLDAP-2.5","OLDAP-2.6","OLDAP-2.7","OLDAP-2.8","OML","OpenSSL","OPL-1.0","OPUBL-1.0","OSET-PL-2.1","OSL-1.0","OSL-1.1","OSL-2.0","OSL-2.1","OSL-3.0","Parity-6.0.0","Parity-7.0.0","PDDL-1.0","PHP-3.0","PHP-3.01","Plexus","PolyForm-Noncommercial-1.0.0","PolyForm-Small-Business-1.0.0","PostgreSQL","PSF-2.0","psfrag","psutils","Python-2.0","Python-2.0.1","Qhull","QPL-1.0","Rdisc","RHeCos-1.1","RPL-1.1","RPL-1.5","RPSL-1.0","RSA-MD","RSCPL","Ruby","SAX-PD","Saxpath","SCEA","SchemeReport","Sendmail","Sendmail-8.23","SGI-B-1.0","SGI-B-1.1","SGI-B-2.0","SHL-0.5","SHL-0.51","SimPL-2.0","SISSL","SISSL-1.2","Sleepycat","SMLNJ","SMPPL","SNIA","Spencer-86","Spencer-94","Spencer-99","SPL-1.0","SSH-OpenSSH","SSH-short","SSPL-1.0","SugarCRM-1.1.3","SWL","Symlinks","TAPR-OHL-1.0","TCL","TCP-wrappers","TMate","TORQUE-1.1","TOSL","TPDL","TTWL","TU-Berlin-1.0","TU-Berlin-2.0","UCL-1.0","Unicode-DFS-2015","Unicode-DFS-2016","Unicode-TOU","Unlicense","UPL-1.0","Vim","VOSTROM","VSL-1.0","W3C","W3C-19980720","W3C-20150513","Watcom-1.0","Wsuipa","WTFPL","X11","X11-distribute-modifications-variant","Xerox","XFree86-1.1","xinetd","Xnet","xpp","XSkat","YPL-1.0","YPL-1.1","Zed","Zend-2.0","Zimbra-1.3","Zimbra-1.4","Zlib","zlib-acknowledgement","ZPL-1.1","ZPL-2.0","ZPL-2.1"]
---- github.com/github/go-spdx/v2@v2.7.1 / cmd/license_ids.txt ---
+--- github.com/github/go-spdx/v2@v2.8.0 / cmd/license_ids.txt ---
 		"0BSD",
 		"AAL",
 		"Abstyles",
@@ -34980,7 +35065,326 @@ func GetDeprecated() []string {
 		"ZPL-2.0",
 		"ZPL-2.1",
 
---- github.com/github/go-spdx/v2@v2.7.1 / cmd/licenses.json ---
+--- github.com/github/go-spdx/v2@v2.8.0 / cmd/license_ranges.go ---
+package main
+
+import (
+	"fmt"
+	"go/format"
+	"os"
+	"regexp"
+	"sort"
+	"strconv"
+	"strings"
+)
+
+type licenseRangeFamily struct {
+	base                string
+	suffix              string
+	inheritBaseVersions bool
+}
+
+var includedLicenseRangeFamilies = []licenseRangeFamily{
+	{base: "Brian-Gladman", suffix: "-Clause"},
+	{base: "MPL", suffix: "-no-copyleft-exception", inheritBaseVersions: true},
+}
+
+var excludedLicenseRangeFamilyBases = map[string]struct{}{
+	"Spencer": {},
+}
+
+const licenseVersionPattern = `\d+(?:\.\d+)*(?:[a-z])?`
+
+var standardLicenseVersionPattern = regexp.MustCompile("^(.+)-(" + licenseVersionPattern + ")$")
+
+func generateLicenseRanges(licenses []License, outputPath string) error {
+	ranges := buildLicenseRanges(licenses)
+	contents := []byte(`package spdxlicenses
+
+// Code generated by go-spdx cmd/license_ranges.go. DO NOT EDIT.
+// Source: https://github.com/spdx/license-list-data specifies official SPDX license list.
+
+// LicenseRanges returns license version groups in ascending version order.
+// IDs within the same version group are equivalent (for example, GPL-2.0 and GPL-2.0-only).
+func LicenseRanges() [][][]string {
+	return [][][]string{
+`)
+	for _, family := range ranges {
+		contents = append(contents, "\t\t{\n"...)
+		for _, version := range family {
+			contents = append(contents, "\t\t\t{\n"...)
+			for _, id := range version {
+				contents = append(contents, fmt.Sprintf("\t\t\t\t%q,\n", id)...)
+			}
+			contents = append(contents, "\t\t\t},\n"...)
+		}
+		contents = append(contents, "\t\t},\n"...)
+	}
+	contents = append(contents, "\t}\n}\n"...)
+
+	contents, err := format.Source(contents)
+	if err != nil {
+		return fmt.Errorf("format generated license_ranges.go: %w", err)
+	}
+	if err := os.WriteFile(outputPath, contents, 0600); err != nil {
+		return err
+	}
+	fmt.Println("Writing `../spdxexp/spdxlicenses/license_ranges.go`... COMPLETE")
+	return nil
+}
+
+func buildLicenseRanges(licenses []License) [][][]string {
+	licenseIDs := make(map[string]struct{}, len(licenses))
+	for _, license := range licenses {
+		licenseIDs[license.LicenseID] = struct{}{}
+	}
+
+	families := buildLicenseRangeFamilies(licenses, includedLicenseRangeFamilies, excludedLicenseRangeFamilyBases)
+	ranges := make([][][]string, 0, len(families))
+	for _, family := range families {
+		pattern := regexp.MustCompile("^" + regexp.QuoteMeta(family.base) + "-(" + licenseVersionPattern + ")" + regexp.QuoteMeta(family.suffix) + "$")
+		versions := make(map[string][]string)
+		for id := range licenseIDs {
+			matches := pattern.FindStringSubmatch(id)
+			if matches == nil {
+				continue
+			}
+			versions[matches[1]] = append(versions[matches[1]], id)
+			if family.suffix == "" {
+				onlyID := id + "-only"
+				if _, ok := licenseIDs[onlyID]; ok {
+					versions[matches[1]] = append(versions[matches[1]], onlyID)
+				}
+			}
+		}
+		if family.inheritBaseVersions {
+			basePattern := regexp.MustCompile("^" + regexp.QuoteMeta(family.base) + "-(" + licenseVersionPattern + ")$")
+			for id := range licenseIDs {
+				matches := basePattern.FindStringSubmatch(id)
+				if matches != nil {
+					if _, overridden := versions[matches[1]]; !overridden {
+						versions[matches[1]] = []string{id}
+					}
+				}
+			}
+		}
+
+		versionNames := make([]string, 0, len(versions))
+		for version := range versions {
+			versionNames = append(versionNames, version)
+		}
+		sort.Slice(versionNames, func(i, j int) bool {
+			return compareLicenseVersions(versionNames[i], versionNames[j]) < 0
+		})
+
+		licenseGroup := make([][]string, 0, len(versionNames))
+		for _, version := range versionNames {
+			sort.Strings(versions[version])
+			licenseGroup = append(licenseGroup, versions[version])
+		}
+		if len(licenseGroup) > 1 {
+			ranges = append(ranges, licenseGroup)
+		}
+	}
+	return ranges
+}
+
+func buildLicenseRangeFamilies(licenses []License, included []licenseRangeFamily, excluded map[string]struct{}) []licenseRangeFamily {
+	versionsByBase := make(map[string]map[string]struct{})
+	for _, license := range licenses {
+		matches := standardLicenseVersionPattern.FindStringSubmatch(license.LicenseID)
+		if matches == nil {
+			continue
+		}
+		if _, excluded := excluded[matches[1]]; excluded {
+			continue
+		}
+		if versionsByBase[matches[1]] == nil {
+			versionsByBase[matches[1]] = make(map[string]struct{})
+		}
+		versionsByBase[matches[1]][matches[2]] = struct{}{}
+	}
+
+	familiesByKey := make(map[string]licenseRangeFamily, len(versionsByBase)+len(included))
+	for base, versions := range versionsByBase {
+		if len(versions) > 1 {
+			familiesByKey[base+"\x00"] = licenseRangeFamily{base: base}
+		}
+	}
+	for _, family := range included {
+		familiesByKey[family.base+"\x00"+family.suffix] = family
+	}
+
+	families := make([]licenseRangeFamily, 0, len(familiesByKey))
+	for _, family := range familiesByKey {
+		families = append(families, family)
+	}
+	sort.Slice(families, func(i, j int) bool {
+		firstBase := strings.ToLower(families[i].base)
+		secondBase := strings.ToLower(families[j].base)
+		if firstBase != secondBase {
+			return firstBase < secondBase
+		}
+		if families[i].base != families[j].base {
+			return families[i].base < families[j].base
+		}
+		return families[i].suffix < families[j].suffix
+	})
+	return families
+}
+
+func compareLicenseVersions(first, second string) int {
+	firstParts := strings.FieldsFunc(first, func(r rune) bool { return r == '.' })
+	secondParts := strings.FieldsFunc(second, func(r rune) bool { return r == '.' })
+	for i := 0; i < len(firstParts) && i < len(secondParts); i++ {
+		firstNumber, firstSuffix := splitVersionPart(firstParts[i])
+		secondNumber, secondSuffix := splitVersionPart(secondParts[i])
+		if firstNumber != secondNumber {
+			return firstNumber - secondNumber
+		}
+		if firstSuffix != secondSuffix {
+			return strings.Compare(firstSuffix, secondSuffix)
+		}
+	}
+	return len(firstParts) - len(secondParts)
+}
+
+func splitVersionPart(part string) (int, string) {
+	index := 0
+	for index < len(part) && part[index] >= '0' && part[index] <= '9' {
+		index++
+	}
+	number, _ := strconv.Atoi(part[:index])
+	return number, part[index:]
+}
+
+--- github.com/github/go-spdx/v2@v2.8.0 / cmd/license_ranges_test.go ---
+package main
+
+import (
+	"os"
+	"path/filepath"
+	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+)
+
+func TestGenerateLicenseRanges(t *testing.T) {
+	configureExampleLicenseRangeFamilies(t)
+
+	outputPath := filepath.Join(t.TempDir(), "license_ranges.go")
+	licenses := []License{
+		{LicenseID: "Example-10.0"},
+		{LicenseID: "Example-2.0-only"},
+		{LicenseID: "Example-1.0-or-later"},
+		{LicenseID: "Example-1.0"},
+		{LicenseID: "Example-2.0"},
+		{LicenseID: "Example-3.0-special"},
+		{LicenseID: "Example-1.0-special"},
+		{LicenseID: "SingleVersion-2.0"},
+	}
+
+	require.NoError(t, generateLicenseRanges(licenses, outputPath))
+	// #nosec G304 -- path is created within t.TempDir for this test.
+	generated, err := os.ReadFile(outputPath)
+	require.NoError(t, err)
+	golden, err := os.ReadFile("testdata/license_ranges.golden")
+	require.NoError(t, err)
+
+	assert.Equal(t, string(golden), string(generated))
+}
+
+func TestBuildLicenseRanges(t *testing.T) {
+	configureExampleLicenseRangeFamilies(t)
+
+	licenses := []License{
+		{LicenseID: "Example-10.0"},
+		{LicenseID: "Example-2.0-only"},
+		{LicenseID: "Example-1.0-or-later"},
+		{LicenseID: "Example-1.0"},
+		{LicenseID: "Example-2.0"},
+		{LicenseID: "Example-3.0-special"},
+		{LicenseID: "Example-1.0-special"},
+		{LicenseID: "SingleVersion-2.0"},
+	}
+
+	licenseRanges := buildLicenseRanges(licenses)
+
+	assert.Equal(t, [][][]string{
+		{{"Example-1.0"}, {"Example-2.0", "Example-2.0-only"}, {"Example-10.0"}},
+		{{"Example-1.0-special"}, {"Example-2.0"}, {"Example-3.0-special"}, {"Example-10.0"}},
+	}, licenseRanges)
+
+	assert.NotContains(t, licenseRanges, [][]string{{"SingleVersion-2.0"}})
+}
+
+func configureExampleLicenseRangeFamilies(t *testing.T) {
+	previousIncluded := includedLicenseRangeFamilies
+	previousExcluded := excludedLicenseRangeFamilyBases
+	includedLicenseRangeFamilies = []licenseRangeFamily{
+		{base: "Example"},
+		{base: "Example", suffix: "-special", inheritBaseVersions: true},
+	}
+	excludedLicenseRangeFamilyBases = nil
+	t.Cleanup(func() {
+		includedLicenseRangeFamilies = previousIncluded
+		excludedLicenseRangeFamilyBases = previousExcluded
+	})
+}
+
+func TestBuildLicenseRangeFamilies(t *testing.T) {
+	licenses := []License{
+		{LicenseID: "Apache-1.0"},
+		{LicenseID: "Apache-2.0"},
+		{LicenseID: "ASWF-1.0"},
+		{LicenseID: "ASWF-2.0"},
+		{LicenseID: "Example-1.0"},
+		{LicenseID: "Example-2.0"},
+		{LicenseID: "Excluded-1.0"},
+		{LicenseID: "Excluded-2.0"},
+		{LicenseID: "Singleton-1.0"},
+		{LicenseID: "Special-2-Clause"},
+		{LicenseID: "Special-3-Clause"},
+	}
+	included := []licenseRangeFamily{{base: "Special", suffix: "-Clause"}}
+	excluded := map[string]struct{}{"Excluded": {}}
+
+	tests := []struct {
+		name                 string
+		licenses             []License
+		included             []licenseRangeFamily
+		excluded             map[string]struct{}
+		licenseRangeFamilies []licenseRangeFamily
+	}{
+		{"no version", []License{{LicenseID: "Example"}}, nil, nil, []licenseRangeFamily{}},
+		{"only one version", []License{{LicenseID: "Singleton-1.0"}}, nil, nil, []licenseRangeFamily{}},
+		{"multiple versions", []License{{LicenseID: "Example-1.0"}, {LicenseID: "Example-2.0"}}, nil, nil, []licenseRangeFamily{{base: "Example"}}},
+		{"included with suffix", []License{{LicenseID: "Special-2-Clause"}, {LicenseID: "Special-3-Clause"}}, included, nil, []licenseRangeFamily{{base: "Special", suffix: "-Clause"}}},
+		{"excluded base", []License{{LicenseID: "Excluded-1.0"}, {LicenseID: "Excluded-2.0"}}, nil, excluded, []licenseRangeFamily{}},
+		{"multiple families", licenses, included, excluded, []licenseRangeFamily{
+			{base: "Apache"},
+			{base: "ASWF"},
+			{base: "Example"},
+			{base: "Special", suffix: "-Clause"},
+		}},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			licenseRangeFamilies := buildLicenseRangeFamilies(test.licenses, test.included, test.excluded)
+			assert.Equal(t, test.licenseRangeFamilies, licenseRangeFamilies)
+		})
+	}
+}
+
+func TestCompareLicenseVersions(t *testing.T) {
+	assert.Negative(t, compareLicenseVersions("1.3a", "1.3c"))
+	assert.Negative(t, compareLicenseVersions("2.0", "10.0"))
+	assert.Zero(t, compareLicenseVersions("2.0", "2.0"))
+}
+
+--- github.com/github/go-spdx/v2@v2.8.0 / cmd/licenses.json ---
 {
   "licenseListVersion": "3.29.0",
   "licenses": [
@@ -44268,7 +44672,46 @@ func GetDeprecated() []string {
   ],
   "releaseDate": "2026-09-16T00:00:00Z"
 }
---- github.com/github/go-spdx/v2@v2.7.1 / spdxexp/license.go ---
+--- github.com/github/go-spdx/v2@v2.8.0 / cmd/testdata/license_ranges.golden ---
+package spdxlicenses
+
+// Code generated by go-spdx cmd/license_ranges.go. DO NOT EDIT.
+// Source: https://github.com/spdx/license-list-data specifies official SPDX license list.
+
+// LicenseRanges returns license version groups in ascending version order.
+// IDs within the same version group are equivalent (for example, GPL-2.0 and GPL-2.0-only).
+func LicenseRanges() [][][]string {
+	return [][][]string{
+		{
+			{
+				"Example-1.0",
+			},
+			{
+				"Example-2.0",
+				"Example-2.0-only",
+			},
+			{
+				"Example-10.0",
+			},
+		},
+		{
+			{
+				"Example-1.0-special",
+			},
+			{
+				"Example-2.0",
+			},
+			{
+				"Example-3.0-special",
+			},
+			{
+				"Example-10.0",
+			},
+		},
+	}
+}
+
+--- github.com/github/go-spdx/v2@v2.8.0 / spdxexp/license.go ---
 package spdxexp
 
 import (
@@ -44339,7 +44782,7 @@ func simplifyLicense(id string) string {
 	return id
 }
 
---- github.com/github/go-spdx/v2@v2.7.1 / spdxexp/license_test.go ---
+--- github.com/github/go-spdx/v2@v2.8.0 / spdxexp/license_test.go ---
 package spdxexp
 
 import (
@@ -44463,36 +44906,40 @@ func TestGetLicenseRange(t *testing.T) {
 	tests := []struct {
 		name         string
 		id           string
-		licenseRange *licenseRange
+		licenses     []string
+		versionGroup int
+		licenseIndex int
 	}{
-		{"no multi-element ranges", "Apache-2.0", &licenseRange{
-			licenses: []string{"Apache-2.0"},
-			location: map[uint8]int{licenseGroup: 2, versionGroup: 2, licenseIndex: 0}}},
-		{"multi-element ranges", "GFDL-1.2-only", &licenseRange{
-			licenses: []string{"GFDL-1.2", "GFDL-1.2-only"},
-			location: map[uint8]int{licenseGroup: 21, versionGroup: 1, licenseIndex: 1}}},
-		{"no range", "Bison-exception-2.2", nil},
+		{"no multi-element ranges", "Apache-2.0", []string{"Apache-2.0"}, 2, 0},
+		{"multi-element ranges", "GFDL-1.2-only", []string{"GFDL-1.2", "GFDL-1.2-only"}, 1, 1},
+		{"no range", "Bison-exception-2.2", nil, 0, 0},
 	}
 
 	for _, test := range tests {
 		test := test
 		t.Run(test.name, func(t *testing.T) {
 			licenseRange := getLicenseRange(test.id)
-			assert.Equal(t, test.licenseRange, licenseRange)
+			if test.licenses == nil {
+				assert.Nil(t, licenseRange)
+				return
+			}
+			if assert.NotNil(t, licenseRange) {
+				assert.Equal(t, test.licenses, licenseRange.licenses)
+				assert.Equal(t, test.versionGroup, licenseRange.location[versionGroup])
+				assert.Equal(t, test.licenseIndex, licenseRange.location[licenseIndex])
+			}
 		})
 	}
 }
 
---- github.com/github/go-spdx/v2@v2.7.1 / spdxexp/spdxlicenses/license_ranges.go ---
+--- github.com/github/go-spdx/v2@v2.8.0 / spdxexp/spdxlicenses/license_ranges.go ---
 package spdxlicenses
 
-// LicenseRanges returns a list of license ranges.
-//
-// Ranges are organized into groups (referred to as license groups) of the same base license (e.g. GPL).
-// Groups have sub-groups of license versions (referred to as the range) where each member is considered
-// to be the same version (e.g. {GPL-2.0, GPL-2.0-only}). The sub-groups are in ascending order within
-// the license group, such that the first sub-group is considered to be less than the second sub-group,
-// and so on. (e.g. {{GPL-1.0}, {GPL-2.0, GPL-2.0-only}} implies {GPL-1.0} < {GPL-2.0, GPL-2.0-only}).
+// Code generated by go-spdx cmd/license_ranges.go. DO NOT EDIT.
+// Source: https://github.com/spdx/license-list-data specifies official SPDX license list.
+
+// LicenseRanges returns license version groups in ascending version order.
+// IDs within the same version group are equivalent (for example, GPL-2.0 and GPL-2.0-only).
 func LicenseRanges() [][][]string {
 	return [][][]string{
 		{
@@ -44515,6 +44962,7 @@ func LicenseRanges() [][][]string {
 		{
 			{
 				"AGPL-1.0",
+				"AGPL-1.0-only",
 			},
 			{
 				"AGPL-3.0",
@@ -44576,6 +45024,14 @@ func LicenseRanges() [][][]string {
 			},
 			{
 				"Brian-Gladman-3-Clause",
+			},
+		},
+		{
+			{
+				"bzip2-1.0.5",
+			},
+			{
+				"bzip2-1.0.6",
 			},
 		},
 		{
@@ -44690,6 +45146,14 @@ func LicenseRanges() [][][]string {
 		},
 		{
 			{
+				"CDLA-Permissive-1.0",
+			},
+			{
+				"CDLA-Permissive-2.0",
+			},
+		},
+		{
+			{
 				"CECILL-1.0",
 			},
 			{
@@ -44697,6 +45161,25 @@ func LicenseRanges() [][][]string {
 			},
 			{
 				"CECILL-2.0",
+			},
+			{
+				"CECILL-2.1",
+			},
+		},
+		{
+			{
+				"CERN-OHL-1.1",
+			},
+			{
+				"CERN-OHL-1.2",
+			},
+		},
+		{
+			{
+				"copyleft-next-0.3.0",
+			},
+			{
+				"copyleft-next-0.3.1",
 			},
 		},
 		{
@@ -44738,6 +45221,9 @@ func LicenseRanges() [][][]string {
 			{
 				"EUPL-1.1",
 			},
+			{
+				"EUPL-1.2",
+			},
 		},
 		{
 			{
@@ -44749,11 +45235,8 @@ func LicenseRanges() [][][]string {
 				"GFDL-1.2-only",
 			},
 			{
-				"GFDL-1.1-or-later",
-				"GFDL-1.2-or-later",
 				"GFDL-1.3",
 				"GFDL-1.3-only",
-				"GFDL-1.3-or-later",
 			},
 		},
 		{
@@ -44766,11 +45249,8 @@ func LicenseRanges() [][][]string {
 				"GPL-2.0-only",
 			},
 			{
-				"GPL-1.0-or-later",
-				"GPL-2.0-or-later",
 				"GPL-3.0",
 				"GPL-3.0-only",
-				"GPL-3.0-or-later",
 			},
 		},
 		{
@@ -44783,6 +45263,14 @@ func LicenseRanges() [][][]string {
 		},
 		{
 			{
+				"LAL-1.2",
+			},
+			{
+				"LAL-1.3",
+			},
+		},
+		{
+			{
 				"LGPL-2.0",
 				"LGPL-2.0-only",
 			},
@@ -44791,11 +45279,16 @@ func LicenseRanges() [][][]string {
 				"LGPL-2.1-only",
 			},
 			{
-				"LGPL-2.0-or-later",
-				"LGPL-2.1-or-later",
 				"LGPL-3.0",
 				"LGPL-3.0-only",
-				"LGPL-3.0-or-later",
+			},
+		},
+		{
+			{
+				"libpng-1.6.35",
+			},
+			{
+				"libpng-2.0",
 			},
 		},
 		{
@@ -44847,6 +45340,22 @@ func LicenseRanges() [][][]string {
 		},
 		{
 			{
+				"MulanPSL-1.0",
+			},
+			{
+				"MulanPSL-2.0",
+			},
+		},
+		{
+			{
+				"NLOD-1.0",
+			},
+			{
+				"NLOD-2.0",
+			},
+		},
+		{
+			{
 				"NPL-1.0",
 			},
 			{
@@ -44859,6 +45368,17 @@ func LicenseRanges() [][][]string {
 			},
 			{
 				"OFL-1.1",
+			},
+		},
+		{
+			{
+				"OGL-UK-1.0",
+			},
+			{
+				"OGL-UK-2.0",
+			},
+			{
+				"OGL-UK-3.0",
 			},
 		},
 		{
@@ -44930,10 +45450,26 @@ func LicenseRanges() [][][]string {
 		},
 		{
 			{
+				"Parity-6.0.0",
+			},
+			{
+				"Parity-7.0.0",
+			},
+		},
+		{
+			{
 				"PHP-3.0",
 			},
 			{
 				"PHP-3.01",
+			},
+		},
+		{
+			{
+				"Python-2.0",
+			},
+			{
+				"Python-2.0.1",
 			},
 		},
 		{
@@ -44957,21 +45493,26 @@ func LicenseRanges() [][][]string {
 		},
 		{
 			{
-				"YPL-1.0",
+				"SHL-0.5",
 			},
 			{
-				"YPL-1.1",
+				"SHL-0.51",
 			},
 		},
 		{
 			{
-				"ZPL-1.1",
+				"TU-Berlin-1.0",
 			},
 			{
-				"ZPL-2.0",
+				"TU-Berlin-2.0",
+			},
+		},
+		{
+			{
+				"YPL-1.0",
 			},
 			{
-				"ZPL-2.1",
+				"YPL-1.1",
 			},
 		},
 		{
@@ -44984,10 +45525,13 @@ func LicenseRanges() [][][]string {
 		},
 		{
 			{
-				"bzip2-1.0.5",
+				"ZPL-1.1",
 			},
 			{
-				"bzip2-1.0.6",
+				"ZPL-2.0",
+			},
+			{
+				"ZPL-2.1",
 			},
 		},
 	}
@@ -45429,7 +45973,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
    See the License for the specific language governing permissions and
    limitations under the License.
 
---- github.com/go-jose/go-jose/v4@v4.1.5 / LICENSE ---
+--- github.com/go-jose/go-jose/v4@v4.1.6 / LICENSE ---
 
                                  Apache License
                            Version 2.0, January 2004
@@ -45633,7 +46177,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
    See the License for the specific language governing permissions and
    limitations under the License.
 
---- github.com/go-jose/go-jose/v4@v4.1.5 / json/LICENSE ---
+--- github.com/go-jose/go-jose/v4@v4.1.6 / json/LICENSE ---
 Copyright (c) 2012 The Go Authors. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -48399,7 +48943,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to [http://unlicense.org]
 
---- github.com/google/pprof@v0.0.0-20260802141513-ef3492d7dac3 / AUTHORS ---
+--- github.com/google/pprof@v0.0.0-20261016150608-1facf8f91b50 / AUTHORS ---
 # This is the official list of pprof authors for copyright purposes.
 # This file is distinct from the CONTRIBUTORS files.
 # See the latter for an explanation.
@@ -48407,7 +48951,7 @@ For more information, please refer to [http://unlicense.org]
 # Name or Organization <email address>
 # The email address is not required for organizations.
 Google Inc.
---- github.com/google/pprof@v0.0.0-20260802141513-ef3492d7dac3 / LICENSE ---
+--- github.com/google/pprof@v0.0.0-20261016150608-1facf8f91b50 / LICENSE ---
 
                                  Apache License
                            Version 2.0, January 2004
@@ -48611,7 +49155,7 @@ Google Inc.
    See the License for the specific language governing permissions and
    limitations under the License.
 
---- github.com/google/pprof@v0.0.0-20260802141513-ef3492d7dac3 / third_party/svgpan/LICENSE ---
+--- github.com/google/pprof@v0.0.0-20261016150608-1facf8f91b50 / third_party/svgpan/LICENSE ---
 Copyright 2009-2017 Andrea Leofreddi <a.leofreddi@vleo.net>. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification, are
@@ -49106,7 +49650,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
---- github.com/gookit/color@v1.6.2 / LICENSE ---
+--- github.com/gookit/color@v1.6.3 / LICENSE ---
 The MIT License (MIT)
 
 Copyright (c) 2016 inhere
@@ -49127,10 +49671,10 @@ FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
 COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
 IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
---- github.com/gpustack/gguf-parser-go@v0.26.4 / LICENSE ---
+--- github.com/gpustack/gguf-parser-go@v0.28.1 / LICENSE ---
 MIT License
 
-Copyright (c) 2024 gguf-parser-go authors
+Copyright (c) 2024-2026 gguf-parser-go authors
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -52314,7 +52858,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
---- github.com/klauspost/compress@v1.20.1 / LICENSE ---
+--- github.com/klauspost/compress@v1.20.3 / LICENSE ---
 Copyright (c) 2012 The Go Authors. All rights reserved.
 Copyright (c) 2019 Klaus Post. All rights reserved.
 
@@ -52620,7 +53164,7 @@ The above copyright notice and this permission notice shall be included in all c
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
---- github.com/klauspost/compress@v1.20.1 / gzhttp/LICENSE ---
+--- github.com/klauspost/compress@v1.20.3 / gzhttp/LICENSE ---
                                  Apache License
                            Version 2.0, January 2004
                         http://www.apache.org/licenses/
@@ -52823,7 +53367,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
    See the License for the specific language governing permissions and
    limitations under the License.
 
---- github.com/klauspost/compress@v1.20.1 / internal/lz4ref/LICENSE ---
+--- github.com/klauspost/compress@v1.20.3 / internal/lz4ref/LICENSE ---
 Copyright (c) 2015, Pierre Curto
 All rights reserved.
 
@@ -52853,7 +53397,7 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
---- github.com/klauspost/compress@v1.20.1 / internal/snapref/LICENSE ---
+--- github.com/klauspost/compress@v1.20.3 / internal/snapref/LICENSE ---
 Copyright (c) 2011 The Snappy-Go Authors. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -52882,7 +53426,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
---- github.com/klauspost/compress@v1.20.1 / s2/LICENSE ---
+--- github.com/klauspost/compress@v1.20.3 / s2/LICENSE ---
 Copyright (c) 2011 The Snappy-Go Authors. All rights reserved.
 Copyright (c) 2019 Klaus Post. All rights reserved.
 
@@ -52912,7 +53456,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
---- github.com/klauspost/compress@v1.20.1 / s2/cmd/internal/filepathx/LICENSE ---
+--- github.com/klauspost/compress@v1.20.3 / s2/cmd/internal/filepathx/LICENSE ---
 Copyright 2016 The filepathx Authors
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
@@ -52921,7 +53465,7 @@ The above copyright notice and this permission notice shall be included in all c
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
---- github.com/klauspost/compress@v1.20.1 / s2/cmd/internal/readahead/LICENSE ---
+--- github.com/klauspost/compress@v1.20.3 / s2/cmd/internal/readahead/LICENSE ---
 The MIT License (MIT)
 
 Copyright (c) 2015 Klaus Post
@@ -52945,7 +53489,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 
---- github.com/klauspost/compress@v1.20.1 / snappy/AUTHORS ---
+--- github.com/klauspost/compress@v1.20.3 / snappy/AUTHORS ---
 # This is the official list of Snappy-Go authors for copyright purposes.
 # This file is distinct from the CONTRIBUTORS files.
 # See the latter for an explanation.
@@ -52965,7 +53509,7 @@ Klaus Post <klauspost@gmail.com>
 Rodolfo Carvalho <rhcarvalho@gmail.com>
 Sebastien Binet <seb.binet@gmail.com>
 
---- github.com/klauspost/compress@v1.20.1 / snappy/LICENSE ---
+--- github.com/klauspost/compress@v1.20.3 / snappy/LICENSE ---
 Copyright (c) 2011 The Snappy-Go Authors. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -52994,7 +53538,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
---- github.com/klauspost/compress@v1.20.1 / snappy/xerial/LICENSE ---
+--- github.com/klauspost/compress@v1.20.3 / snappy/xerial/LICENSE ---
 The MIT License (MIT)
 
 Copyright (c) 2016 Evan Huus
@@ -53018,7 +53562,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
---- github.com/klauspost/compress@v1.20.1 / zstd/internal/xxhash/LICENSE.txt ---
+--- github.com/klauspost/compress@v1.20.3 / zstd/internal/xxhash/LICENSE.txt ---
 Copyright (c) 2016 Caleb Spare
 
 MIT License
@@ -53042,7 +53586,7 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
---- github.com/klauspost/pgzip@v1.2.6 / LICENSE ---
+--- github.com/klauspost/pgzip@v1.2.7 / LICENSE ---
 The MIT License (MIT)
 
 Copyright (c) 2014 Klaus Post
@@ -53109,7 +53653,7 @@ The above copyright notice and this permission notice shall be included in all c
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
---- github.com/mattn/go-runewidth@v0.0.27 / LICENSE ---
+--- github.com/mattn/go-runewidth@v0.0.31 / LICENSE ---
 The MIT License (MIT)
 
 Copyright (c) 2016 Yasuhiro Matsumoto
@@ -53132,7 +53676,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
---- github.com/mattn/go-sqlite3@v1.14.48 / LICENSE ---
+--- github.com/mattn/go-sqlite3@v1.14.52 / LICENSE ---
 The MIT License (MIT)
 
 Copyright (c) 2014 Yasuhiro Matsumoto
@@ -54171,7 +54715,7 @@ THE SOFTWARE.
    See the License for the specific language governing permissions and
    limitations under the License.
 
---- github.com/moby/moby/api@v1.56.0 / LICENSE ---
+--- github.com/moby/moby/api@v1.56.1 / LICENSE ---
 
                                  Apache License
                            Version 2.0, January 2004
@@ -54375,7 +54919,7 @@ THE SOFTWARE.
    See the License for the specific language governing permissions and
    limitations under the License.
 
---- github.com/moby/moby/client@v0.6.0 / LICENSE ---
+--- github.com/moby/moby/client@v0.6.2 / LICENSE ---
 
                                  Apache License
                            Version 2.0, January 2004
@@ -54606,7 +55150,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
---- github.com/moby/sys/mountinfo@v0.7.2 / LICENSE ---
+--- github.com/moby/sys/mountinfo@v0.7.3 / LICENSE ---
 
                                  Apache License
                            Version 2.0, January 2004
@@ -58953,6 +59497,28 @@ license of the derivative portions.
    See the License for the specific language governing permissions and
    limitations under the License.
 
+--- github.com/sbomify/ar@v0.0.0-20261110120314-cac91ea00b05 / COPYING ---
+Copyright (c) 2013 Blake Smith <blakesmith0@gmail.com>
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+
+
 --- github.com/scylladb/go-set@v1.0.3-0.20200225121959-cc7b2070d91e / LICENSE ---
 
                                  Apache License
@@ -59250,7 +59816,7 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
 
---- github.com/sigstore/fulcio@v1.8.7 / COPYRIGHT.txt ---
+--- github.com/sigstore/fulcio@v1.8.8 / COPYRIGHT.txt ---
 
 Copyright 2021 The Sigstore Authors.
 
@@ -59266,7 +59832,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 
---- github.com/sigstore/fulcio@v1.8.7 / LICENSE ---
+--- github.com/sigstore/fulcio@v1.8.8 / LICENSE ---
                                  Apache License
                            Version 2.0, January 2004
                         http://www.apache.org/licenses/
@@ -65752,6 +66318,232 @@ func copyright() {
 	}
 }
 
+--- github.com/varlink/go@v0.4.1-0.20261015173642-c935be0c53f7 / COPYRIGHT ---
+Copyrights in the varlink project are retained by their contributors. No
+copyright assignment is required to contribute to the varlink project.
+
+For full authorship information, see the version control history.
+
+Except as otherwise noted (below and/or in individual files), varlink is
+licensed under the Apache License, Version 2.0 <LICENSE>.
+
+Copyright 2019 The varlink authors and/or their companies
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use the file in this project except in compliance
+with the License. You may obtain a copy of the License at
+
+   http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+
+--- github.com/varlink/go@v0.4.1-0.20261015173642-c935be0c53f7 / LICENSE ---
+                                 Apache License
+                           Version 2.0, January 2004
+                        http://www.apache.org/licenses/
+
+   TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION
+
+   1. Definitions.
+
+      "License" shall mean the terms and conditions for use, reproduction,
+      and distribution as defined by Sections 1 through 9 of this document.
+
+      "Licensor" shall mean the copyright owner or entity authorized by
+      the copyright owner that is granting the License.
+
+      "Legal Entity" shall mean the union of the acting entity and all
+      other entities that control, are controlled by, or are under common
+      control with that entity. For the purposes of this definition,
+      "control" means (i) the power, direct or indirect, to cause the
+      direction or management of such entity, whether by contract or
+      otherwise, or (ii) ownership of fifty percent (50%) or more of the
+      outstanding shares, or (iii) beneficial ownership of such entity.
+
+      "You" (or "Your") shall mean an individual or Legal Entity
+      exercising permissions granted by this License.
+
+      "Source" form shall mean the preferred form for making modifications,
+      including but not limited to software source code, documentation
+      source, and configuration files.
+
+      "Object" form shall mean any form resulting from mechanical
+      transformation or translation of a Source form, including but
+      not limited to compiled object code, generated documentation,
+      and conversions to other media types.
+
+      "Work" shall mean the work of authorship, whether in Source or
+      Object form, made available under the License, as indicated by a
+      copyright notice that is included in or attached to the work
+      (an example is provided in the Appendix below).
+
+      "Derivative Works" shall mean any work, whether in Source or Object
+      form, that is based on (or derived from) the Work and for which the
+      editorial revisions, annotations, elaborations, or other modifications
+      represent, as a whole, an original work of authorship. For the purposes
+      of this License, Derivative Works shall not include works that remain
+      separable from, or merely link (or bind by name) to the interfaces of,
+      the Work and Derivative Works thereof.
+
+      "Contribution" shall mean any work of authorship, including
+      the original version of the Work and any modifications or additions
+      to that Work or Derivative Works thereof, that is intentionally
+      submitted to Licensor for inclusion in the Work by the copyright owner
+      or by an individual or Legal Entity authorized to submit on behalf of
+      the copyright owner. For the purposes of this definition, "submitted"
+      means any form of electronic, verbal, or written communication sent
+      to the Licensor or its representatives, including but not limited to
+      communication on electronic mailing lists, source code control systems,
+      and issue tracking systems that are managed by, or on behalf of, the
+      Licensor for the purpose of discussing and improving the Work, but
+      excluding communication that is conspicuously marked or otherwise
+      designated in writing by the copyright owner as "Not a Contribution."
+
+      "Contributor" shall mean Licensor and any individual or Legal Entity
+      on behalf of whom a Contribution has been received by Licensor and
+      subsequently incorporated within the Work.
+
+   2. Grant of Copyright License. Subject to the terms and conditions of
+      this License, each Contributor hereby grants to You a perpetual,
+      worldwide, non-exclusive, no-charge, royalty-free, irrevocable
+      copyright license to reproduce, prepare Derivative Works of,
+      publicly display, publicly perform, sublicense, and distribute the
+      Work and such Derivative Works in Source or Object form.
+
+   3. Grant of Patent License. Subject to the terms and conditions of
+      this License, each Contributor hereby grants to You a perpetual,
+      worldwide, non-exclusive, no-charge, royalty-free, irrevocable
+      (except as stated in this section) patent license to make, have made,
+      use, offer to sell, sell, import, and otherwise transfer the Work,
+      where such license applies only to those patent claims licensable
+      by such Contributor that are necessarily infringed by their
+      Contribution(s) alone or by combination of their Contribution(s)
+      with the Work to which such Contribution(s) was submitted. If You
+      institute patent litigation against any entity (including a
+      cross-claim or counterclaim in a lawsuit) alleging that the Work
+      or a Contribution incorporated within the Work constitutes direct
+      or contributory patent infringement, then any patent licenses
+      granted to You under this License for that Work shall terminate
+      as of the date such litigation is filed.
+
+   4. Redistribution. You may reproduce and distribute copies of the
+      Work or Derivative Works thereof in any medium, with or without
+      modifications, and in Source or Object form, provided that You
+      meet the following conditions:
+
+      (a) You must give any other recipients of the Work or
+          Derivative Works a copy of this License; and
+
+      (b) You must cause any modified files to carry prominent notices
+          stating that You changed the files; and
+
+      (c) You must retain, in the Source form of any Derivative Works
+          that You distribute, all copyright, patent, trademark, and
+          attribution notices from the Source form of the Work,
+          excluding those notices that do not pertain to any part of
+          the Derivative Works; and
+
+      (d) If the Work includes a "NOTICE" text file as part of its
+          distribution, then any Derivative Works that You distribute must
+          include a readable copy of the attribution notices contained
+          within such NOTICE file, excluding those notices that do not
+          pertain to any part of the Derivative Works, in at least one
+          of the following places: within a NOTICE text file distributed
+          as part of the Derivative Works; within the Source form or
+          documentation, if provided along with the Derivative Works; or,
+          within a display generated by the Derivative Works, if and
+          wherever such third-party notices normally appear. The contents
+          of the NOTICE file are for informational purposes only and
+          do not modify the License. You may add Your own attribution
+          notices within Derivative Works that You distribute, alongside
+          or as an addendum to the NOTICE text from the Work, provided
+          that such additional attribution notices cannot be construed
+          as modifying the License.
+
+      You may add Your own copyright statement to Your modifications and
+      may provide additional or different license terms and conditions
+      for use, reproduction, or distribution of Your modifications, or
+      for any such Derivative Works as a whole, provided Your use,
+      reproduction, and distribution of the Work otherwise complies with
+      the conditions stated in this License.
+
+   5. Submission of Contributions. Unless You explicitly state otherwise,
+      any Contribution intentionally submitted for inclusion in the Work
+      by You to the Licensor shall be under the terms and conditions of
+      this License, without any additional terms or conditions.
+      Notwithstanding the above, nothing herein shall supersede or modify
+      the terms of any separate license agreement you may have executed
+      with Licensor regarding such Contributions.
+
+   6. Trademarks. This License does not grant permission to use the trade
+      names, trademarks, service marks, or product names of the Licensor,
+      except as required for reasonable and customary use in describing the
+      origin of the Work and reproducing the content of the NOTICE file.
+
+   7. Disclaimer of Warranty. Unless required by applicable law or
+      agreed to in writing, Licensor provides the Work (and each
+      Contributor provides its Contributions) on an "AS IS" BASIS,
+      WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+      implied, including, without limitation, any warranties or conditions
+      of TITLE, NON-INFRINGEMENT, MERCHANTABILITY, or FITNESS FOR A
+      PARTICULAR PURPOSE. You are solely responsible for determining the
+      appropriateness of using or redistributing the Work and assume any
+      risks associated with Your exercise of permissions under this License.
+
+   8. Limitation of Liability. In no event and under no legal theory,
+      whether in tort (including negligence), contract, or otherwise,
+      unless required by applicable law (such as deliberate and grossly
+      negligent acts) or agreed to in writing, shall any Contributor be
+      liable to You for damages, including any direct, indirect, special,
+      incidental, or consequential damages of any character arising as a
+      result of this License or out of the use or inability to use the
+      Work (including but not limited to damages for loss of goodwill,
+      work stoppage, computer failure or malfunction, or any and all
+      other commercial damages or losses), even if such Contributor
+      has been advised of the possibility of such damages.
+
+   9. Accepting Warranty or Additional Liability. While redistributing
+      the Work or Derivative Works thereof, You may choose to offer,
+      and charge a fee for, acceptance of support, warranty, indemnity,
+      or other liability obligations and/or rights consistent with this
+      License. However, in accepting such obligations, You may act only
+      on Your own behalf and on Your sole responsibility, not on behalf
+      of any other Contributor, and only if You agree to indemnify,
+      defend, and hold each Contributor harmless for any liability
+      incurred by, or claims asserted against, such Contributor by reason
+      of your accepting any such warranty or additional liability.
+
+   END OF TERMS AND CONDITIONS
+
+   APPENDIX: How to apply the Apache License to your work.
+
+      To apply the Apache License to your work, attach the following
+      boilerplate notice, with the fields enclosed by brackets "[]"
+      replaced with your own identifying information. (Don't include
+      the brackets!)  The text should be enclosed in the appropriate
+      comment syntax for the file format. We also recommend that a
+      file or class name and description of purpose be included on the
+      same "printed page" as the copyright notice for easier
+      identification within third-party archives.
+
+   Copyright [yyyy] [name of copyright owner]
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+
 --- github.com/vbatts/go-mtree@v0.7.0 / LICENSE ---
 Copyright (c) 2016 Vincent Batts, Raleigh, NC, USA
 
@@ -66016,7 +66808,7 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
---- github.com/vbauerster/cupwriter@v0.0.4 / UNLICENSE ---
+--- github.com/vbauerster/cupwriter@v0.0.5 / UNLICENSE ---
 This is free and unencumbered software released into the public domain.
 
 Anyone is free to copy, modify, publish, use, compile, sell, or
@@ -66042,7 +66834,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
 
---- github.com/vbauerster/mpb/v8@v8.14.0 / UNLICENSE ---
+--- github.com/vbauerster/mpb/v8@v8.16.2 / UNLICENSE ---
 This is free and unencumbered software released into the public domain.
 
 Anyone is free to copy, modify, publish, use, compile, sell, or
@@ -67388,7 +68180,7 @@ DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
 THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
---- go.opentelemetry.io/otel/metric@v1.46.0 / LICENSE ---
+--- go.opentelemetry.io/otel/log@v1.47.0 / LICENSE ---
                                  Apache License
                            Version 2.0, January 2004
                         http://www.apache.org/licenses/
@@ -67620,7 +68412,7 @@ DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
 THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
---- go.opentelemetry.io/otel/sdk/metric@v1.46.0 / LICENSE ---
+--- go.opentelemetry.io/otel/metric@v1.47.0 / LICENSE ---
                                  Apache License
                            Version 2.0, January 2004
                         http://www.apache.org/licenses/
@@ -67852,7 +68644,7 @@ DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
 THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
---- go.opentelemetry.io/otel/sdk@v1.46.0 / LICENSE ---
+--- go.opentelemetry.io/otel/sdk/metric@v1.47.0 / LICENSE ---
                                  Apache License
                            Version 2.0, January 2004
                         http://www.apache.org/licenses/
@@ -68084,7 +68876,7 @@ DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
 THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
---- go.opentelemetry.io/otel/trace@v1.46.0 / LICENSE ---
+--- go.opentelemetry.io/otel/sdk@v1.47.0 / LICENSE ---
                                  Apache License
                            Version 2.0, January 2004
                         http://www.apache.org/licenses/
@@ -68316,7 +69108,7 @@ DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
 THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
---- go.opentelemetry.io/otel@v1.46.0 / LICENSE ---
+--- go.opentelemetry.io/otel/trace@v1.47.0 / LICENSE ---
                                  Apache License
                            Version 2.0, January 2004
                         http://www.apache.org/licenses/
@@ -68548,7 +69340,239 @@ DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
 THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
---- go.podman.io/image/v5@v5.41.2 / LICENSE ---
+--- go.opentelemetry.io/otel@v1.47.0 / LICENSE ---
+                                 Apache License
+                           Version 2.0, January 2004
+                        http://www.apache.org/licenses/
+
+   TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION
+
+   1. Definitions.
+
+      "License" shall mean the terms and conditions for use, reproduction,
+      and distribution as defined by Sections 1 through 9 of this document.
+
+      "Licensor" shall mean the copyright owner or entity authorized by
+      the copyright owner that is granting the License.
+
+      "Legal Entity" shall mean the union of the acting entity and all
+      other entities that control, are controlled by, or are under common
+      control with that entity. For the purposes of this definition,
+      "control" means (i) the power, direct or indirect, to cause the
+      direction or management of such entity, whether by contract or
+      otherwise, or (ii) ownership of fifty percent (50%) or more of the
+      outstanding shares, or (iii) beneficial ownership of such entity.
+
+      "You" (or "Your") shall mean an individual or Legal Entity
+      exercising permissions granted by this License.
+
+      "Source" form shall mean the preferred form for making modifications,
+      including but not limited to software source code, documentation
+      source, and configuration files.
+
+      "Object" form shall mean any form resulting from mechanical
+      transformation or translation of a Source form, including but
+      not limited to compiled object code, generated documentation,
+      and conversions to other media types.
+
+      "Work" shall mean the work of authorship, whether in Source or
+      Object form, made available under the License, as indicated by a
+      copyright notice that is included in or attached to the work
+      (an example is provided in the Appendix below).
+
+      "Derivative Works" shall mean any work, whether in Source or Object
+      form, that is based on (or derived from) the Work and for which the
+      editorial revisions, annotations, elaborations, or other modifications
+      represent, as a whole, an original work of authorship. For the purposes
+      of this License, Derivative Works shall not include works that remain
+      separable from, or merely link (or bind by name) to the interfaces of,
+      the Work and Derivative Works thereof.
+
+      "Contribution" shall mean any work of authorship, including
+      the original version of the Work and any modifications or additions
+      to that Work or Derivative Works thereof, that is intentionally
+      submitted to Licensor for inclusion in the Work by the copyright owner
+      or by an individual or Legal Entity authorized to submit on behalf of
+      the copyright owner. For the purposes of this definition, "submitted"
+      means any form of electronic, verbal, or written communication sent
+      to the Licensor or its representatives, including but not limited to
+      communication on electronic mailing lists, source code control systems,
+      and issue tracking systems that are managed by, or on behalf of, the
+      Licensor for the purpose of discussing and improving the Work, but
+      excluding communication that is conspicuously marked or otherwise
+      designated in writing by the copyright owner as "Not a Contribution."
+
+      "Contributor" shall mean Licensor and any individual or Legal Entity
+      on behalf of whom a Contribution has been received by Licensor and
+      subsequently incorporated within the Work.
+
+   2. Grant of Copyright License. Subject to the terms and conditions of
+      this License, each Contributor hereby grants to You a perpetual,
+      worldwide, non-exclusive, no-charge, royalty-free, irrevocable
+      copyright license to reproduce, prepare Derivative Works of,
+      publicly display, publicly perform, sublicense, and distribute the
+      Work and such Derivative Works in Source or Object form.
+
+   3. Grant of Patent License. Subject to the terms and conditions of
+      this License, each Contributor hereby grants to You a perpetual,
+      worldwide, non-exclusive, no-charge, royalty-free, irrevocable
+      (except as stated in this section) patent license to make, have made,
+      use, offer to sell, sell, import, and otherwise transfer the Work,
+      where such license applies only to those patent claims licensable
+      by such Contributor that are necessarily infringed by their
+      Contribution(s) alone or by combination of their Contribution(s)
+      with the Work to which such Contribution(s) was submitted. If You
+      institute patent litigation against any entity (including a
+      cross-claim or counterclaim in a lawsuit) alleging that the Work
+      or a Contribution incorporated within the Work constitutes direct
+      or contributory patent infringement, then any patent licenses
+      granted to You under this License for that Work shall terminate
+      as of the date such litigation is filed.
+
+   4. Redistribution. You may reproduce and distribute copies of the
+      Work or Derivative Works thereof in any medium, with or without
+      modifications, and in Source or Object form, provided that You
+      meet the following conditions:
+
+      (a) You must give any other recipients of the Work or
+          Derivative Works a copy of this License; and
+
+      (b) You must cause any modified files to carry prominent notices
+          stating that You changed the files; and
+
+      (c) You must retain, in the Source form of any Derivative Works
+          that You distribute, all copyright, patent, trademark, and
+          attribution notices from the Source form of the Work,
+          excluding those notices that do not pertain to any part of
+          the Derivative Works; and
+
+      (d) If the Work includes a "NOTICE" text file as part of its
+          distribution, then any Derivative Works that You distribute must
+          include a readable copy of the attribution notices contained
+          within such NOTICE file, excluding those notices that do not
+          pertain to any part of the Derivative Works, in at least one
+          of the following places: within a NOTICE text file distributed
+          as part of the Derivative Works; within the Source form or
+          documentation, if provided along with the Derivative Works; or,
+          within a display generated by the Derivative Works, if and
+          wherever such third-party notices normally appear. The contents
+          of the NOTICE file are for informational purposes only and
+          do not modify the License. You may add Your own attribution
+          notices within Derivative Works that You distribute, alongside
+          or as an addendum to the NOTICE text from the Work, provided
+          that such additional attribution notices cannot be construed
+          as modifying the License.
+
+      You may add Your own copyright statement to Your modifications and
+      may provide additional or different license terms and conditions
+      for use, reproduction, or distribution of Your modifications, or
+      for any such Derivative Works as a whole, provided Your use,
+      reproduction, and distribution of the Work otherwise complies with
+      the conditions stated in this License.
+
+   5. Submission of Contributions. Unless You explicitly state otherwise,
+      any Contribution intentionally submitted for inclusion in the Work
+      by You to the Licensor shall be under the terms and conditions of
+      this License, without any additional terms or conditions.
+      Notwithstanding the above, nothing herein shall supersede or modify
+      the terms of any separate license agreement you may have executed
+      with Licensor regarding such Contributions.
+
+   6. Trademarks. This License does not grant permission to use the trade
+      names, trademarks, service marks, or product names of the Licensor,
+      except as required for reasonable and customary use in describing the
+      origin of the Work and reproducing the content of the NOTICE file.
+
+   7. Disclaimer of Warranty. Unless required by applicable law or
+      agreed to in writing, Licensor provides the Work (and each
+      Contributor provides its Contributions) on an "AS IS" BASIS,
+      WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+      implied, including, without limitation, any warranties or conditions
+      of TITLE, NON-INFRINGEMENT, MERCHANTABILITY, or FITNESS FOR A
+      PARTICULAR PURPOSE. You are solely responsible for determining the
+      appropriateness of using or redistributing the Work and assume any
+      risks associated with Your exercise of permissions under this License.
+
+   8. Limitation of Liability. In no event and under no legal theory,
+      whether in tort (including negligence), contract, or otherwise,
+      unless required by applicable law (such as deliberate and grossly
+      negligent acts) or agreed to in writing, shall any Contributor be
+      liable to You for damages, including any direct, indirect, special,
+      incidental, or consequential damages of any character arising as a
+      result of this License or out of the use or inability to use the
+      Work (including but not limited to damages for loss of goodwill,
+      work stoppage, computer failure or malfunction, or any and all
+      other commercial damages or losses), even if such Contributor
+      has been advised of the possibility of such damages.
+
+   9. Accepting Warranty or Additional Liability. While redistributing
+      the Work or Derivative Works thereof, You may choose to offer,
+      and charge a fee for, acceptance of support, warranty, indemnity,
+      or other liability obligations and/or rights consistent with this
+      License. However, in accepting such obligations, You may act only
+      on Your own behalf and on Your sole responsibility, not on behalf
+      of any other Contributor, and only if You agree to indemnify,
+      defend, and hold each Contributor harmless for any liability
+      incurred by, or claims asserted against, such Contributor by reason
+      of your accepting any such warranty or additional liability.
+
+   END OF TERMS AND CONDITIONS
+
+   APPENDIX: How to apply the Apache License to your work.
+
+      To apply the Apache License to your work, attach the following
+      boilerplate notice, with the fields enclosed by brackets "[]"
+      replaced with your own identifying information. (Don't include
+      the brackets!)  The text should be enclosed in the appropriate
+      comment syntax for the file format. We also recommend that a
+      file or class name and description of purpose be included on the
+      same "printed page" as the copyright notice for easier
+      identification within third-party archives.
+
+   Copyright [yyyy] [name of copyright owner]
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+
+--------------------------------------------------------------------------------
+
+Copyright 2009 The Go Authors.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are
+met:
+
+   * Redistributions of source code must retain the above copyright
+notice, this list of conditions and the following disclaimer.
+   * Redistributions in binary form must reproduce the above
+copyright notice, this list of conditions and the following disclaimer
+in the documentation and/or other materials provided with the
+distribution.
+   * Neither the name of Google LLC nor the names of its
+contributors may be used to endorse or promote products derived from
+this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+"AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+--- go.podman.io/image/v5@v5.42.0 / LICENSE ---
 
                                  Apache License
                            Version 2.0, January 2004
@@ -68739,7 +69763,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
    See the License for the specific language governing permissions and
    limitations under the License.
 
---- go.podman.io/storage@v1.64.1 / AUTHORS ---
+--- go.podman.io/storage@v1.65.0 / AUTHORS ---
 # This file lists all individuals having contributed content to the repository.
 # For how it is generated, see `hack/generate-authors.sh`.
 
@@ -70264,7 +71288,7 @@ Zunayed Ali <zunayed@gmail.com>
 尹吉峰 <jifeng.yin@gmail.com>
 搏通 <yufeng.pyf@alibaba-inc.com>
 
---- go.podman.io/storage@v1.64.1 / LICENSE ---
+--- go.podman.io/storage@v1.65.0 / LICENSE ---
 
                                  Apache License
                            Version 2.0, January 2004
@@ -70457,7 +71481,7 @@ Zunayed Ali <zunayed@gmail.com>
    See the License for the specific language governing permissions and
    limitations under the License.
 
---- go.podman.io/storage@v1.64.1 / NOTICE ---
+--- go.podman.io/storage@v1.65.0 / NOTICE ---
 Docker
 Copyright 2012-2016 Docker, Inc.
 
@@ -70478,7 +71502,7 @@ For more information, please see https://www.bis.doc.gov
 
 See also https://www.apache.org/dev/crypto.html and/or seek legal counsel.
 
---- go.podman.io/storage@v1.64.1 / pkg/mflag/LICENSE ---
+--- go.podman.io/storage@v1.65.0 / pkg/mflag/LICENSE ---
 Copyright (c) 2014-2016 The Docker & Go Authors. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -70507,7 +71531,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
---- go.yaml.in/yaml/v3@v3.0.5 / LICENSE ---
+--- go.yaml.in/yaml/v3@v3.0.6 / LICENSE ---
 
 This project is covered by two different licenses: MIT and Apache.
 
@@ -70559,7 +71583,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 
---- go.yaml.in/yaml/v3@v3.0.5 / NOTICE ---
+--- go.yaml.in/yaml/v3@v3.0.6 / NOTICE ---
 Copyright 2011-2016 Canonical Ltd.
 
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -70788,7 +71812,7 @@ Google
    limitations under the License.
 
 
---- golang.org/x/crypto@v0.58.0 / LICENSE ---
+--- golang.org/x/crypto@v0.59.0 / LICENSE ---
 Copyright 2009 The Go Authors.
 
 Redistribution and use in source and binary forms, with or without
@@ -70817,7 +71841,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
---- golang.org/x/crypto@v0.58.0 / PATENTS ---
+--- golang.org/x/crypto@v0.59.0 / PATENTS ---
 Additional IP Rights Grant (Patents)
 
 "This implementation" means the copyrightable works distributed by
@@ -70894,7 +71918,7 @@ infringement, or inducement of patent infringement, then any patent
 rights granted to you under this License for this implementation of Go
 shall terminate as of the date such litigation is filed.
 
---- golang.org/x/mod@v0.41.0 / LICENSE ---
+--- golang.org/x/mod@v0.42.0 / LICENSE ---
 Copyright 2009 The Go Authors.
 
 Redistribution and use in source and binary forms, with or without
@@ -70923,7 +71947,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
---- golang.org/x/mod@v0.41.0 / PATENTS ---
+--- golang.org/x/mod@v0.42.0 / PATENTS ---
 Additional IP Rights Grant (Patents)
 
 "This implementation" means the copyrightable works distributed by
@@ -70947,7 +71971,7 @@ infringement, or inducement of patent infringement, then any patent
 rights granted to you under this License for this implementation of Go
 shall terminate as of the date such litigation is filed.
 
---- golang.org/x/net@v0.61.0 / LICENSE ---
+--- golang.org/x/net@v0.62.0 / LICENSE ---
 Copyright 2009 The Go Authors.
 
 Redistribution and use in source and binary forms, with or without
@@ -70976,7 +72000,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
---- golang.org/x/net@v0.61.0 / PATENTS ---
+--- golang.org/x/net@v0.62.0 / PATENTS ---
 Additional IP Rights Grant (Patents)
 
 "This implementation" means the copyrightable works distributed by
@@ -71029,7 +72053,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
---- golang.org/x/sync@v0.24.0 / LICENSE ---
+--- golang.org/x/sync@v0.25.0 / LICENSE ---
 Copyright 2009 The Go Authors.
 
 Redistribution and use in source and binary forms, with or without
@@ -71058,7 +72082,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
---- golang.org/x/sync@v0.24.0 / PATENTS ---
+--- golang.org/x/sync@v0.25.0 / PATENTS ---
 Additional IP Rights Grant (Patents)
 
 "This implementation" means the copyrightable works distributed by
@@ -71082,7 +72106,7 @@ infringement, or inducement of patent infringement, then any patent
 rights granted to you under this License for this implementation of Go
 shall terminate as of the date such litigation is filed.
 
---- golang.org/x/sys@v0.49.0 / LICENSE ---
+--- golang.org/x/sys@v0.50.0 / LICENSE ---
 Copyright 2009 The Go Authors.
 
 Redistribution and use in source and binary forms, with or without
@@ -71111,7 +72135,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
---- golang.org/x/sys@v0.49.0 / PATENTS ---
+--- golang.org/x/sys@v0.50.0 / PATENTS ---
 Additional IP Rights Grant (Patents)
 
 "This implementation" means the copyrightable works distributed by
@@ -71135,7 +72159,7 @@ infringement, or inducement of patent infringement, then any patent
 rights granted to you under this License for this implementation of Go
 shall terminate as of the date such litigation is filed.
 
---- golang.org/x/term@v0.47.0 / LICENSE ---
+--- golang.org/x/term@v0.48.0 / LICENSE ---
 Copyright 2009 The Go Authors.
 
 Redistribution and use in source and binary forms, with or without
@@ -71164,7 +72188,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
---- golang.org/x/term@v0.47.0 / PATENTS ---
+--- golang.org/x/term@v0.48.0 / PATENTS ---
 Additional IP Rights Grant (Patents)
 
 "This implementation" means the copyrightable works distributed by
@@ -71188,7 +72212,7 @@ infringement, or inducement of patent infringement, then any patent
 rights granted to you under this License for this implementation of Go
 shall terminate as of the date such litigation is filed.
 
---- golang.org/x/text@v0.43.0 / LICENSE ---
+--- golang.org/x/text@v0.44.0 / LICENSE ---
 Copyright 2009 The Go Authors.
 
 Redistribution and use in source and binary forms, with or without
@@ -71217,7 +72241,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
---- golang.org/x/text@v0.43.0 / PATENTS ---
+--- golang.org/x/text@v0.44.0 / PATENTS ---
 Additional IP Rights Grant (Patents)
 
 "This implementation" means the copyrightable works distributed by
@@ -71294,7 +72318,7 @@ infringement, or inducement of patent infringement, then any patent
 rights granted to you under this License for this implementation of Go
 shall terminate as of the date such litigation is filed.
 
---- golang.org/x/tools@v0.51.0 / LICENSE ---
+--- golang.org/x/tools@v0.52.0 / LICENSE ---
 Copyright 2009 The Go Authors.
 
 Redistribution and use in source and binary forms, with or without
@@ -71323,7 +72347,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
---- golang.org/x/tools@v0.51.0 / PATENTS ---
+--- golang.org/x/tools@v0.52.0 / PATENTS ---
 Additional IP Rights Grant (Patents)
 
 "This implementation" means the copyrightable works distributed by
@@ -71347,7 +72371,7 @@ infringement, or inducement of patent infringement, then any patent
 rights granted to you under this License for this implementation of Go
 shall terminate as of the date such litigation is filed.
 
---- golang.org/x/tools@v0.51.0 / copyright/copyright.go ---
+--- golang.org/x/tools@v0.52.0 / copyright/copyright.go ---
 // Copyright 2020 The Go Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
@@ -71438,7 +72462,7 @@ func checkFile(toolsDir, filename string) (bool, error) {
 	}), nil
 }
 
---- golang.org/x/tools@v0.51.0 / copyright/copyright_test.go ---
+--- golang.org/x/tools@v0.52.0 / copyright/copyright_test.go ---
 // Copyright 2020 The Go Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
@@ -72557,7 +73581,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
---- modernc.org/libc@v1.77.1 / AUTHORS ---
+--- modernc.org/libc@v1.79.0 / AUTHORS ---
 # This file lists authors for copyright purposes.  This file is distinct from
 # the CONTRIBUTORS files.  See the latter for an explanation.
 #
@@ -72583,7 +73607,7 @@ Patricio Whittingslow <graded.sp@gmail.com>
 Scot C Bontrager <scot@indievisible.org>
 Steffen Butzer <steffen(dot)butzer@outlook.com>
 
---- modernc.org/libc@v1.77.1 / LICENSE ---
+--- modernc.org/libc@v1.79.0 / LICENSE ---
 Copyright (c) 2017 The Libc Authors. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -72612,7 +73636,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
---- modernc.org/libc@v1.77.1 / LICENSE-3RD-PARTY.md ---
+--- modernc.org/libc@v1.79.0 / LICENSE-3RD-PARTY.md ---
 # Third-Party Software Notices
 
 This repository contains code and assets acquired from third-party sources.
@@ -72919,7 +73943,7 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
---- modernc.org/libc@v1.77.1 / testdata/nsz.repo.hu/libc-test/AUTHORS ---
+--- modernc.org/libc@v1.79.0 / testdata/nsz.repo.hu/libc-test/AUTHORS ---
 Rich Felker
 Szabolcs Nagy
 Kirill Ternovsky
@@ -72928,7 +73952,7 @@ Jens Gustedt
 Alexander Monakov
 Julien Ramseier
 
---- modernc.org/libc@v1.77.1 / testdata/nsz.repo.hu/libc-test/COPYRIGHT ---
+--- modernc.org/libc@v1.79.0 / testdata/nsz.repo.hu/libc-test/COPYRIGHT ---
 libc-test is licensed under the following standard MIT license:
 
 Copyright © 2005-2013 libc-test AUTHORS
@@ -72959,7 +73983,7 @@ third parties:
 math tests use numbers under BSD and GPL licenses see src/math/ucb/*
 and src/math/crlibm/* for details
 
---- modernc.org/libc@v1.77.1 / testdata/nsz.repo.hu/libc-test/src/math/crlibm/COPYING ---
+--- modernc.org/libc@v1.79.0 / testdata/nsz.repo.hu/libc-test/src/math/crlibm/COPYING ---
 		    GNU GENERAL PUBLIC LICENSE
 		       Version 2, June 1991
 
@@ -73492,7 +74516,7 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
---- modernc.org/sqlite@v1.60.1 / AUTHORS ---
+--- modernc.org/sqlite@v1.61.0 / AUTHORS ---
 # This file lists authors for copyright purposes.  This file is distinct from
 # the CONTRIBUTORS files.  See the latter for an explanation.
 #
@@ -73505,6 +74529,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 Angus Dippenaar <angusdippenaar@gmail.com>
 Artyom Pervukhin <github@artyom.dev>
+Chris Gianelloni <wolf31o2@blinklabs.io>
 Dan Kortschak <dan@kortschak.io>
 Dan Peterson <danp@danp.net>
 David Walton <david@davidwalton.com>
@@ -73525,11 +74550,13 @@ Ross Light <ross@zombiezen.com>
 SUSE LLC <moio@suse.com>
 Saed SayedAhmed <saadmtsa@gmail.com>
 Steffen Butzer <steffen(dot)butzer@outlook.com>
+Tedla Brandsema <git@tedla.dev>
 Toni Spets <toni.spets@beeper.com>
 W. Michael Petullo <mike@flyn.org>
 Zhenghao Zhang zhangzhenghao@hotmail.com
+不插电 <r27153733@gmail.com>
 
---- modernc.org/sqlite@v1.60.1 / LICENSE ---
+--- modernc.org/sqlite@v1.61.0 / LICENSE ---
 Copyright (c) 2017 The Sqlite Authors. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -73557,7 +74584,7 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
---- modernc.org/sqlite@v1.60.1 / LICENSE-3RD-PARTY.md ---
+--- modernc.org/sqlite@v1.61.0 / LICENSE-3RD-PARTY.md ---
 # Third-Party Licenses
 
 `modernc.org/sqlite` is BSD-3-Clause; that license is in [LICENSE](LICENSE) and it is
@@ -73597,18 +74624,18 @@ and license texts it points at are the ones you have to carry with you.
 
 | Component | Version | License | Reached via | Text |
 | --- | --- | --- | --- | --- |
-| [github.com/dustin/go-humanize](https://pkg.go.dev/github.com/dustin/go-humanize) | v1.0.1 | MIT | modernc.org/libc, `go.mod` | [L1](#L1) |
+| [github.com/dustin/go-humanize](https://pkg.go.dev/github.com/dustin/go-humanize) | v1.1.0 | MIT | modernc.org/libc, `go.mod` | [L1](#L1) |
 | [github.com/google/uuid](https://pkg.go.dev/github.com/google/uuid) | v1.6.0 | BSD-3-Clause | modernc.org/libc, `go.mod` | [L2](#L2) |
 | [github.com/remyoudompheng/bigfft](https://pkg.go.dev/github.com/remyoudompheng/bigfft) | v0.0.0-20230129092748-24d4a6f8daec | BSD-3-Clause | modernc.org/fileutil, modernc.org/libc, modernc.org/mathutil, modernc.org/memory, `go.mod` | [L2](#L2) |
 | [Go](https://github.com/golang/go) | -- | BSD-3-Clause | modernc.org/libc | [N1](#N1) |
 | [go-netdb](https://github.com/dominikh/go-netdb) | -- | MIT | modernc.org/libc | [N1](#N1) |
-| [golang.org/x/sys](https://pkg.go.dev/golang.org/x/sys) | v0.48.0 | BSD-3-Clause | github.com/google/pprof, github.com/mattn/go-isatty, modernc.org/libc, modernc.org/memory, `go.mod` | [L3](#L3) |
-| [modernc.org/libc](https://pkg.go.dev/modernc.org/libc) | v1.77.1 | BSD-3-Clause | `go.mod` | [L4](#L4) |
+| [golang.org/x/sys](https://pkg.go.dev/golang.org/x/sys) | v0.49.0 | BSD-3-Clause | github.com/google/pprof, github.com/mattn/go-isatty, modernc.org/libc, modernc.org/memory, `go.mod` | [L3](#L3) |
+| [modernc.org/libc](https://pkg.go.dev/modernc.org/libc) | v1.79.0 | BSD-3-Clause | `go.mod` | [L4](#L4) |
 | [modernc.org/mathutil](https://pkg.go.dev/modernc.org/mathutil) | v1.7.1 | BSD-3-Clause | modernc.org/fileutil, modernc.org/libc, modernc.org/memory, `go.mod` | [L4](#L4) |
 | [modernc.org/memory](https://pkg.go.dev/modernc.org/memory) | v1.12.1 | BSD-3-Clause, attribution reference | modernc.org/libc, `go.mod` | [L4](#L4), [L2](#L2), [L5](#L5), [L6](#L6) |
 | [musl libc](https://musl.libc.org/) | -- | MIT | modernc.org/libc | [N1](#N1) |
 | [NixOS/nixpkgs](https://github.com/NixOS/nixpkgs) | -- | MIT | modernc.org/libc | [N1](#N1) |
-| [SQLite](https://sqlite.org/) | 3.53.4 | public domain | transpiled into `lib/` | [L7](#L7) |
+| [SQLite](https://sqlite.org/) | 3.54.1 | public domain | transpiled into `lib/` | [L7](#L7) |
 | [sqlite-vec](https://github.com/asg017/sqlite-vec) | v0.1.9 | MIT | transpiled into `vec/` | [L8](#L8) |
 | [SQLite `test_demovfs.c`](https://www.sqlite.org/src/doc/trunk/src/test_demovfs.c) | -- | public domain | `vfs/c/vfs.c`, transpiled into `vfs/` | [L7](#L7) |
 
@@ -73623,7 +74650,7 @@ not reach a program that imports `modernc.org/sqlite`.
 
 | Component | Version | License | Reached via | Text |
 | --- | --- | --- | --- | --- |
-| [github.com/google/pprof](https://pkg.go.dev/github.com/google/pprof) | v0.0.0-20260802141513-ef3492d7dac3 | Apache-2.0, BSD-3-Clause | `go.mod` | [L9](#L9), [L10](#L10) |
+| [github.com/google/pprof](https://pkg.go.dev/github.com/google/pprof) | v0.0.0-20261016150608-1facf8f91b50 | Apache-2.0, BSD-3-Clause | `go.mod` | [L9](#L9), [L10](#L10) |
 | [modernc.org/fileutil](https://pkg.go.dev/modernc.org/fileutil) | v1.4.0 | BSD-3-Clause | modernc.org/libc, `go.mod` | [L4](#L4), [L11](#L11) |
 
 ## 3. Components in the module graph, not compiled into anything
@@ -73644,14 +74671,14 @@ this one.
 | [github.com/hashicorp/golang-lru/v2](https://pkg.go.dev/github.com/hashicorp/golang-lru/v2) | v2.0.7 | MPL-2.0, BSD-3-Clause | modernc.org/libc | [L13](#L13), [L14](#L14) |
 | [github.com/ianlancetaylor/demangle](https://pkg.go.dev/github.com/ianlancetaylor/demangle) | v0.0.0-20250417193237-f615e6bd150b | BSD-3-Clause | github.com/google/pprof | [L2](#L2) |
 | [github.com/mattn/go-isatty](https://pkg.go.dev/github.com/mattn/go-isatty) | v0.0.24 | MIT | modernc.org/libc, `go.mod` | [L15](#L15) |
-| [github.com/ncruces/go-strftime](https://pkg.go.dev/github.com/ncruces/go-strftime) | v1.0.0 | MIT | modernc.org/libc, `go.mod` | [L8](#L8) |
-| [golang.org/x/mod](https://pkg.go.dev/golang.org/x/mod) | v0.41.0 | BSD-3-Clause | modernc.org/libc | [L3](#L3) |
-| [golang.org/x/sync](https://pkg.go.dev/golang.org/x/sync) | v0.23.0 | BSD-3-Clause | modernc.org/libc | [L3](#L3) |
-| [golang.org/x/tools](https://pkg.go.dev/golang.org/x/tools) | v0.50.0 | BSD-3-Clause | modernc.org/libc | [L3](#L3) |
-| [modernc.org/cc/v4](https://pkg.go.dev/modernc.org/cc/v4) | v4.29.7 | BSD-3-Clause | modernc.org/libc | [L4](#L4) |
-| [modernc.org/ccgo/v4](https://pkg.go.dev/modernc.org/ccgo/v4) | v4.36.1 | BSD-3-Clause | modernc.org/libc | [L4](#L4) |
+| [github.com/ncruces/go-strftime](https://pkg.go.dev/github.com/ncruces/go-strftime) | v1.1.0 | MIT | modernc.org/libc, `go.mod` | [L8](#L8) |
+| [golang.org/x/mod](https://pkg.go.dev/golang.org/x/mod) | v0.42.0 | BSD-3-Clause | modernc.org/libc | [L3](#L3) |
+| [golang.org/x/sync](https://pkg.go.dev/golang.org/x/sync) | v0.24.0 | BSD-3-Clause | modernc.org/libc | [L3](#L3) |
+| [golang.org/x/tools](https://pkg.go.dev/golang.org/x/tools) | v0.52.0 | BSD-3-Clause | modernc.org/libc | [L3](#L3) |
+| [modernc.org/cc/v4](https://pkg.go.dev/modernc.org/cc/v4) | v4.30.3 | BSD-3-Clause | modernc.org/libc | [L4](#L4) |
+| [modernc.org/ccgo/v4](https://pkg.go.dev/modernc.org/ccgo/v4) | v4.37.0 | BSD-3-Clause | modernc.org/libc | [L4](#L4) |
 | [modernc.org/gc/v2](https://pkg.go.dev/modernc.org/gc/v2) | v2.6.5 | BSD-3-Clause | modernc.org/libc | [L16](#L16) |
-| [modernc.org/gc/v3](https://pkg.go.dev/modernc.org/gc/v3) | v3.1.5 | BSD-3-Clause | modernc.org/libc | [L16](#L16) |
+| [modernc.org/gc/v3](https://pkg.go.dev/modernc.org/gc/v3) | v3.2.0 | BSD-3-Clause | modernc.org/libc | [L16](#L16) |
 | [modernc.org/goabi0](https://pkg.go.dev/modernc.org/goabi0) | v0.2.0 | BSD-3-Clause | modernc.org/libc | [L17](#L17) |
 | [modernc.org/opt](https://pkg.go.dev/modernc.org/opt) | v0.2.0 | BSD-3-Clause | modernc.org/libc | [L4](#L4) |
 | [modernc.org/sortutil](https://pkg.go.dev/modernc.org/sortutil) | v1.2.1 | BSD-3-Clause | modernc.org/libc | [L4](#L4) |
@@ -73910,7 +74937,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 Applies to:
 
-- SQLite 3.53.4 (`LICENSE-SQLITE`)
+- SQLite 3.54.1 (`LICENSE-SQLITE`)
 - SQLite `test_demovfs.c`
 - SQLite test suite (`testdata/`)
 
@@ -75173,7 +76200,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ---
 
---- modernc.org/sqlite@v1.60.1 / LICENSE-SQLITE ---
+--- modernc.org/sqlite@v1.61.0 / LICENSE-SQLITE ---
 SQLite Is Public Domain
 
 All of the code and documentation in SQLite has been dedicated to the public
@@ -75200,7 +76227,7 @@ code can be traced back to its original author, and all of those authors have
 public domain dedications on file. So the SQLite code base is clean and is
 uncontaminated with licensed code from other projects.
 
---- modernc.org/sqlite@v1.60.1 / LICENSE-SQLITE_VEC ---
+--- modernc.org/sqlite@v1.61.0 / LICENSE-SQLITE_VEC ---
 MIT License
 
 Copyright (c) 2024 Alex Garcia
@@ -75223,7 +76250,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
---- Go go1.26.8 / LICENSE ---
+--- Go go1.27.4 / LICENSE ---
 Copyright 2009 The Go Authors.
 
 Redistribution and use in source and binary forms, with or without
@@ -75252,7 +76279,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
---- Go go1.26.8 / PATENTS ---
+--- Go go1.27.4 / PATENTS ---
 Additional IP Rights Grant (Patents)
 
 "This implementation" means the copyrightable works distributed by
@@ -75276,7 +76303,7 @@ infringement, or inducement of patent infringement, then any patent
 rights granted to you under this License for this implementation of Go
 shall terminate as of the date such litigation is filed.
 
---- Go go1.26.8 / src/cmd/compile/internal/ssa/_gen/vendor/golang.org/x/tools/LICENSE ---
+--- Go go1.27.4 / src/cmd/compile/internal/ssa/_gen/vendor/golang.org/x/tools/LICENSE ---
 Copyright 2009 The Go Authors.
 
 Redistribution and use in source and binary forms, with or without
@@ -75305,7 +76332,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
---- Go go1.26.8 / src/cmd/compile/internal/ssa/_gen/vendor/golang.org/x/tools/PATENTS ---
+--- Go go1.27.4 / src/cmd/compile/internal/ssa/_gen/vendor/golang.org/x/tools/PATENTS ---
 Additional IP Rights Grant (Patents)
 
 "This implementation" means the copyrightable works distributed by
@@ -75329,7 +76356,7 @@ infringement, or inducement of patent infringement, then any patent
 rights granted to you under this License for this implementation of Go
 shall terminate as of the date such litigation is filed.
 
---- Go go1.26.8 / src/cmd/vendor/github.com/google/pprof/AUTHORS ---
+--- Go go1.27.4 / src/cmd/vendor/github.com/google/pprof/AUTHORS ---
 # This is the official list of pprof authors for copyright purposes.
 # This file is distinct from the CONTRIBUTORS files.
 # See the latter for an explanation.
@@ -75337,7 +76364,7 @@ shall terminate as of the date such litigation is filed.
 # Name or Organization <email address>
 # The email address is not required for organizations.
 Google Inc.
---- Go go1.26.8 / src/cmd/vendor/github.com/google/pprof/LICENSE ---
+--- Go go1.27.4 / src/cmd/vendor/github.com/google/pprof/LICENSE ---
 
                                  Apache License
                            Version 2.0, January 2004
@@ -75541,7 +76568,7 @@ Google Inc.
    See the License for the specific language governing permissions and
    limitations under the License.
 
---- Go go1.26.8 / src/cmd/vendor/github.com/google/pprof/third_party/svgpan/LICENSE ---
+--- Go go1.27.4 / src/cmd/vendor/github.com/google/pprof/third_party/svgpan/LICENSE ---
 Copyright 2009-2017 Andrea Leofreddi <a.leofreddi@vleo.net>. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification, are
@@ -75570,7 +76597,7 @@ The views and conclusions contained in the software and documentation are those 
 authors and should not be interpreted as representing official policies, either expressed
 or implied, of Andrea Leofreddi.
 
---- Go go1.26.8 / src/cmd/vendor/github.com/ianlancetaylor/demangle/LICENSE ---
+--- Go go1.27.4 / src/cmd/vendor/github.com/ianlancetaylor/demangle/LICENSE ---
 Copyright (c) 2015 The Go Authors. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -75599,7 +76626,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
---- Go go1.26.8 / src/cmd/vendor/golang.org/x/arch/LICENSE ---
+--- Go go1.27.4 / src/cmd/vendor/golang.org/x/arch/LICENSE ---
 Copyright 2015 The Go Authors.
 
 Redistribution and use in source and binary forms, with or without
@@ -75628,7 +76655,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
---- Go go1.26.8 / src/cmd/vendor/golang.org/x/arch/PATENTS ---
+--- Go go1.27.4 / src/cmd/vendor/golang.org/x/arch/PATENTS ---
 Additional IP Rights Grant (Patents)
 
 "This implementation" means the copyrightable works distributed by
@@ -75652,7 +76679,7 @@ infringement, or inducement of patent infringement, then any patent
 rights granted to you under this License for this implementation of Go
 shall terminate as of the date such litigation is filed.
 
---- Go go1.26.8 / src/cmd/vendor/golang.org/x/build/LICENSE ---
+--- Go go1.27.4 / src/cmd/vendor/golang.org/x/build/LICENSE ---
 Copyright 2009 The Go Authors.
 
 Redistribution and use in source and binary forms, with or without
@@ -75681,7 +76708,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
---- Go go1.26.8 / src/cmd/vendor/golang.org/x/build/PATENTS ---
+--- Go go1.27.4 / src/cmd/vendor/golang.org/x/build/PATENTS ---
 Additional IP Rights Grant (Patents)
 
 "This implementation" means the copyrightable works distributed by
@@ -75705,7 +76732,7 @@ infringement, or inducement of patent infringement, then any patent
 rights granted to you under this License for this implementation of Go
 shall terminate as of the date such litigation is filed.
 
---- Go go1.26.8 / src/cmd/vendor/golang.org/x/mod/LICENSE ---
+--- Go go1.27.4 / src/cmd/vendor/golang.org/x/mod/LICENSE ---
 Copyright 2009 The Go Authors.
 
 Redistribution and use in source and binary forms, with or without
@@ -75734,7 +76761,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
---- Go go1.26.8 / src/cmd/vendor/golang.org/x/mod/PATENTS ---
+--- Go go1.27.4 / src/cmd/vendor/golang.org/x/mod/PATENTS ---
 Additional IP Rights Grant (Patents)
 
 "This implementation" means the copyrightable works distributed by
@@ -75758,7 +76785,7 @@ infringement, or inducement of patent infringement, then any patent
 rights granted to you under this License for this implementation of Go
 shall terminate as of the date such litigation is filed.
 
---- Go go1.26.8 / src/cmd/vendor/golang.org/x/sync/LICENSE ---
+--- Go go1.27.4 / src/cmd/vendor/golang.org/x/sync/LICENSE ---
 Copyright 2009 The Go Authors.
 
 Redistribution and use in source and binary forms, with or without
@@ -75787,7 +76814,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
---- Go go1.26.8 / src/cmd/vendor/golang.org/x/sync/PATENTS ---
+--- Go go1.27.4 / src/cmd/vendor/golang.org/x/sync/PATENTS ---
 Additional IP Rights Grant (Patents)
 
 "This implementation" means the copyrightable works distributed by
@@ -75811,7 +76838,7 @@ infringement, or inducement of patent infringement, then any patent
 rights granted to you under this License for this implementation of Go
 shall terminate as of the date such litigation is filed.
 
---- Go go1.26.8 / src/cmd/vendor/golang.org/x/sys/LICENSE ---
+--- Go go1.27.4 / src/cmd/vendor/golang.org/x/sys/LICENSE ---
 Copyright 2009 The Go Authors.
 
 Redistribution and use in source and binary forms, with or without
@@ -75840,7 +76867,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
---- Go go1.26.8 / src/cmd/vendor/golang.org/x/sys/PATENTS ---
+--- Go go1.27.4 / src/cmd/vendor/golang.org/x/sys/PATENTS ---
 Additional IP Rights Grant (Patents)
 
 "This implementation" means the copyrightable works distributed by
@@ -75864,7 +76891,7 @@ infringement, or inducement of patent infringement, then any patent
 rights granted to you under this License for this implementation of Go
 shall terminate as of the date such litigation is filed.
 
---- Go go1.26.8 / src/cmd/vendor/golang.org/x/telemetry/LICENSE ---
+--- Go go1.27.4 / src/cmd/vendor/golang.org/x/telemetry/LICENSE ---
 Copyright 2009 The Go Authors.
 
 Redistribution and use in source and binary forms, with or without
@@ -75893,7 +76920,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
---- Go go1.26.8 / src/cmd/vendor/golang.org/x/telemetry/PATENTS ---
+--- Go go1.27.4 / src/cmd/vendor/golang.org/x/telemetry/PATENTS ---
 Additional IP Rights Grant (Patents)
 
 "This implementation" means the copyrightable works distributed by
@@ -75917,7 +76944,7 @@ infringement, or inducement of patent infringement, then any patent
 rights granted to you under this License for this implementation of Go
 shall terminate as of the date such litigation is filed.
 
---- Go go1.26.8 / src/cmd/vendor/golang.org/x/term/LICENSE ---
+--- Go go1.27.4 / src/cmd/vendor/golang.org/x/term/LICENSE ---
 Copyright 2009 The Go Authors.
 
 Redistribution and use in source and binary forms, with or without
@@ -75946,7 +76973,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
---- Go go1.26.8 / src/cmd/vendor/golang.org/x/term/PATENTS ---
+--- Go go1.27.4 / src/cmd/vendor/golang.org/x/term/PATENTS ---
 Additional IP Rights Grant (Patents)
 
 "This implementation" means the copyrightable works distributed by
@@ -75970,7 +76997,7 @@ infringement, or inducement of patent infringement, then any patent
 rights granted to you under this License for this implementation of Go
 shall terminate as of the date such litigation is filed.
 
---- Go go1.26.8 / src/cmd/vendor/golang.org/x/text/LICENSE ---
+--- Go go1.27.4 / src/cmd/vendor/golang.org/x/text/LICENSE ---
 Copyright 2009 The Go Authors.
 
 Redistribution and use in source and binary forms, with or without
@@ -75999,7 +77026,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
---- Go go1.26.8 / src/cmd/vendor/golang.org/x/text/PATENTS ---
+--- Go go1.27.4 / src/cmd/vendor/golang.org/x/text/PATENTS ---
 Additional IP Rights Grant (Patents)
 
 "This implementation" means the copyrightable works distributed by
@@ -76023,7 +77050,7 @@ infringement, or inducement of patent infringement, then any patent
 rights granted to you under this License for this implementation of Go
 shall terminate as of the date such litigation is filed.
 
---- Go go1.26.8 / src/cmd/vendor/golang.org/x/tools/LICENSE ---
+--- Go go1.27.4 / src/cmd/vendor/golang.org/x/tools/LICENSE ---
 Copyright 2009 The Go Authors.
 
 Redistribution and use in source and binary forms, with or without
@@ -76052,7 +77079,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
---- Go go1.26.8 / src/cmd/vendor/golang.org/x/tools/PATENTS ---
+--- Go go1.27.4 / src/cmd/vendor/golang.org/x/tools/PATENTS ---
 Additional IP Rights Grant (Patents)
 
 "This implementation" means the copyrightable works distributed by
@@ -76076,7 +77103,7 @@ infringement, or inducement of patent infringement, then any patent
 rights granted to you under this License for this implementation of Go
 shall terminate as of the date such litigation is filed.
 
---- Go go1.26.8 / src/cmd/vendor/rsc.io/markdown/LICENSE ---
+--- Go go1.27.4 / src/cmd/vendor/rsc.io/markdown/LICENSE ---
 Copyright (c) 2009 The Go Authors. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -76105,7 +77132,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
---- Go go1.26.8 / src/crypto/internal/boring/LICENSE ---
+--- Go go1.27.4 / src/crypto/internal/boring/LICENSE ---
 The Go source code and supporting files in this directory
 are covered by the usual Go license (see ../../../../LICENSE).
 
@@ -76309,7 +77336,7 @@ Some files from Intel carry the following license:
 # NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
---- Go go1.26.8 / src/internal/copyright/copyright_test.go ---
+--- Go go1.27.4 / src/internal/copyright/copyright_test.go ---
 // Copyright 2024 The Go Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
@@ -76383,7 +77410,7 @@ func TestCopyright(t *testing.T) {
 	})
 }
 
---- Go go1.26.8 / src/runtime/testdata/testgoroutineleakprofile/goker/LICENSE ---
+--- Go go1.27.4 / src/runtime/testdata/testgoroutineleakprofile/goker/LICENSE ---
 The MIT License (MIT)
 Copyright © 2021 Institute of Computing Technology, University of New South Wales 
 
@@ -76405,7 +77432,7 @@ THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
---- Go go1.26.8 / src/vendor/golang.org/x/crypto/LICENSE ---
+--- Go go1.27.4 / src/vendor/golang.org/x/crypto/LICENSE ---
 Copyright 2009 The Go Authors.
 
 Redistribution and use in source and binary forms, with or without
@@ -76434,7 +77461,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
---- Go go1.26.8 / src/vendor/golang.org/x/crypto/PATENTS ---
+--- Go go1.27.4 / src/vendor/golang.org/x/crypto/PATENTS ---
 Additional IP Rights Grant (Patents)
 
 "This implementation" means the copyrightable works distributed by
@@ -76458,7 +77485,7 @@ infringement, or inducement of patent infringement, then any patent
 rights granted to you under this License for this implementation of Go
 shall terminate as of the date such litigation is filed.
 
---- Go go1.26.8 / src/vendor/golang.org/x/net/LICENSE ---
+--- Go go1.27.4 / src/vendor/golang.org/x/net/LICENSE ---
 Copyright 2009 The Go Authors.
 
 Redistribution and use in source and binary forms, with or without
@@ -76487,7 +77514,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
---- Go go1.26.8 / src/vendor/golang.org/x/net/PATENTS ---
+--- Go go1.27.4 / src/vendor/golang.org/x/net/PATENTS ---
 Additional IP Rights Grant (Patents)
 
 "This implementation" means the copyrightable works distributed by
@@ -76511,7 +77538,7 @@ infringement, or inducement of patent infringement, then any patent
 rights granted to you under this License for this implementation of Go
 shall terminate as of the date such litigation is filed.
 
---- Go go1.26.8 / src/vendor/golang.org/x/sys/LICENSE ---
+--- Go go1.27.4 / src/vendor/golang.org/x/sys/LICENSE ---
 Copyright 2009 The Go Authors.
 
 Redistribution and use in source and binary forms, with or without
@@ -76540,7 +77567,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
---- Go go1.26.8 / src/vendor/golang.org/x/sys/PATENTS ---
+--- Go go1.27.4 / src/vendor/golang.org/x/sys/PATENTS ---
 Additional IP Rights Grant (Patents)
 
 "This implementation" means the copyrightable works distributed by
@@ -76564,7 +77591,7 @@ infringement, or inducement of patent infringement, then any patent
 rights granted to you under this License for this implementation of Go
 shall terminate as of the date such litigation is filed.
 
---- Go go1.26.8 / src/vendor/golang.org/x/text/LICENSE ---
+--- Go go1.27.4 / src/vendor/golang.org/x/text/LICENSE ---
 Copyright 2009 The Go Authors.
 
 Redistribution and use in source and binary forms, with or without
@@ -76593,7 +77620,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
---- Go go1.26.8 / src/vendor/golang.org/x/text/PATENTS ---
+--- Go go1.27.4 / src/vendor/golang.org/x/text/PATENTS ---
 Additional IP Rights Grant (Patents)
 
 "This implementation" means the copyrightable works distributed by

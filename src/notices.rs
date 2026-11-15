@@ -11,8 +11,8 @@ use std::{
 
 pub(super) fn bundle(root: &Path, tool: &str) -> Result<Vec<u8>> {
     let expected = match tool {
-        "syft" => "5d56eacef92c66e40d44034914d53dc599f68542388aa91542e71cef8b88ac15",
-        "grype" => "2a1096158a1f761a9366ddd7b99dfb01bd50aa1eea1299d7d8f0e8e4397e86a2",
+        "syft" => "06bec637a9fab5fb511f91c22d1cfaf59f76340bc4d9aeb45f01f9468546b3be",
+        "grype" => "c94fabd9eb510f00c2281efeefdb7b402a6d65952fa46ef7f86c8fff135c2af7",
         "static-base" => "378fef9d3e685a2ad1168283453781a01a66bd8ccc7e261e490340712bf18af4",
         _ => return Err("unsupported scanner notice bundle"),
     };
@@ -28,29 +28,28 @@ pub(super) fn bundle(root: &Path, tool: &str) -> Result<Vec<u8>> {
     bytes(&path, 8 * 1024 * 1024)
 }
 
-// Historical bindings remain until four current source-bound native captures
-// are reviewed. The Go 1.27.4 guard below deliberately refuses their reuse for
-// this remediation; no new notice approval follows from an old capture.
+// Four unchanged native captures from run 43730804248, source-bound to the
+// actual PR merge tree. Collection proposes texts; it never approves delivery.
 const CAPTURES: [(&str, &str, &str); 4] = [
     (
         "syft",
         "amd64",
-        "5a5f3414ed8c6756e5f8f54c055ff69280ca292c0e73a1180f3cd09da748fd84",
+        "da65d45f9ecb47041cb8f8e0fc68eb8270786113e4df043f9d3dd20c90ebf45c",
     ),
     (
         "syft",
         "arm64",
-        "fb19c70ec78c583f52930b16c0a8fda80e72f223bc5df59461b508ee7273a669",
+        "6bea8858bafe08aa45584612775899c56f6985d779dee7e79446fedf48afd4be",
     ),
     (
         "grype",
         "amd64",
-        "c1acd4f75981463c54cd0f80fdacb8f2d846882e9d2ec5f064198e9f54d618e4",
+        "c168cea4d612a5e4637e026c0591f8d19a6dc337849cfe62afef37f01ae9dde8",
     ),
     (
         "grype",
         "arm64",
-        "544087dc109662e1f5803f2c4c91d643316e22b1e04b4233c5f5a537af793a13",
+        "a3fc72043c332d73043837035e792c3f9bb4b35c23c52d7fd131914b0312daeb",
     ),
 ];
 fn legal(name: &str) -> bool {
@@ -224,14 +223,19 @@ pub(super) fn collect(driver: &mut Driver) -> Result<()> {
         let mut native_reference = None;
         for (_, arch, expected) in CAPTURES.iter().filter(|(name, _, _)| *name == tool) {
             let path = driver.root.join(format!(
-                ".work/delivery-20261030/catalog-{tool}-{arch}/{tool}.syft.json"
+                ".work/security-repair-captures/{tool}-{arch}/{tool}.syft.json"
             ));
             if hash(&path, 8 * 1024 * 1024)? != *expected {
                 return Err("unreviewed scanner catalog");
             }
             let doc = read_json(&path)?;
-            if doc["source"]["metadata"]["architecture"] != *arch {
-                return Err("scanner catalog architecture mismatch");
+            if doc["source"]["metadata"]["architecture"] != *arch
+                || doc["source"]["metadata"]["labels"]["org.opencontainers.image.revision"]
+                    != "d3b870dbb18148fcf71d0ea0986a2eed2b484872"
+                || doc["source"]["metadata"]["labels"]["org.opencontainers.image.source"]
+                    != "https://github.com/PRJXAI/devsecops"
+            {
+                return Err("scanner catalog source/architecture mismatch");
             }
             let mut observed = BTreeSet::new();
             let mut native_observed = BTreeSet::new();
@@ -427,9 +431,29 @@ pub(super) fn collect(driver: &mut Driver) -> Result<()> {
         return Err("missing Go license");
     }
     for (tool, graph) in by_tool {
-        let mut bundle =
-            format!("Third-party notices for {tool}. Original text follows each source heading.\n")
-                .into_bytes();
+        let (version, commit, patch) = match tool {
+            "syft" => (
+                "1.57.1",
+                "a0c0d3890a9d79421c403e8fcadec50a2e55bf21",
+                "patches/syft-1.57.1-security.patch.txt",
+            ),
+            "grype" => (
+                "0.121.3",
+                "cd1f23eb50dfb52647090158f453c7359172591f",
+                "patches/grype-0.121.3-security.patch.txt",
+            ),
+            _ => return Err("unsupported derivative notice"),
+        };
+        let patch_hash = hash(&driver.root.join(patch), 1024 * 1024)?;
+        let mut bundle = format!(
+            "Modified distribution: {tool} {version}-dependency-security.1, rebuilt by PRJXAI.\n\
+             Upstream source: https://github.com/anchore/{tool}/tree/{commit}\n\
+             Changes: dependency manifests patched for x/crypto 0.59.0, OpenTelemetry 1.47.0 and the sbomify/ar negative-member-size fix. Compiler: Go 1.27.4.\n\
+             Exact build recipe, modified manifests (patch), and source checksums: the org.opencontainers.image.revision source tree at https://github.com/PRJXAI/devsecops .\n\
+             Patch: {patch}; SHA-256 {patch_hash}. Upstream endorsement is not claimed; original terms are not relicensed.\n\
+             Native embedded versions are preserved in the source-attributed index, not rewritten as release tags.\n\
+             Third-party notices for {tool}. Original text follows each source heading.\n"
+        ).into_bytes();
         let mut records = Vec::new();
         for module in graph {
             let value = &downloads[&module];
@@ -468,7 +492,7 @@ pub(super) fn collect(driver: &mut Driver) -> Result<()> {
         write_new(&file, &bundle, 0o444)?;
         write_json(
             &output.join(format!("{tool}-index.json")),
-            &json!({"tool":tool,"captured_run":41074964808u64,"source_sha":"aaab990627e8f73fb89c5807193092324e3d004d","go_source_commit":commit,"go_legal_files":go_texts.len(),"native_module_versions":native_versions[tool],"modules":records,"bundle_sha256":hash(&file, 8 * 1024 * 1024)?,"bundle_bytes":bundle.len(),"redistribution_approved":false}),
+            &json!({"tool":tool,"captured_run":43730804248u64,"source_sha":"d3b870dbb18148fcf71d0ea0986a2eed2b484872","go_source_commit":commit,"go_legal_files":go_texts.len(),"native_module_versions":native_versions[tool],"modules":records,"bundle_sha256":hash(&file, 8 * 1024 * 1024)?,"bundle_bytes":bundle.len(),"redistribution_approved":false}),
         )?;
     }
     Ok(())
