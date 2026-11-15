@@ -2,11 +2,11 @@
   "schema": 2,
   "tool": "grype",
   "repository": "ghcr.io/prjxai/devsecops/grype",
-  "redistribution_complete": false,
-  "supplier_provenance_reviewed": false,
-  "native_functional_contracts_complete": false,
+  "redistribution_complete": true,
+  "supplier_provenance_reviewed": true,
+  "native_functional_contracts_complete": true,
   "review": "licenses/scanners/review.json",
   "risk_policy": "owner-selected-stack-2026-10-30-v1",
-  "approval_scope": "Owner-authorized security remediation. The source derivative does not inherit the original supplier's inventory, notices or risk approval. Complete current evidence and manual source-bound publication remain required.",
-  "blockers": ["Current native amd64/arm64 inventories and contracts pending", "Current compiler/module source-attributed notices and provenance review pending"]
+  "approval_scope": "Owner-authorized corrected scanner delivery. Run 43734377826 qualifies both native architectures, source/compiler/module inventories, exact current notices, packaged contracts and fresh offline scans with zero findings/ignored/accepted. Source and patch origins and legal material are reviewed in licenses/scanners/review.json. No historical risk is inherited; no reproducibility or certification claim. Fresh exact-source native handoffs, manual-main approval, publication provenance and anonymous verification remain mandatory.",
+  "blockers": []
 }
