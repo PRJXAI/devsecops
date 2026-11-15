@@ -17,7 +17,7 @@ FROM binary-${TARGETARCH} AS binary
 
 # Select individual verified ELF objects, not the supplier's rootfs, utilities,
 # libstdc++, locale, package metadata or loader configuration.
-FROM cgr.dev/chainguard/glibc-dynamic:latest@sha256:709673274b417a48f56374da8a7633ef7b2f5b27e34612ce98a335737318cc94 AS glibc
+FROM cgr.dev/chainguard/glibc-dynamic:latest@sha256:671a621016fb33812136dea6182b1db957996d3c8c618187aaf86abd9b14af53 AS glibc
 FROM cgr.dev/chainguard/static:latest@sha256:fc42af33e643f20d08baf03cddcc1c02ba57052dfb02edb0d79f3fc47bcea8d9 AS runtime-amd64
 COPY --from=glibc /usr/lib/ld-linux-x86-64.so.2 /usr/lib/ld-linux-x86-64.so.2
 COPY --from=glibc /usr/lib/libc.so.6 /usr/lib/libm.so.6 /usr/lib/libgcc_s.so.1 /usr/lib/
