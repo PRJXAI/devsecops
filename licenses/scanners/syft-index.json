@@ -3,7 +3,7 @@
   "bundle_sha256": "06bec637a9fab5fb511f91c22d1cfaf59f76340bc4d9aeb45f01f9468546b3be",
   "captured_run": 43730804248,
   "go_legal_files": 38,
-  "go_source_commit": "a0c0d3890a9d79421c403e8fcadec50a2e55bf21",
+  "go_source_commit": "7b2881024c95a11ddb86663a616340aa3a88b67f",
   "modules": [
     {
       "files": [

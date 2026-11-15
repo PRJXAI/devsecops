@@ -13,6 +13,10 @@ Images install tool notices at `/usr/share/licenses/TOOL/THIRD-PARTY-NOTICES.txt
 
 Collection includes named LICENSE/LICENCE/UNLICENSE, NOTICE, COPYING, PATENTS and copyright files. Test/example legal texts may also appear; inclusion does not assert compilation. Go source commit `7b2881024c95a11ddb86663a616340aa3a88b67f` is bound by Git blob identities, with original text retained.
 
+## Index metadata erratum — 2026-11-15
+
+The indexes at published source `7d20ea6ba4956a65db1640ec3752534d9dc4b727` incorrectly put each scanner's upstream commit in `go_source_commit`: a collector-local variable shadowed the already verified Go commit. The compiler texts, their Git-blob verification, this source documentation and `review.json` already identified Go `7b2881024c95a11ddb86663a616340aa3a88b67f` correctly. Both indexes and the collector now agree, with a hash/source/bundle consistency regression. No native catalog, notice payload, module attribution, compiler, accepted risk or released image bytes are changed by this metadata-only erratum. It does not relabel the earlier index field as correct or imply a new binary delivery.
+
 ## Obtain source
 
 Each `MODULE@VERSION` in the index identifies public source. Retrieve it with `GOPROXY=https://proxy.golang.org GOSUMDB=sum.golang.org go mod download -json MODULE@VERSION`, verify the recorded `h1:` checksum and inspect its source directory. Recorded public origins/commits and these source routes preserve recipients' rights, including file-level copyleft source access.

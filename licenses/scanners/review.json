@@ -10,12 +10,12 @@
   "syft": {
     "embedded_source_modules": 297,
     "bundle_sha256": "06bec637a9fab5fb511f91c22d1cfaf59f76340bc4d9aeb45f01f9468546b3be",
-    "index_sha256": "e992af627bb22709d4806a3dc90f54146e91f1a77bc9d521c955334fd3e1cbef"
+    "index_sha256": "b12d5649c3de11359b5ab4c73728bd62e283c11783152d3cbb9d240b25e0ef36"
   },
   "grype": {
     "embedded_source_modules": 320,
     "bundle_sha256": "c94fabd9eb510f00c2281efeefdb7b402a6d65952fa46ef7f86c8fff135c2af7",
-    "index_sha256": "bab437c7f356b461bb92313c21d4905a136668db88a4c168b7e4033a67caf17a"
+    "index_sha256": "9cc5e884b4a2c3dbfb2ca8af66f80fb6e4dceb9f65355daf5d5e29c7d3b92f61"
   },
   "static_base": {
     "image": "cgr.dev/chainguard/static:latest@sha256:fc42af33e643f20d08baf03cddcc1c02ba57052dfb02edb0d79f3fc47bcea8d9",
