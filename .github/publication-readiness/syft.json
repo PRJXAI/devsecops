@@ -2,11 +2,11 @@
   "schema": 2,
   "tool": "syft",
   "repository": "ghcr.io/prjxai/devsecops/syft",
-  "redistribution_complete": true,
-  "supplier_provenance_reviewed": true,
-  "native_functional_contracts_complete": true,
+  "redistribution_complete": false,
+  "supplier_provenance_reviewed": false,
+  "native_functional_contracts_complete": false,
   "review": "licenses/scanners/review.json",
   "risk_policy": "owner-selected-stack-2026-10-30-v1",
-  "approval_scope": "Owner-authorized delivery of the unmodified pinned supplier, packaged source-attributed notices/base source arrangements and reviewed native contracts. Both fresh native handoffs, exact inventory/scans/load checks and manual source-bound approval remain required before publication.",
-  "blockers": []
+  "approval_scope": "Owner-authorized security remediation. The source derivative does not inherit the original supplier's inventory, notices or risk approval. Complete current evidence and manual source-bound publication remain required.",
+  "blockers": ["Current native amd64/arm64 inventories and contracts pending", "Current compiler/module source-attributed notices and provenance review pending"]
 }

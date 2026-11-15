@@ -399,8 +399,8 @@ impl Driver {
             "2.56.0.1.g02cd7dbd28"
         } else {
             match (tool, args) {
-                ("syft", _) => "1.55.0",
-                ("grype", _) => "0.121.0",
+                ("syft", _) => "1.57.1",
+                ("grype", _) => "0.121.3",
                 ("gitleaks", _) => "8.30.1",
                 ("cargo-audit", _) => "0.22.2",
                 ("cargo-deny", _) => "0.20.2",

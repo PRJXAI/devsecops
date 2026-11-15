@@ -4,6 +4,10 @@
 !images/*/Dockerfile
 !licenses/
 !licenses/**
+!patches/
+patches/**
+!patches/syft-1.57.1-security.patch.txt
+!patches/grype-0.121.3-security.patch.txt
 .git
 .work
 target

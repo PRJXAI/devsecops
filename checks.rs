@@ -113,6 +113,18 @@ mod tests {
         {
             return true;
         }
+        if matches!(
+            (tool, args),
+            (
+                "syft",
+                "--chmod=0444 patches/syft-1.57.1-security.patch.txt /security.patch"
+            ) | (
+                "grype",
+                "--chmod=0444 patches/grype-0.121.3-security.patch.txt /security.patch"
+            )
+        ) {
+            return true;
+        }
         if matches!(tool, "syft" | "grype")
             && args
                 == "--chmod=0444 licenses/scanners/STATIC-BASE-NOTICES.txt /usr/share/licenses/static-base/NOTICES.txt"
@@ -234,6 +246,51 @@ mod tests {
         instructions == expected
     }
 
+    // Two fixed supplier derivatives, not a caller-configurable rebuild facility.
+    // The complete recipes bind compiler/source, exact patches, offline verification,
+    // full race suites and final payloads. No general Go/shell RUN exemption exists.
+    fn scanner_source_recipe(text: &str, tool: &str) -> bool {
+        use sha2::Digest;
+        let expected = match tool {
+            "syft" => "10a6577145badce7a2b9821cb28ea9343898ba666375c6579013d748fb25ab47",
+            "grype" => "3a13d19a3e654e4907959dfe8e503488af2d7da6d06b15e5b180b5bb95014112",
+            _ => return false,
+        };
+        let reviewed = match tool {
+            "syft" => include_str!("images/syft/Dockerfile"),
+            "grype" => include_str!("images/grype/Dockerfile"),
+            _ => return false,
+        };
+        fn instructions(text: &str) -> Option<Vec<String>> {
+            let mut lines = Vec::new();
+            let mut pending = String::new();
+            for raw in text.lines().map(str::trim) {
+                if raw.is_empty() || raw.starts_with('#') {
+                    continue;
+                }
+                if let Some(part) = raw.strip_suffix('\\') {
+                    pending.push_str(part);
+                    pending.push(' ');
+                    continue;
+                }
+                pending.push_str(raw);
+                let (op, args) = pending.split_once(' ')?;
+                if !op.eq_ignore_ascii_case("USER") {
+                    lines.push(format!("{} {args}", op.to_ascii_uppercase()));
+                }
+                pending.clear();
+            }
+            pending.is_empty().then_some(lines)
+        }
+        sha2::Sha256::digest(reviewed.as_bytes())
+            .iter()
+            .map(|byte| format!("{byte:02x}"))
+            .collect::<String>()
+            == expected
+            && instructions(text).is_some()
+            && instructions(text) == instructions(reviewed)
+    }
+
     fn docker_policy(text: &str, tool: &str) -> bool {
         let mut stages = BTreeSet::new();
         let mut final_image = String::new();
@@ -329,7 +386,9 @@ mod tests {
                     }
                 }
                 "RUN" => {
-                    if final_image.is_empty() || !direct_extraction(args) {
+                    if final_image.is_empty()
+                        || !(direct_extraction(args) || scanner_source_recipe(text, tool))
+                    {
                         return false;
                     }
                     final_run = true;
@@ -379,6 +438,7 @@ mod tests {
         pending.is_empty()
             && TOOLS.contains(&tool)
             && (tool != "gitleaks" || production_gitleaks_dockerfile(text.as_bytes()))
+            && (!matches!(tool, "syft" | "grype") || scanner_source_recipe(text, tool))
             && (if tool == "cargo-audit" {
                 final_image == "runtime-${TARGETARCH}" && official_audit_supplier(text)
             } else {
@@ -631,6 +691,49 @@ mod tests {
             assert!(!docker_policy(&text.replace(old, new), "gitleaks"));
         }
         assert!(!docker_policy(&text, "syft"));
+    }
+
+    #[test]
+    fn scanner_derivatives_bind_fixed_inputs_and_cannot_skip_offline_race_tests() {
+        use sha2::Digest;
+        for (tool, patch, expected) in [
+            (
+                "syft",
+                "syft-1.57.1-security.patch.txt",
+                "795846bbf2ceb946b21c1ae8cf2583aeb441420cb1ea5b090058c51294ec7bb1",
+            ),
+            (
+                "grype",
+                "grype-0.121.3-security.patch.txt",
+                "ad4dee172338094aa882ddedaefcd371cf4a3da79e3a1a67cd94f78f737a16ff",
+            ),
+        ] {
+            let text =
+                fs::read_to_string(root().join(format!("images/{tool}/Dockerfile"))).unwrap();
+            assert!(docker_policy(&text, tool));
+            assert_eq!(
+                sha2::Sha256::digest(fs::read(root().join("patches").join(patch)).unwrap())
+                    .iter()
+                    .map(|byte| format!("{byte:02x}"))
+                    .collect::<String>(),
+                expected
+            );
+            for (old, new) in [
+                ("GOTOOLCHAIN=local", "GOTOOLCHAIN=auto"),
+                ("GOSUMDB=sum.golang.org", "GOSUMDB=off"),
+                ("GOFLAGS=-mod=readonly", "GOFLAGS=-mod=mod"),
+                ("--network=none", "--network=host"),
+                ("\"-race\",", ""),
+                ("\"./...\"", "\"./selected-only\""),
+                ("\"github.com/blakesmith/ar\"", "\"./selected-only\""),
+                ("/security.patch", "/arbitrary.patch"),
+            ] {
+                let changed = text.replace(old, new);
+                assert_ne!(changed, text);
+                assert!(!docker_policy(&changed, tool), "{tool}: {old}");
+            }
+            assert!(!docker_policy(&text, "gitleaks"));
+        }
     }
 
     fn syft_candidate_dockerfile(bytes: &[u8]) -> bool {
@@ -897,7 +1000,7 @@ mod tests {
         assert!(!remote_add(&duplicate));
         let bad_add = "add http://example.org/tool /tool\n";
         assert!(!docker_policy(&format!("{text}\n{bad_add}"), "syft"));
-        assert!(!docker_policy(&text.replace("FROM anchore/syft:v1.55.0-nonroot@sha256:ec5bdbc745485920c6f444239f0c09ed87b3c4c165ff9433f95bc66b3500fbf9", "from anchore/syft:latest"), "syft"));
+        assert!(!docker_policy(&text.replace("FROM golang:1.27.4@sha256:5e8afd493a7124a8586e134d9b532731161d4b9becf9dee5a5956b107426f93d", "from golang:latest"), "syft"));
         assert!(!docker_policy(
             &format!("# syntax=docker/dockerfile:latest\n{text}"),
             "syft"
@@ -1652,6 +1755,10 @@ jobs:";
                 "!images/*/Dockerfile",
                 "!licenses/",
                 "!licenses/**",
+                "!patches/",
+                "patches/**",
+                "!patches/syft-1.57.1-security.patch.txt",
+                "!patches/grype-0.121.3-security.patch.txt",
                 ".git",
                 ".work",
                 "target",
@@ -1673,6 +1780,8 @@ jobs:";
             "!**/credentials*",
             "!**",
             "!images/*/secret.sh",
+            "!patches/**",
+            "!patches/unreviewed.patch.txt",
         ] {
             assert!(!context_policy(&format!("{rules}\n{reinclusion}\n")));
         }

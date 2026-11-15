@@ -2,6 +2,10 @@
 
 This page records delivered behavior and measured limits, not a rolling implementation diary. Earlier investigations remain in Git history and private captures; their failures are not relabeled successful by documentation consolidation.
 
+## Security-remediation qualification
+
+The configured Syft 1.57.1/Grype 0.121.3 source derivatives pin Go 1.27.4, OpenTelemetry 1.47.0, x/crypto 0.59.0 and the sbomify/ar negative-member-size fix at `cac91ea00b0538f92fd42fa3ece0b15adc5ef01f`. Source archives and resolved manifest patches are hash-bound; offline upstream race suites remain mandatory. Historical risk rules are unchanged and cannot apply to these recipes. Local first-party validation passes **137 ordinary tests / 41 ignored explicit diagnostics**. Current native inventories, notice collection, full native qualification and publication remain pending; both readiness records are closed. No new delivery or zero-finding claim follows from the recipes or these unit tests.
+
 ## Current baseline
 
 Source baseline before this delivery: `aaab990627e8f73fb89c5807193092324e3d004d`, hosted run [41074964808](https://github.com/PRJXAI/devsecops/actions/runs/41074964808). First-party checks and both experimental Gitleaks jobs pass. All production image preparations fail on their own inventory/contract/finding gates and publication is skipped. No package availability follows from that run.

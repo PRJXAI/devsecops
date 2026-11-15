@@ -7,7 +7,7 @@ Read README.md, docs/operations.md, docs/releases.md, docs/security.md, docs/too
 - All first-party code, tests and orchestration are Rust. CI run steps are single Cargo invocations. No first-party unsafe Rust, Python, JavaScript glue, shell programs/heredocs or generic supplier-rebuild framework.
 - Keep explicit per-tool Dockerfiles. Final stages are digest-pinned distroless/nonroot, exec entrypoints and required binaries/runtime/CA/legal texts only. No shell, compiler, package manager, config, credentials, advisory DB or socket in layers.
 - Pin supplier images and release archives/binaries by literal digest/SHA-256 on both architectures. Dockerfiles use declarative stages and exec-form direct extraction, never disguised shell glue or whole-rootfs copies.
-- Prefer released binaries. Gitleaks is the existing fixed-source derivative with pinned source/patch/compiler, offline race tests, exact private context and checked Go notices. Do not restore historical supplier profiles as approval.
+- Prefer released binaries. Syft/Grype now have fixed released-source security derivatives with pinned compiler/source/dependency patches, offline full upstream race suites and the patched ar dependency's negative-size regression. Their recipes are exact/hash-bound, not a generic rebuild interface; current native profiles/notices/readiness must be independently completed. Gitleaks retains its separate fixed-source builder, private context and checked Go notices. Do not restore historical supplier profiles as production approval.
 
 ## Security and authority
 
@@ -24,6 +24,7 @@ Publication requires that tool's actual evidence/readiness and manual tool/sourc
 - `images/`: explicit packaging; `checks.rs`: Docker/context/workflow/language/docs policy and mutation tests.
 - `src/main.rs`: endpoint-bound build/process control; `src/builder.rs`: pinned-CLI precedence fixtures. Preserve 8 MiB ordinary streams and pre-write save/export 16 GiB/1 GiB caps, EOF/deadline/cancellation and unconditional bounded cleanup.
 - `src/contracts.rs`, `filesystem.rs`, `grype_contract.rs`, `audit.rs`: native functionality, stopped-container files, detection and first-party audit. cargo-deny/k3d remain deliberately blocked until their full contracts exist.
+- `inventory/approved-*-recipe.txt`: immutable original public recipes for historical policy regression tests only, never production inputs or new-source approval.
 - `src/release.rs`, `release_risk.rs`, `archive.rs`, `coverage.rs`: independent tool handoffs/readiness/publication, exact risk scope, immutable identities and native coverage. Preserve bad-second/eighteenth archive-load regressions and producer/publisher checks.
 - `inventory/scanner-production.json`: refreshed native Syft/Grype profiles; `inventory/gitleaks-production.json`: upgraded Gitleaks profile. Historical captured data and UNKNOWN/missing/compiler mutations stay intact.
 - `src/notices.rs`: fixed scanner source/legal collection and exact bundle validation. `src/risk_snapshot_capture.rs`: ignored proposal-only capture, never automatic approval. Legal bundles/indexes live in `licenses/scanners/`.
