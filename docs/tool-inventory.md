@@ -4,7 +4,7 @@
 |---|---|---|---|
 | Syft | 1.57.1 source derivative / Go 1.27.4 | JSON/SPDX/CycloneDX, Rust workspace/npm development locks, offline directory/archive input | Security remediation pending current native profiles/notices and both handoffs; original delivery remains separately attributed |
 | Grype | 0.121.3 source derivative / Go 1.27.4 | Separate DB retrieval; offline clean/vulnerable/missing-data controls; all-match accounting | Security remediation pending current native profiles/notices and both handoffs; original delivery remains separately attributed |
-| Gitleaks | 8.30.1 derivative / Go 1.27.4 | Source/deleted/bare/all-ref/redaction/clean-HEAD; minimal offline Git | Go notices packaged; exact Git/glibc corresponding-source and retained loader completion issue remain separate gaps |
+| Gitleaks | 8.30.1 derivative / Go 1.27.4 | Source/deleted/bare/all-ref/redaction/clean-HEAD; minimal offline Git | Go/native notices and exact corresponding sources packaged; both current native loader/full preparations pass 0/0. Reviewed readiness open; manual-main publication/provenance/anonymous delivery still required |
 | cargo-audit | 0.22.2 | Clean/vulnerable/missing-RustSec controls | Official GNU native closure tested; compiled Rust/native inventory and supplier review incomplete |
 | cargo-deny | 0.20.2 | Complete advisories/bans/licenses/sources graph, index/cache inputs | Full compiler-free replacement is not proven; retain consumer host gate |
 | k3d | 5.9.0 | Packaged native disposable control-plane lifecycle and inventory | Host-CLI consumer smoke is not packaged-image qualification |

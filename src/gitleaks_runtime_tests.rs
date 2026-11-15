@@ -2,6 +2,46 @@ use super::*;
 use sha2::Digest;
 
 #[test]
+fn current_native_readiness_is_recipe_specific_zero_risk_and_not_publication() {
+    let root = Path::new(env!("CARGO_MANIFEST_DIR"));
+    let record = read_json(&root.join("licenses/gitleaks-native-qualification.json")).unwrap();
+    assert_eq!(
+        record["material_review"],
+        "licenses/gitleaks-current-review.json"
+    );
+    assert_eq!(
+        record["recipe_sha256"],
+        hash(&root.join("images/gitleaks/Dockerfile"), 1024 * 1024).unwrap()
+    );
+    assert_eq!(
+        record["actual_native_source"],
+        "0c39e0151e2bf597d371ae89d1e8308573362829"
+    );
+    assert_eq!(
+        record["identical_git_tree"],
+        "fface88c975074297208c2c261105bb979592017"
+    );
+    assert_eq!(
+        record["runtime_disposition"]["other_artifacts_or_unobserved_platforms_approved"],
+        false
+    );
+    let native = record["native"].as_object().unwrap();
+    assert_eq!(native.len(), 2);
+    for arch in ["amd64", "arm64"] {
+        for field in ["findings", "ignored", "accepted", "blocking"] {
+            assert_eq!(native[arch][field], 0);
+        }
+        assert_eq!(native[arch]["report_sha256"].as_str().unwrap().len(), 64);
+    }
+    assert!(
+        record["remaining_release_gates"]
+            .as_str()
+            .unwrap()
+            .contains("No image is published")
+    );
+}
+
+#[test]
 fn current_material_review_binds_original_sources_without_granting_a_release() {
     let root = Path::new(env!("CARGO_MANIFEST_DIR"));
     let review = read_json(&root.join("licenses/gitleaks-current-review.json")).unwrap();

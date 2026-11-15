@@ -1,6 +1,8 @@
 # Gitleaks runtime source review — 2026-10-29
 
-**Evidence advanced; redistribution is not approved.** [Artifact identities](gitleaks-runtime-evidence.json) bind 20 selected package/architecture payloads to the two unchanged production archives from hosted run 40712836198, source `818c36229a839653a6952d8079e5952ae51650bc`. This supersedes the earlier inability to retrieve exact expanded recipes in [supplier evidence](supplier-evidence.md), not its remaining source/notices/provenance requirements.
+**Historical artifact review; not approval of those artifacts.** Current fixed-source material/physical-source arrangements are reviewed separately in [current review](gitleaks-current-review.json), with explicit native loader completion and supported-runtime disposition in [current qualification](gitleaks-native-qualification.json). The historical failures, false collection approvals and limitations below remain unchanged in scope; current readiness does not retroactively approve them.
+
+**Evidence advanced; redistribution of the historical artifacts is not approved.** [Artifact identities](gitleaks-runtime-evidence.json) bind 20 selected package/architecture payloads to the two unchanged production archives from hosted run 40712836198, source `818c36229a839653a6952d8079e5952ae51650bc`. This supersedes the earlier inability to retrieve exact expanded recipes in [supplier evidence](supplier-evidence.md), not its remaining source/notices/provenance requirements.
 
 ## Current remediation observation — 2026-11-15
 
@@ -65,4 +67,4 @@ Private captures are under `.work/approval-suppliers/gitleaks-runtime-v3/`; publ
 
 The ordinary `runtime_source_evidence_is_two_architecture_observation_not_approval` test checks the exact two-architecture/package coverage and false approval/completeness claims. The opt-in `release::tests::recorded_runtime_recipes_and_original_artifacts_keep_their_hashes` rehashes all original APKs, expanded recipes, PKGINFO and both image archives, and checks retained selected-file identities. It does not independently rebuild packages or turn metadata into legal approval. The real initial payload comparison was performed by the private Rust collector; the replay is an integrity check on those observations.
 
-The [loader-only diagnostic](../docs/results.md) independently reproduces the completion failure without Gitleaks/Git execution. Publication and consumer adoption remain blocked; no readiness approval changes follow from this review.
+The [loader-only diagnostic](../docs/results.md) independently reproduces the completion failure without Gitleaks/Git execution. For those historical artifacts, publication and consumer adoption remain blocked; no readiness approval changes follow from this historical review. Current readiness instead follows the separately bound physical-source/material review and both mandatory current native preparations, while fresh manual-main publication and delivery gates remain required.

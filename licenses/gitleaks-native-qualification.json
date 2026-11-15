@@ -1,0 +1,22 @@
+{
+  "schema": 1,
+  "scope": "Current Gitleaks readiness basis, not publication or production approval",
+  "material_review": "licenses/gitleaks-current-review.json",
+  "run": "https://github.com/PRJXAI/devsecops/actions/runs/43769369490",
+  "reviewed_head": "15cd4172d50775c66ed82e6e7b95b9aa5a35de66",
+  "actual_native_source": "0c39e0151e2bf597d371ae89d1e8308573362829",
+  "identical_git_tree": "fface88c975074297208c2c261105bb979592017",
+  "recipe_sha256": "cb02297c04344f39d27fb04f4b4321b6c0a143e27fd2406fc42ad94a61bd90ef",
+  "native": {
+    "amd64": {"findings":0,"ignored":0,"accepted":0,"blocking":0,"report_sha256":"d39de5447a705a67f02bbc162c2802acc81880081a71d0fe90ed6522f3fe255b"},
+    "arm64": {"findings":0,"ignored":0,"accepted":0,"blocking":0,"report_sha256":"66e0f2d6c246cad42c7c185de2810b02c7118128404696d270f8fe363ea284bf"}
+  },
+  "runtime_disposition": {
+    "qualified_platforms": ["native GitHub ubuntu-24.04 amd64", "native GitHub ubuntu-24.04-arm arm64"],
+    "mandatory_loader_boundary": "One offline native GNU-loader-only --list /usr/bin/git invocation must complete within unchanged 120 seconds, with libc/PCRE2/zlib closure, exit 0, no stderr and confirmed task-container cleanup. No Git/Gitleaks execution substitutes for this boundary; their complete contracts follow separately.",
+    "historical_failure": "Retained old loader-only 120-second Docker Running/no-process/no-exit-event stall and successful cleanup. Root cause remains unestablished; this record neither retroactively passes that artifact nor approves a retry/deadline/host-change waiver.",
+    "current_basis": "Both complete current native preparations, including the newly mandatory exact loader boundary, physical source/filesystem checks and all Git/Gitleaks contracts, pass. Current fixed runtime and original upstream complete race suites pass; no test or finding is suppressed. A separate current ARM loader-only diagnostic also exits normally.",
+    "other_artifacts_or_unobserved_platforms_approved": false
+  },
+  "remaining_release_gates": "Fresh exact-source native preparations after changes, guarded all-green merge, manual-main publication with explicit existing review input, exact scanned-byte handoffs, provenance and anonymous index/member/config access remain mandatory. No image is published by this readiness record."
+}
