@@ -1,0 +1,26 @@
+--- a/brotli_test.go
++++ b/brotli_test.go
+@@ -289,8 +289,10 @@
+ 	}()
+ 
+ 	ch := make(chan []byte)
+-	errch := make(chan error)
++	errch := make(chan error, 1)
++	done := make(chan struct{})
+ 	go func() {
++		defer close(done)
+ 		for {
+ 			segment, ok := <-ch
+ 			if !ok {
+@@ -306,7 +308,10 @@
+ 			}
+ 		}
+ 	}()
+-	defer close(ch)
++	defer func() {
++		close(ch)
++		<-done // finish Flush before the earlier deferred writer.Close
++	}()
+ 
+ 	segments := [...][]byte{
+ 		[]byte("first"),

@@ -2,6 +2,12 @@
 
 **Evidence advanced; redistribution is not approved.** [Artifact identities](gitleaks-runtime-evidence.json) bind 20 selected package/architecture payloads to the two unchanged production archives from hosted run 40712836198, source `818c36229a839653a6952d8079e5952ae51650bc`. This supersedes the earlier inability to retrieve exact expanded recipes in [supplier evidence](supplier-evidence.md), not its remaining source/notices/provenance requirements.
 
+## Current remediation observation — 2026-11-15
+
+A separate arm64 source derivative uses Git **2.56.1-r1** and glibc **2.44-r19**. Their exact public binary APKs now contain `.source.sha256`, and matching public `git-source-2.56.1-r1.apk` / `glibc-2.44-source-2.44-r19.apk` companions are available. The fixed Rust read-only capture verifies selected Git/libc payload bytes against the actual native filesystem and verifies **every one of 9 / 93 source-manifest files**, including overlays and upstream artifacts. It extracts or executes no source paths. These are new artifacts, not retroactive authentication of the older packages below.
+
+This observation covers only two packages on arm64, not all retained runtime packages or both architectures. Standalone APK verification reported **UNTRUSTED**, and the current-index fetch did not select those exact versions; neither result is relabeled signature authentication. Trust remains the HTTPS supplier plus selected native-byte identity and binary-bound source hashes, not independent rebuild proof. Complete source/notice/recipient arrangements and dual-native qualification are still required; redistribution remains unapproved.
+
 ## What is now established
 
 Public APKs are available at `https://apk.cgr.dev/chainguard/{x86_64,aarch64}/...` and the Wolfi mirror. Earlier requests to `packages.cgr.dev` and private recipe GitHub URLs did not locate these bytes. Each captured APK includes `.PKGINFO` and its expanded `.melange.yaml`, including resolved build-package versions, source pins, build options and nested pipeline commands. These were read as data, never executed.

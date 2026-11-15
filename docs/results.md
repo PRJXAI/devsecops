@@ -12,6 +12,12 @@ Run [43734377826](https://github.com/PRJXAI/devsecops/actions/runs/43734377826),
 
 Run [43743102622](https://github.com/PRJXAI/devsecops/actions/runs/43743102622) retains a Grype amd64 cold unit-stage timeout after source preparation; earlier clean preparations do not erase it. Unit compilation now has its own bounded `go test -c` phase before the complete uncached race execution. No package, assertion, timeout or workflow-wide bound is removed; compile-only output is never a passing-test receipt.
 
+## Gitleaks remediation candidate
+
+The local arm64 candidate updates Go to 1.27.4, x/crypto to 0.59.0, Brotli to 1.3.0 and the Git/glibc runtime suppliers to the pinned Git 2.56.1 / patched glibc 2.44 builds. Official Gitleaks unit races, seeded/deleted/bare/all-ref/redaction contracts and native filesystem checks pass. Its unchanged all-layers catalog with a fresh offline database reports **0 matches / 0 ignored**. This dirty-source prototype is not a release: refreshed dual-native profiles, compiler/module notices, complete native corresponding source and artifact-specific approval remain required.
+
+Brotli's original `TestDecoderStreaming` fixture closes its shared Writer before the background Flush goroutine has joined. The retained upstream race failure is reproduced as a mandatory negative control. A hash-bound third-party fixture-only patch adds the join and buffers its existing error channel; every assertion remains. Rust orchestration tests the synchronized copy's complete race suite, verifies original/fixed fixture hashes and re-verifies the untouched production module cache. No production Brotli source is patched and no test is skipped. Missing prerequisites, read-only SumDB-cache failure and a full-graph prefetch that changed go.sum remain retained failures; the fixed prefetch retrieves only the already-checksummed actual test prerequisite.
+
 ## Current baseline
 
 Source baseline before this delivery: `aaab990627e8f73fb89c5807193092324e3d004d`, hosted run [41074964808](https://github.com/PRJXAI/devsecops/actions/runs/41074964808). First-party checks and both experimental Gitleaks jobs pass. All production image preparations fail on their own inventory/contract/finding gates and publication is skipped. No package availability follows from that run.

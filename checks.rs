@@ -724,7 +724,7 @@ mod tests {
             .iter()
             .map(|b| format!("{b:02x}"))
             .collect::<String>()
-            == "76bfd69521745e27085f3472aac140ebdc7862073efc025f54c90edfe7653f65"
+            == "7b7afb6f316a0562d11928e1ebc13becd138d078e7f537a76eee961e84fa7761"
             && instructions(bytes).is_some()
             && instructions(bytes) == instructions(reviewed)
     }

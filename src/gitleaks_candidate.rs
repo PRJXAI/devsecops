@@ -3,23 +3,55 @@
 use super::*;
 use std::process::Command;
 const COMPILER: &str =
-    "golang:1.27.3@sha256:898838c455eecb68ed7b0b6f0635630ebdd657e732f07a23d0ab475007a52c36";
+    "golang:1.27.4@sha256:5e8afd493a7124a8586e134d9b532731161d4b9becf9dee5a5956b107426f93d";
 const SOURCE: &str =
     "https://codeload.github.com/gitleaks/gitleaks/tar.gz/83d9cd684c87d95d656c1458ef04895a7f1cbd8e";
 const SOURCE_HASH: &str = "6b2638a733b85619dc80bdf28e84e4fed7e526a761ab5c148fbf67695aea2115";
-const PATCH_HASH: &str = "25ffa10aef86ce506a4f66f8a294014de23031b96b27fa757be7b584f13af051";
-const MOD_HASH: &str = "ba06359b7031ccdda2687fc4553291ffa7f1075b062f38a0bce4e51f7ff4d3c0";
-const SUM_HASH: &str = "9f27b112986f235ee2b771bfa5c38e3dbf7521eac1e5722b42f5b528214b3b5c";
+const PATCH_HASH: &str = "cc22bde80f503fe26ab5075ff10c428feb83e320ecb19087042d409c25bbc21e";
+const MOD_HASH: &str = "8b36b554e8ba97785c41ca2f261c30c8f08d6db50458039365c48e752305a3be";
+const SUM_HASH: &str = "0b201de828353230fa0898c772260f926d13c5721b8997e44f490212cc53caf5";
+const BROTLI_TEST_PATCH: &str = "fd0b039a32bc65392ca6c0c884311a05b055024836edc44908c2edf76573664a";
+const BROTLI_ORIGINAL_TEST: &str =
+    "c49806c65764d5d7f6fbf441e0e7c80f86a7fca4a3d7b823fdc6c1fd9f27572a";
+const BROTLI_FIXED_TEST: &str = "a49f549fac39fc90e82e2d40ba5cf8402be68e6ee0fb33fde3c9521dc4f68fc2";
 #[cfg(test)]
-const TARGETS: [(&str, &str); 7] = [
-    ("golang.org/x/crypto", "v0.58.0"),
-    ("golang.org/x/text", "v0.43.0"),
-    ("golang.org/x/sys", "v0.49.0"),
+const TARGETS: [(&str, &str); 8] = [
+    ("github.com/andybalholm/brotli", "v1.3.0"),
+    ("golang.org/x/crypto", "v0.59.0"),
+    ("golang.org/x/text", "v0.44.0"),
+    ("golang.org/x/sys", "v0.50.0"),
     ("github.com/klauspost/compress", "v1.20.3"),
     ("github.com/nwaples/rardecode/v2", "v2.4.5"),
     ("github.com/ulikunitz/xz", "v0.5.17"),
-    ("golang.org/x/sync", "v0.24.0"),
+    ("golang.org/x/sync", "v0.25.0"),
 ];
+
+#[test]
+fn brotli_fixture_patch_retains_all_assertions_and_never_changes_runtime_sources() {
+    let patch = include_str!("../patches/brotli-1.3.0-streaming-test.patch.txt");
+    let digest = <sha2::Sha256 as sha2::Digest>::digest(patch.as_bytes())
+        .iter()
+        .map(|byte| format!("{byte:02x}"))
+        .collect::<String>();
+    assert_eq!(digest, BROTLI_TEST_PATCH);
+    assert_eq!(
+        patch
+            .lines()
+            .filter(|line| line.starts_with("+++ "))
+            .collect::<Vec<_>>(),
+        ["+++ b/brotli_test.go"]
+    );
+    assert_eq!(
+        patch
+            .lines()
+            .filter(|line| line.starts_with('-') && !line.starts_with("---"))
+            .collect::<Vec<_>>(),
+        ["-\terrch := make(chan error)", "-\tdefer close(ch)"]
+    );
+    assert!(patch.contains("+\t\t<-done"));
+    assert!(patch.contains("+\t\tdefer close(done)"));
+    assert!(!patch.contains("t.Skip"));
+}
 
 fn captured_copy(output: &Path, target: &Path, expected: &str) -> Result<()> {
     if hash(output, 1024 * 1024)? != expected {
@@ -124,6 +156,13 @@ fn compile(driver: &mut Driver, context: &Path, phase: &mut &'static str) -> Res
         .root
         .join("patches/gitleaks-8.30.1-dependencies.patch.txt");
     captured_copy(&patch, &context.join("dependencies.patch"), PATCH_HASH)?;
+    captured_copy(
+        &driver
+            .root
+            .join("patches/brotli-1.3.0-streaming-test.patch.txt"),
+        &context.join("brotli-test.patch"),
+        BROTLI_TEST_PATCH,
+    )?;
     *phase = "compiler-pull";
     driver.docker(&["pull", COMPILER], 300, false)?;
     let name = format!(
@@ -162,10 +201,18 @@ fn compile(driver: &mut Driver, context: &Path, phase: &mut &'static str) -> Res
                     "/input/dependencies.patch",
                     true,
                 )?,
+                "--mount",
+                &mount(
+                    &context.join("brotli-test.patch"),
+                    "/input/brotli-test.patch",
+                    true,
+                )?,
                 "--env",
                 "HOME=/tmp",
                 "--env",
                 "GOTOOLCHAIN=local",
+                "--env",
+                "GOPATH=/tmp/go",
                 "--env",
                 "GOMODCACHE=/tmp/modcache",
                 "--env",
@@ -247,6 +294,21 @@ fn compile(driver: &mut Driver, context: &Path, phase: &mut &'static str) -> Res
             600,
             false,
         )?;
+        // Explicit upstream test prerequisite already checksum-bound in go.sum;
+        // downloading an unrelated pruned module graph would mutate that lock.
+        driver.docker(
+            &[
+                "exec",
+                "--workdir=/src",
+                &name,
+                "go",
+                "mod",
+                "download",
+                "github.com/xyproto/randomstring@v1.0.5",
+            ],
+            600,
+            false,
+        )?;
         // Only this owned build container had network access; test/build are offline.
         driver.docker(&["network", "disconnect", "bridge", &name], 30, false)?;
         *phase = "offline-module-verification";
@@ -261,14 +323,132 @@ fn compile(driver: &mut Driver, context: &Path, phase: &mut &'static str) -> Res
                 "exec",
                 "--workdir=/src",
                 "--env=CGO_ENABLED=1",
+                "--env=GOPROXY=off",
                 &name,
                 "go",
                 "test",
                 "-mod=readonly",
                 "-race",
+                "-count=1",
                 "./...",
             ],
             900,
+            false,
+        )?;
+        *phase = "brotli-upstream-fixture-control";
+        // Never alter the checksum-verified module cache or shipped dependency.
+        // This copied upstream TEST alone needs synchronization before Close.
+        let brotli = "/src/brotli-unit";
+        driver.docker(
+            &[
+                "exec",
+                &name,
+                "cp",
+                "-R",
+                "/tmp/modcache/github.com/andybalholm/brotli@v1.3.0",
+                brotli,
+            ],
+            30,
+            false,
+        )?;
+        driver.docker(&["exec", &name, "chmod", "-R", "u+w", brotli], 30, false)?;
+        let original = driver.docker(
+            &[
+                "exec",
+                &name,
+                "sha256sum",
+                "/src/brotli-unit/brotli_test.go",
+            ],
+            15,
+            false,
+        )?;
+        if !bytes(&original, 256)?.starts_with(BROTLI_ORIGINAL_TEST.as_bytes()) {
+            return Err("changed upstream Brotli fixture");
+        }
+        let mut negative = Command::new("docker");
+        negative.args([
+            "exec",
+            "--workdir=/src/brotli-unit",
+            "--env=CGO_ENABLED=1",
+            "--env=GOPROXY=off",
+            &name,
+            "go",
+            "test",
+            "-race",
+            "-count=1",
+            "-run=^TestDecoderStreaming$",
+            ".",
+        ]);
+        let evidence = driver.execute(negative, 900, false, 1)?;
+        let evidence = bytes(&evidence, crate::LOG_LIMIT as u64)?;
+        if !evidence
+            .windows(b"WARNING: DATA RACE".len())
+            .any(|w| w == b"WARNING: DATA RACE")
+            || !evidence
+                .windows(b"FAIL: TestDecoderStreaming".len())
+                .any(|w| w == b"FAIL: TestDecoderStreaming")
+        {
+            return Err("Brotli negative control did not reproduce the fixture race");
+        }
+        *phase = "brotli-upstream-unit-races";
+        driver.docker(
+            &[
+                "exec",
+                "--workdir=/src/brotli-unit",
+                &name,
+                "git",
+                "apply",
+                "--check",
+                "/input/brotli-test.patch",
+            ],
+            30,
+            false,
+        )?;
+        driver.docker(
+            &[
+                "exec",
+                "--workdir=/src/brotli-unit",
+                &name,
+                "git",
+                "apply",
+                "/input/brotli-test.patch",
+            ],
+            30,
+            false,
+        )?;
+        let fixed = driver.docker(
+            &[
+                "exec",
+                &name,
+                "sha256sum",
+                "/src/brotli-unit/brotli_test.go",
+            ],
+            15,
+            false,
+        )?;
+        if !bytes(&fixed, 256)?.starts_with(BROTLI_FIXED_TEST.as_bytes()) {
+            return Err("changed synchronized Brotli fixture");
+        }
+        driver.docker(
+            &[
+                "exec",
+                "--workdir=/src/brotli-unit",
+                "--env=CGO_ENABLED=1",
+                "--env=GOPROXY=off",
+                &name,
+                "go",
+                "test",
+                "-race",
+                "-count=1",
+                "./...",
+            ],
+            900,
+            false,
+        )?;
+        // Original runtime module bytes must still verify after fixture tests.
+        driver.docker(
+            &["exec", "--workdir=/src", &name, "go", "mod", "verify"],
+            60,
             false,
         )?;
         *phase = "compile";
@@ -372,7 +552,9 @@ fn validate(driver: &mut Driver, public: &Path, phase: &mut &'static str) -> Res
     mkdir(&context, false)?;
     write_new(
         &context.join("Dockerfile"),
-        include_bytes!("../tests/fixtures/gitleaks/Dockerfile"),
+        // Qualify the current fixed derivative; old fixture/recorded evidence
+        // remains historical and is never rebound as current approval.
+        include_bytes!("../images/gitleaks/Dockerfile"),
         0o600,
     )?;
     write_new(
@@ -442,7 +624,7 @@ fn validate(driver: &mut Driver, public: &Path, phase: &mut &'static str) -> Res
         .ok_or("missing candidate inventory")?
     {
         if item["type"] == "go-module" {
-            if text(item, "/metadata/goCompiledVersion")? != "go1.27.3" {
+            if text(item, "/metadata/goCompiledVersion")? != "go1.27.4" {
                 return Err("unexpected candidate compiler");
             }
             let name = text(item, "/name")?;
@@ -451,7 +633,7 @@ fn validate(driver: &mut Driver, public: &Path, phase: &mut &'static str) -> Res
             }
         }
     }
-    if modules.get("stdlib") != Some(&"go1.27.3")
+    if modules.get("stdlib") != Some(&"go1.27.4")
         || modules.get("github.com/zricethezav/gitleaks/v8") != Some(&"v8.30.1")
     {
         return Err("missing candidate main/runtime inventory");
