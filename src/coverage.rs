@@ -238,7 +238,10 @@ mod tests {
     // or a replacement/native SBOM used for scanning. Fresh full native documents
     // must still pass the same production check at both parent call sites.
     fn captured(tool: &str) -> Value {
-        let profile = profile(tool).unwrap();
+        synthetic_profile_fixture(profile(tool).unwrap())
+    }
+    // Unit-only structural data, never an authentic capture, saved inventory or scan input.
+    fn synthetic_profile_fixture(profile: &Value) -> Value {
         let mut artifacts = Vec::new();
         for (path, rows) in profile["locations"].as_object().unwrap() {
             for row in rows.as_array().unwrap() {
@@ -588,31 +591,21 @@ mod tests {
     fn production_gitleaks_requires_reviewed_upgrade_not_original_supplier_inventory() {
         let current = profile("gitleaks").unwrap();
         assert_eq!(current["evidence"]["release_accepted"], false);
-        assert_eq!(current["compilers"]["/usr/local/bin/gitleaks"], "go1.27.3");
-        let mut original = captured("gitleaks");
+        assert_eq!(current["compilers"]["/usr/local/bin/gitleaks"], "go1.27.4");
         let old = &baseline().unwrap()["tools"]["gitleaks"];
-        for p in original["artifacts"].as_array_mut().unwrap() {
-            if p["type"] == "go-module" {
-                let row = old["locations"]["/usr/local/bin/gitleaks"]
-                    .as_array()
-                    .unwrap()
-                    .iter()
-                    .find(|row| row[1] == p["name"])
-                    .unwrap();
-                p["version"] = row[2].clone();
-                p["metadata"]["goCompiledVersion"] =
-                    old["compilers"]["/usr/local/bin/gitleaks"].clone();
-            }
-        }
+        let original = synthetic_profile_fixture(old);
         assert!(check_profile(&original, "gitleaks", old).is_ok());
         assert!(check(&original, "gitleaks").is_err());
     }
 
     #[test]
     #[ignore = "approved run 40683447538 public native candidate captures; no Docker/network"]
-    fn upgraded_native_documents_match_production_profile_without_rewriting_reports() {
+    fn historical_native_documents_match_the_frozen_profile_without_rewriting_reports() {
         let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR"));
-        let profile = profile("gitleaks").unwrap();
+        let profile: Value = serde_json::from_str(include_str!(
+            "../tests/fixtures/gitleaks-historical-profile.json"
+        ))
+        .unwrap();
         for arch in ["amd64", "arm64"] {
             let path = root.join(format!(
                 ".work/ctpo-hosted/{arch}/gitleaks-native-candidate-{arch}/gitleaks.syft.json"
@@ -627,7 +620,8 @@ mod tests {
             );
             assert_eq!(bom["source"]["metadata"]["architecture"], arch);
             super::super::release::no_scan_diagnostics(&bom).unwrap();
-            assert!(check(&bom, "gitleaks").is_ok());
+            assert!(check_profile(&bom, "gitleaks", &profile).is_ok());
+            assert!(check(&bom, "gitleaks").is_err());
             let mut observed = BTreeSet::new();
             for p in bom["artifacts"].as_array().unwrap() {
                 for l in p["locations"].as_array().unwrap() {
@@ -813,11 +807,11 @@ mod tests {
     fn native_git_and_each_library_keep_their_own_tuple() {
         let sbom = captured("gitleaks");
         for (name, path, version) in [
-            ("git", "/usr/bin/git", "2.56.0-r3"),
-            ("pcre2", "/usr/lib/libpcre2-8.so.0", "10.49-r1"),
-            ("zlib", "/usr/lib/libz.so.1", "1.3.2.1_rc20260921-r0"),
-            ("glibc-2.44", "/usr/lib/apk/db/installed", "2.44-r9"),
-            ("ld-linux-2.44", "/usr/lib/apk/db/installed", "2.44-r9"),
+            ("git", "/usr/bin/git", "2.56.1-r1"),
+            ("pcre2", "/usr/lib/libpcre2-8.so.0", "10.49-r3"),
+            ("zlib", "/usr/lib/libz.so.1", "1.3.2.1_rc20260921-r2"),
+            ("glibc-2.44", "/usr/lib/apk/db/installed", "2.44-r19"),
+            ("ld-linux-2.44", "/usr/lib/apk/db/installed", "2.44-r19"),
         ] {
             let i = index(&sbom, name, path);
             assert_eq!(sbom["artifacts"][i]["version"], version);

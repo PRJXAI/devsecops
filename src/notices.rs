@@ -9,6 +9,10 @@ use std::{
     process::Command,
 };
 
+#[cfg(test)]
+#[path = "gitleaks_notices.rs"]
+mod gitleaks_collection;
+
 pub(super) fn bundle(root: &Path, tool: &str) -> Result<Vec<u8>> {
     let expected = match tool {
         "syft" => "06bec637a9fab5fb511f91c22d1cfaf59f76340bc4d9aeb45f01f9468546b3be",

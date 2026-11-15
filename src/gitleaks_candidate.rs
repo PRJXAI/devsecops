@@ -65,11 +65,18 @@ pub(crate) fn go_notices(root: &Path) -> Result<Vec<u8>> {
     let folder = root.join("licenses/gitleaks-go-notices");
     let index = folder.join("index.json");
     if hash(&index, 1024 * 1024)?
-        != "1a768e1f20b1e78a2655fc515da6e31dd702a75fda477f551901796788c01466"
+        != "07a6e2d84057faea19bfd39ebad5fdd94523ab464f7237a28f6ed76fe0765e0c"
     {
         return Err("Gitleaks notice index differs from reviewed collection");
     }
     let index = read_json(&index)?;
+    if index["compiler"] != "go1.27.4"
+        || index["native_modules"] != 63
+        || hash(&folder.join("current-source-index.json"), 1024 * 1024)?
+            != text(&index, "/module_source_index_sha256")?
+    {
+        return Err("Gitleaks native legal source index differs");
+    }
     let mut bundle =
         b"Collected Gitleaks/Go notices. Native runtime/source review remains separate.\n".to_vec();
     for record in index["files"].as_array().ok_or("missing notice files")? {
@@ -680,25 +687,28 @@ fn production_notices_preserve_all_texts_and_reject_missing_changed_or_linked_in
     let folder = root.join("licenses/gitleaks-go-notices");
     fs::create_dir_all(folder.join("files")).unwrap();
     assert!(go_notices(&root).is_err());
-    for name in std::iter::once("index.json").chain(
-        index["files"]
-            .as_array()
-            .unwrap()
-            .iter()
-            .map(|v| v["file"].as_str().unwrap()),
-    ) {
+    for name in ["index.json", "current-source-index.json"]
+        .into_iter()
+        .chain(
+            index["files"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .map(|v| v["file"].as_str().unwrap()),
+        )
+    {
         let data = bytes(
             &driver.root.join("licenses/gitleaks-go-notices").join(name),
             1024 * 1024,
         )
         .unwrap();
         write_new(&folder.join(name), &data, 0o600).unwrap();
-        if name != "index.json" {
+        if name.starts_with("files/") {
             assert!(good.windows(data.len()).any(|chunk| chunk == data));
         }
     }
     assert_eq!(go_notices(&root).unwrap(), good);
-    let target = folder.join("files/000.txt");
+    let target = folder.join(index["files"][0]["file"].as_str().unwrap());
     let original = bytes(&target, 1024 * 1024).unwrap();
     fs::remove_file(&target).unwrap();
     assert!(go_notices(&root).is_err());
@@ -711,6 +721,15 @@ fn production_notices_preserve_all_texts_and_reject_missing_changed_or_linked_in
     assert!(go_notices(&root).is_err());
     fs::remove_file(&target).unwrap();
     write_new(&target, &original, 0o600).unwrap();
+    let source_index = folder.join("current-source-index.json");
+    let source_bytes = bytes(&source_index, 1024 * 1024).unwrap();
+    fs::remove_file(&source_index).unwrap();
+    assert!(go_notices(&root).is_err());
+    write_new(&source_index, b"changed", 0o600).unwrap();
+    assert!(go_notices(&root).is_err());
+    fs::remove_file(&source_index).unwrap();
+    write_new(&source_index, &source_bytes, 0o600).unwrap();
+    assert_eq!(go_notices(&root).unwrap(), good);
     fs::write(folder.join("index.json"), b"{}").unwrap();
     assert!(go_notices(&root).is_err());
 }
