@@ -137,6 +137,12 @@ mod tests {
         {
             return true;
         }
+        if tool == "grype"
+            && args
+                == "--chown=65532:65532 tests/fixtures/grype-source-cache/image-simple.tar /src/grype/pkg/testdata/cache/stereoscope-fixture-image-simple-42ea0faabdf8f9815ba86da9e859efafbb1aef8cf6c6ecce9d62e26137b83880.tar"
+        {
+            return true;
+        }
         if matches!(
             (tool, args),
             (
@@ -278,7 +284,7 @@ mod tests {
         use sha2::Digest;
         let expected = match tool {
             "syft" => "3d4bc83c1da1ed35ba6e9616742f5171966c729b77b9aac42beb4cf876d54133",
-            "grype" => "ae479e9d7e3acdeec2b34b633cd8c3c1540c6d28b42d23721ac86d614f6958b4",
+            "grype" => "2a031efd513106f57b389a291fbd904a354db871b49444824a14a4907587459f",
             _ => return false,
         };
         let reviewed = match tool {
@@ -624,6 +630,9 @@ mod tests {
             Some("tests/fixtures/syft-os-cache/rhel-no-manifests.tar") => {
                 Some("befc70081e96a5b9b18f89b96ced88027936603de81158e91ae09fcf163a34c3")
             }
+            Some("tests/fixtures/grype-source-cache/image-simple.tar") => {
+                Some("4e9f1960620315490f6c64057657fdd1355e1de9e76814cc27deb50d75b19203")
+            }
             _ => None,
         };
         if !["rs", "md", "toml", "lock", "json", "yml", "yaml", "txt"].contains(&extension.as_str())
@@ -871,6 +880,29 @@ mod tests {
                     .any(|entry| entry.unwrap().path().unwrap() == Path::new("manifest.json"))
             );
         }
+    }
+
+    #[test]
+    fn grype_package_exclusion_fixture_is_exact_nonexecutable_image_data() {
+        use sha2::Digest;
+        let path = root().join("tests/fixtures/grype-source-cache/image-simple.tar");
+        let metadata = fs::symlink_metadata(&path).unwrap();
+        assert!(metadata.is_file() && metadata.len() <= 512 * 1024);
+        let bytes = fs::read(path).unwrap();
+        assert_eq!(
+            sha2::Sha256::digest(&bytes)
+                .iter()
+                .map(|byte| format!("{byte:02x}"))
+                .collect::<String>(),
+            "4e9f1960620315490f6c64057657fdd1355e1de9e76814cc27deb50d75b19203"
+        );
+        let mut archive = tar::Archive::new(std::io::Cursor::new(bytes));
+        assert!(
+            archive
+                .entries()
+                .unwrap()
+                .any(|entry| entry.unwrap().path().unwrap() == Path::new("manifest.json"))
+        );
     }
 
     fn syft_candidate_dockerfile(bytes: &[u8]) -> bool {
@@ -1902,6 +1934,9 @@ jobs:";
                 "!tests/fixtures/syft-os-cache/not-rhel.tar",
                 "!tests/fixtures/syft-os-cache/rhel-manifests.tar",
                 "!tests/fixtures/syft-os-cache/rhel-no-manifests.tar",
+                "!tests/fixtures/grype-source-cache/",
+                "tests/fixtures/grype-source-cache/**",
+                "!tests/fixtures/grype-source-cache/image-simple.tar",
                 "!licenses/",
                 "!licenses/**",
                 "!patches/",

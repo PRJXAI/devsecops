@@ -14,6 +14,9 @@ tests/fixtures/syft-os-cache/**
 !tests/fixtures/syft-os-cache/not-rhel.tar
 !tests/fixtures/syft-os-cache/rhel-manifests.tar
 !tests/fixtures/syft-os-cache/rhel-no-manifests.tar
+!tests/fixtures/grype-source-cache/
+tests/fixtures/grype-source-cache/**
+!tests/fixtures/grype-source-cache/image-simple.tar
 !licenses/
 !licenses/**
 !patches/

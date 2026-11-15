@@ -28,6 +28,9 @@ pub(super) fn bundle(root: &Path, tool: &str) -> Result<Vec<u8>> {
     bytes(&path, 8 * 1024 * 1024)
 }
 
+// Historical bindings remain until four current source-bound native captures
+// are reviewed. The Go 1.27.4 guard below deliberately refuses their reuse for
+// this remediation; no new notice approval follows from an old capture.
 const CAPTURES: [(&str, &str, &str); 4] = [
     (
         "syft",
@@ -132,6 +135,73 @@ fn get(driver: &mut Driver, url: &str) -> Result<PathBuf> {
     ]);
     driver.execute(c, 75, false, 0)
 }
+// Legal-source attribution is distinct from the untouched native artifact version.
+// The derivative main modules have authentic VCS +dirty versions, not released tags.
+// Their unchanged legal texts come from the exact pinned upstream source base;
+// dependency-manifest patches and all replacement modules are attributed separately.
+fn module_source(package: &Value, tool: &str) -> Result<String> {
+    let name = text(package, "/name")?;
+    let version = text(package, "/version")?;
+    if version.eq_ignore_ascii_case("UNKNOWN") || name.contains([' ', '\n', '@']) {
+        return Err("unresolved scanner source module");
+    }
+    let (main, base, commit) = match tool {
+        "syft" => (
+            "github.com/anchore/syft",
+            "v1.57.1",
+            "a0c0d3890a9d79421c403e8fcadec50a2e55bf21",
+        ),
+        "grype" => (
+            "github.com/anchore/grype",
+            "v0.121.3",
+            "cd1f23eb50dfb52647090158f453c7359172591f",
+        ),
+        _ => return Err("unsupported fixed scanner source"),
+    };
+    if name != main {
+        if !version.starts_with('v')
+            || version.contains([' ', '\n', '@'])
+            || version.ends_with("+dirty")
+        {
+            return Err("unresolved dependency source version");
+        }
+        return Ok(format!("{name}@{version}"));
+    }
+    if package["type"] != "go-module"
+        || package["metadataType"] != "go-module-buildinfo-entry"
+        || package["metadata"]["mainModule"] != main
+        || package["metadata"]["goCompiledVersion"] != "go1.27.4"
+        || !version.starts_with("v0.0.0-")
+        || !version.ends_with(&format!("-{}+dirty", &commit[..12]))
+    {
+        return Err("main derivative source identity mismatch");
+    }
+    let mut settings = BTreeMap::new();
+    for setting in package["metadata"]["goBuildSettings"]
+        .as_array()
+        .ok_or("missing native source settings")?
+    {
+        if settings
+            .insert(text(setting, "/key")?, text(setting, "/value")?)
+            .is_some()
+        {
+            return Err("duplicate native source setting");
+        }
+    }
+    for (key, expected) in [
+        ("vcs", "git"),
+        ("vcs.revision", commit),
+        ("vcs.modified", "true"),
+        ("CGO_ENABLED", "0"),
+        ("GOOS", "linux"),
+    ] {
+        if settings.get(key).copied() != Some(expected) {
+            return Err("main source provenance differs from fixed recipe");
+        }
+    }
+    Ok(format!("{name}@{base}"))
+}
+
 pub(super) fn collect(driver: &mut Driver) -> Result<()> {
     let output = driver.root.join(".work/scanner-notice-collection");
     mkdir(&output, false)?;
@@ -148,8 +218,10 @@ pub(super) fn collect(driver: &mut Driver) -> Result<()> {
     }
     let mut modules = BTreeSet::new();
     let mut by_tool = BTreeMap::new();
+    let mut native_versions = BTreeMap::new();
     for tool in ["syft", "grype"] {
         let mut reference = None;
+        let mut native_reference = None;
         for (_, arch, expected) in CAPTURES.iter().filter(|(name, _, _)| *name == tool) {
             let path = driver.root.join(format!(
                 ".work/delivery-20261030/catalog-{tool}-{arch}/{tool}.syft.json"
@@ -162,6 +234,7 @@ pub(super) fn collect(driver: &mut Driver) -> Result<()> {
                 return Err("scanner catalog architecture mismatch");
             }
             let mut observed = BTreeSet::new();
+            let mut native_observed = BTreeSet::new();
             for package in doc["artifacts"]
                 .as_array()
                 .ok_or("missing scanner packages")?
@@ -169,26 +242,34 @@ pub(super) fn collect(driver: &mut Driver) -> Result<()> {
                 if package["type"] != "go-module" {
                     continue;
                 }
-                if package["metadata"]["goCompiledVersion"] != "go1.26.8" {
+                if package["metadata"]["goCompiledVersion"] != "go1.27.4" {
                     return Err("scanner compiler changed");
                 }
                 let name = text(package, "/name")?;
-                let version = text(package, "/version")?;
                 if name == "stdlib" {
                     continue;
                 }
-                if !version.starts_with('v') || name.contains([' ', '\n', '@']) {
-                    return Err("unresolved scanner source module");
-                }
-                observed.insert(format!("{name}@{version}"));
+                native_observed.insert(format!("{name}@{}", text(package, "/version")?));
+                observed.insert(module_source(package, tool)?);
             }
             if observed.is_empty() || reference.as_ref().is_some_and(|r| *r != observed) {
                 return Err("native scanner module graphs differ");
             }
+            if native_reference
+                .as_ref()
+                .is_some_and(|previous| previous != &native_observed)
+            {
+                return Err("native artifact module versions differ between architectures");
+            }
             modules.extend(observed.clone());
             reference = Some(observed);
+            native_reference = Some(native_observed);
         }
         by_tool.insert(tool, reference.ok_or("missing native scanner graph")?);
+        native_versions.insert(
+            tool,
+            native_reference.ok_or("missing native module versions")?,
+        );
     }
     // Fixed public module proxy, checksum verification on, no VCS/private fallback,
     // operator Go settings, workspace or automatic toolchain execution.
@@ -198,7 +279,7 @@ pub(super) fn collect(driver: &mut Driver) -> Result<()> {
         .env("HOME", &output)
         .env("GOENV", "off")
         .env("GOWORK", "off")
-        .env("GOTOOLCHAIN", "go1.27.3")
+        .env("GOTOOLCHAIN", "go1.27.4")
         .env("GOPATH", &cache)
         .env("GOMODCACHE", cache.join("pkg/mod"))
         .env("GOPROXY", "https://proxy.golang.org")
@@ -228,9 +309,30 @@ pub(super) fn collect(driver: &mut Driver) -> Result<()> {
     if downloads.len() != modules.len() {
         return Err("incomplete module source retrieval");
     }
+    for (module, commit) in [
+        (
+            "github.com/anchore/syft@v1.57.1",
+            "a0c0d3890a9d79421c403e8fcadec50a2e55bf21",
+        ),
+        (
+            "github.com/anchore/grype@v0.121.3",
+            "cd1f23eb50dfb52647090158f453c7359172591f",
+        ),
+        (
+            "github.com/sbomify/ar@v0.0.0-20261110120314-cac91ea00b05",
+            "cac91ea00b0538f92fd42fa3ece0b15adc5ef01f",
+        ),
+    ] {
+        let source = downloads
+            .get(module)
+            .ok_or("missing fixed main/replacement source")?;
+        if source["Origin"]["Hash"] != commit {
+            return Err("main/replacement legal source does not match pinned commit");
+        }
+    }
     let commit = read_json(&get(
         driver,
-        "https://api.github.com/repos/golang/go/commits/go1.26.8",
+        "https://api.github.com/repos/golang/go/commits/go1.27.4",
     )?)?;
     let commit = text(&commit, "/sha")?.to_owned();
     if commit.len() != 40 || !commit.bytes().all(|b| b.is_ascii_hexdigit()) {
@@ -317,11 +419,11 @@ pub(super) fn collect(driver: &mut Driver) -> Result<()> {
             return Err("Go notice source object mismatch");
         }
         go_texts.push((
-            format!("Go go1.26.8 / {path}"),
+            format!("Go go1.27.4 / {path}"),
             bytes(&downloaded, 1024 * 1024)?,
         ));
     }
-    if !go_texts.iter().any(|(p, _)| p == "Go go1.26.8 / LICENSE") {
+    if !go_texts.iter().any(|(p, _)| p == "Go go1.27.4 / LICENSE") {
         return Err("missing Go license");
     }
     for (tool, graph) in by_tool {
@@ -366,7 +468,7 @@ pub(super) fn collect(driver: &mut Driver) -> Result<()> {
         write_new(&file, &bundle, 0o444)?;
         write_json(
             &output.join(format!("{tool}-index.json")),
-            &json!({"tool":tool,"captured_run":41074964808u64,"source_sha":"aaab990627e8f73fb89c5807193092324e3d004d","go_source_commit":commit,"go_legal_files":go_texts.len(),"modules":records,"bundle_sha256":hash(&file, 8 * 1024 * 1024)?,"bundle_bytes":bundle.len(),"redistribution_approved":false}),
+            &json!({"tool":tool,"captured_run":41074964808u64,"source_sha":"aaab990627e8f73fb89c5807193092324e3d004d","go_source_commit":commit,"go_legal_files":go_texts.len(),"native_module_versions":native_versions[tool],"modules":records,"bundle_sha256":hash(&file, 8 * 1024 * 1024)?,"bundle_bytes":bundle.len(),"redistribution_approved":false}),
         )?;
     }
     Ok(())
@@ -374,6 +476,52 @@ pub(super) fn collect(driver: &mut Driver) -> Result<()> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn main_legal_source_mapping_requires_real_native_vcs_identity_not_a_guessed_version() {
+        let package = json!({"name":"github.com/anchore/syft","version":"v0.0.0-20261109133238-a0c0d3890a9d+dirty","type":"go-module","metadataType":"go-module-buildinfo-entry","metadata":{"mainModule":"github.com/anchore/syft","goCompiledVersion":"go1.27.4","goBuildSettings":[{"key":"vcs","value":"git"},{"key":"vcs.revision","value":"a0c0d3890a9d79421c403e8fcadec50a2e55bf21"},{"key":"vcs.modified","value":"true"},{"key":"CGO_ENABLED","value":"0"},{"key":"GOOS","value":"linux"}]}});
+        assert_eq!(
+            module_source(&package, "syft").unwrap(),
+            "github.com/anchore/syft@v1.57.1"
+        );
+        for (pointer, value) in [
+            ("/version", json!("UNKNOWN")),
+            ("/version", json!("v1.57.1")),
+            ("/metadata/goCompiledVersion", json!("go1.26.8")),
+            ("/metadata/mainModule", json!("foreign")),
+            ("/metadata/goBuildSettings/1/value", json!("foreign")),
+            ("/metadata/goBuildSettings/2/value", json!("false")),
+            ("/metadata/goBuildSettings/3/value", json!("1")),
+            ("/metadata/goBuildSettings/4/value", json!("windows")),
+        ] {
+            let mut changed = package.clone();
+            *changed.pointer_mut(pointer).unwrap() = value;
+            assert!(module_source(&changed, "syft").is_err(), "{pointer}");
+        }
+        assert_eq!(
+            package["version"],
+            "v0.0.0-20261109133238-a0c0d3890a9d+dirty"
+        );
+    }
+    #[test]
+    fn replacement_sources_keep_actual_module_versions_and_never_restore_abandoned_identity() {
+        let package =
+            json!({"name":"github.com/sbomify/ar","version":"v0.0.0-20261110120314-cac91ea00b05"});
+        assert_eq!(
+            module_source(&package, "syft").unwrap(),
+            "github.com/sbomify/ar@v0.0.0-20261110120314-cac91ea00b05"
+        );
+        let incompatible =
+            json!({"name":"github.com/example/legacy","version":"v2.0.0+incompatible"});
+        assert!(module_source(&incompatible, "grype").is_ok());
+        assert!(module_source(&package, "unsupported").is_err());
+        for version in ["UNKNOWN", "", "v1.0.0+dirty", "v1.0.0 @foreign"] {
+            let mut changed = package.clone();
+            changed["version"] = json!(version);
+            assert!(module_source(&changed, "syft").is_err());
+        }
+    }
+
     #[test]
     #[ignore = "fixed captured public static-base source/legal assembly; no network or publication"]
     fn assemble_captured_static_base_notices() {

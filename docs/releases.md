@@ -33,7 +33,7 @@ GITHUB_SHA=FULL_SOURCE_SHA cargo run --locked --bin devsecops -- prepare-tool sy
 
 Use a clean committed source for release work. The catalog command captures evidence, not a release. Preparation refuses an existing tool output directory; preserve failed evidence before another corrected observation. Receipts expire after 24 hours; database freshness is checked independently. Tool-local directories avoid stale sibling work becoming an aggregate veto.
 
-The fixed scanner notice collector reads four hash-bound native catalogs from run 41074964808, retrieves the exact public module sources with Go checksum verification and collects source-attributed legal texts. `cargo run --locked --bin devsecops -- collect-scanner-notices` writes private proposals, not readiness approval. Source caches have no hard filesystem quota. Collection failure, missing legal texts or a changed bundle must be investigated before packaging.
+The original notice collection used four hash-bound native catalogs from run 41074964808. The security-remediation collector requires refreshed current captures; its Go 1.27.4 guard deliberately refuses the historical bindings until those inputs are reviewed. Native derivative module versions remain untouched: legal attribution maps the main module to its fixed upstream source base only after exact native VCS checks, and verifies main/replacement source commits after checksum-verified public retrieval. `cargo run --locked --bin devsecops -- collect-scanner-notices` writes private proposals, not readiness approval. Source caches have no hard filesystem quota. Collection failure, missing legal texts or a changed bundle must be investigated before packaging.
 
 ## Authorized publication
 
