@@ -1,6 +1,22 @@
 # Gitleaks runtime source review — 2026-10-29
 
-**Evidence advanced; redistribution is not approved.** [Artifact identities](gitleaks-runtime-evidence.json) bind 20 selected package/architecture payloads to the two unchanged production archives from hosted run 40712836198, source `818c36229a839653a6952d8079e5952ae51650bc`. This supersedes the earlier inability to retrieve exact expanded recipes in [supplier evidence](supplier-evidence.md), not its remaining source/notices/provenance requirements.
+**Historical artifact review; not approval of those artifacts.** Current fixed-source material/physical-source arrangements are reviewed separately in [current review](gitleaks-current-review.json), with explicit native loader completion and supported-runtime disposition in [current qualification](gitleaks-native-qualification.json). The historical failures, false collection approvals and limitations below remain unchanged in scope; current readiness does not retroactively approve them.
+
+**Evidence advanced; redistribution of the historical artifacts is not approved.** [Artifact identities](gitleaks-runtime-evidence.json) bind 20 selected package/architecture payloads to the two unchanged production archives from hosted run 40712836198, source `818c36229a839653a6952d8079e5952ae51650bc`. This supersedes the earlier inability to retrieve exact expanded recipes in [supplier evidence](supplier-evidence.md), not its remaining source/notices/provenance requirements.
+
+## Current remediation observation — 2026-11-15
+
+A separate arm64 source derivative uses Git **2.56.1-r1** and glibc **2.44-r19**. Their exact public binary APKs now contain `.source.sha256`, and matching public `git-source-2.56.1-r1.apk` / `glibc-2.44-source-2.44-r19.apk` companions are available. The fixed Rust read-only capture verifies selected Git/libc payload bytes against the actual native filesystem and verifies **every one of 9 / 93 source-manifest files**, including overlays and upstream artifacts. It extracts or executes no source paths. These are new artifacts, not retroactive authentication of the older packages below.
+
+This observation covers only two packages on arm64, not all retained runtime packages or both architectures. Standalone APK verification reported **UNTRUSTED**, and the current-index fetch did not select those exact versions; neither result is relabeled signature authentication. Trust remains the HTTPS supplier plus selected native-byte identity and binary-bound source hashes, not independent rebuild proof. Complete source/notice/recipient arrangements and dual-native qualification are still required; redistribution remains unapproved.
+
+## Current source-delivery candidate — 2026-11-15
+
+The fixed dual-native observation now covers all ten retained runtime package identities on each architecture. Git/glibc/GCC/baselayout binary-bound companion manifests and their original files verify. CA is exact native editable PEM source form; PCRE2 and zlib use exact native library APKs plus their vendor-recipe-bound upstream original notices (including the pinned SLJIT gitlink). Missing CA/PCRE2/zlib companion routes remain documented failures, not invented source archives. This does not establish independent vendor reproducibility or standalone APK signature trust.
+
+The candidate now stages **four complete selected-architecture source APKs (~223 MiB)** alongside the executable, plus **227,530 bytes** of original native/base legal material and an exact source index. Fixed Rust code permits only those eight architecture-specific source hashes; GCC retrieval uses checked ≤64 MiB ranges. The image recipe copies only the four explicit filenames, read-only. A mandatory stopped-filesystem contract requires every original archive byte/size/mode, native notice and source index without extraction, under unchanged archive/member/header bounds. Missing/changed/linked/extra sources fail; source assembly is not a passing release receipt.
+
+Physical candidate image qualification, complete all-layer native inventory/SCA, current profiles and the full dual-native workflow are still required. Readiness remains closed and no current Gitleaks image is published. The index collection-time approval remains false; a future artifact-specific material review must not infer success from file availability or these packaging changes.
 
 ## What is now established
 
@@ -51,4 +67,4 @@ Private captures are under `.work/approval-suppliers/gitleaks-runtime-v3/`; publ
 
 The ordinary `runtime_source_evidence_is_two_architecture_observation_not_approval` test checks the exact two-architecture/package coverage and false approval/completeness claims. The opt-in `release::tests::recorded_runtime_recipes_and_original_artifacts_keep_their_hashes` rehashes all original APKs, expanded recipes, PKGINFO and both image archives, and checks retained selected-file identities. It does not independently rebuild packages or turn metadata into legal approval. The real initial payload comparison was performed by the private Rust collector; the replay is an integrity check on those observations.
 
-The [loader-only diagnostic](../docs/results.md) independently reproduces the completion failure without Gitleaks/Git execution. Publication and consumer adoption remain blocked; no readiness approval changes follow from this review.
+The [loader-only diagnostic](../docs/results.md) independently reproduces the completion failure without Gitleaks/Git execution. For those historical artifacts, publication and consumer adoption remain blocked; no readiness approval changes follow from this historical review. Current readiness instead follows the separately bound physical-source/material review and both mandatory current native preparations, while fresh manual-main publication and delivery gates remain required.

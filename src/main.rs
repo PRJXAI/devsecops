@@ -7,6 +7,10 @@ mod builder;
 mod contracts;
 mod coverage;
 mod filesystem;
+#[cfg(test)]
+mod gitleaks_native_material;
+#[cfg(test)]
+mod gitleaks_source_capture;
 mod grype_contract;
 mod notices;
 mod public_access;
@@ -410,7 +414,7 @@ impl Driver {
         let cleanup = self.docker(&["rm", "--force", &name], 10, true);
         let output = container_output(result, cleanup)?;
         let expected = if entrypoint == Some("/usr/bin/git") {
-            "2.56.0.1.g02cd7dbd28"
+            "2.56.1"
         } else {
             match (tool, args) {
                 ("syft", _) => "1.57.1",

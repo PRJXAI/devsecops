@@ -1,0 +1,44 @@
+{
+  "schema": 1,
+  "date": "2026-11-15",
+  "scope": "Current fixed Gitleaks Go/native source and notice material review, not a clean-scan, publication or independent legal-certification receipt",
+  "authorization": "Owner-authorized remediation and publication only through existing gates; no expanded advisory acceptance, protection change, production deployment or future written source offer",
+  "main_source_commit": "83d9cd684c87d95d656c1458ef04895a7f1cbd8e",
+  "main_source_archive_sha256": "6b2638a733b85619dc80bdf28e84e4fed7e526a761ab5c148fbf67695aea2115",
+  "main_proxy_discrepancy": "Native v8.30.1 retained. Proxy tag origin 8d1f98c7967eb1e79cb44ac6241a124e145d2165 differs; actual main legal source uses the exact build archive, not an invented proxy/tag equivalence. Cause not independently established.",
+  "go_material": {
+    "compiler": "go1.27.4",
+    "compiler_source_commit": "7b2881024c95a11ddb86663a616340aa3a88b67f",
+    "native_module_trees": 63,
+    "original_module_texts": 91,
+    "original_compiler_texts": 38,
+    "collected_bundle_sha256": "2cb8a6f594f09d4bcf366a30c82c5570e415b00c1653cef86c323e0e22de3400",
+    "source_index_sha256": "9b38e829a62cdeb72e795c7ba885927d23ebeae35dd68bedb7fdb15c73c383a1",
+    "packaging_index_sha256": "07a6e2d84057faea19bfd39ebad5fdd94523ab464f7237a28f6ed76fe0765e0c"
+  },
+  "native_material": {
+    "native_notice_sha256": "505907d7c7178d6b75e9a9e6f67f4b0e8b232b7772433a3f6596c8f2b56158c9",
+    "native_notice_bytes": 227530,
+    "source_index_sha256": "73b24b710a28791a73461dfd7be36d3a892670a28642a1a52c9746e989bfb67e",
+    "native_source_observation_sha256": "dea1d687cb664ca4b00455b856d7bfa4273faea8917ef2d1684d0858f85d7513",
+    "package_architecture_observations": 20,
+    "corresponding_source_archives_per_architecture": 4,
+    "recipient_arrangement": "Exact Git/glibc/GCC/baselayout source companion APKs accompany the selected native image under its licenses directory, with build recipes, overlays, upstream sources and checksum manifests. Read-only regular-file bytes/sizes/hashes and source index are mandatory filesystem controls; no future written source offer is substituted.",
+    "permissive_and_data": "Exact PCRE2 library and zlib APK native-byte identity plus vendor-recipe source attribution and original notices (including SLJIT); CA is unmodified editable PEM source form with original MPL/MIT material. Unavailable exact source-companion routes remain 404 observations, not GPL source-completeness claims.",
+    "gnu_legal_source": "glibc legal texts extracted from the exact verified source companion (COPYING.LIB resolves to COPYING.LESSERv2); unavailable public mirror routes and the empty symlink extraction were retained, not used as licenses. GCC license/exception texts also re-extracted from the verified source companion and matched byte-for-byte to the pinned upstream commit texts.",
+    "rights": "Original terms/copyrights retained, modified distribution prominently identified, no endorsement/relicensing or extra restriction. Ordinary dynamic GNU libraries remain replaceable/relinkable through the public recipe; execution containment is not a recipient-rights restriction.",
+    "trust_boundary": "HTTPS supplier plus pinned image/archive/source hashes and exact selected native bytes; standalone APK verification was UNTRUSTED and is not represented as authenticated. Independent vendor source-to-binary reproducibility is not established."
+  },
+  "review": {
+    "material_review_complete": true,
+    "source_and_notice_delivery_controls_required": true,
+    "fresh_both_native_release_preparations_required": true,
+    "all_raw_severities_and_ignored_matches_required": true,
+    "manual_main_publication_required": true,
+    "provenance_and_anonymous_delivery_required": true,
+    "collection_time_approval_fields_remain_false": true,
+    "independent_vendor_reproducibility_established": false,
+    "publication_from_this_record_alone_authorized": false,
+    "other_tools_or_production_deployment_approved": false
+  }
+}

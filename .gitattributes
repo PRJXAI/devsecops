@@ -3,3 +3,5 @@
 licenses/scanners/syft-NOTICES.txt -text -whitespace
 licenses/scanners/grype-NOTICES.txt -text -whitespace
 licenses/scanners/STATIC-BASE-NOTICES.txt -text -whitespace
+licenses/gitleaks-go-notices/files/current-1.27.4-NOTICES.txt -text -whitespace
+licenses/gitleaks-runtime-NOTICES.txt -text -whitespace

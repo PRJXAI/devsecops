@@ -102,13 +102,16 @@ mod tests {
     }
 
     fn narrow_copy(args: &str, stages: &BTreeSet<String>, tool: &str) -> bool {
-        // These two files exist only in Rust's private, verified fixed-source
-        // context. The complete Gitleaks recipe is additionally hash-bound below.
+        // Only these exact public payload/legal/source files enter Rust's private
+        // verified context. The complete recipe is additionally hash-bound below.
         if tool == "gitleaks"
             && matches!(
                 args,
                 "--chmod=0555 candidate /usr/local/bin/gitleaks"
                     | "--chmod=0444 go-notices.txt /usr/share/licenses/gitleaks/GO-NOTICES.txt"
+                    | "--chmod=0444 native-notices.txt /usr/share/licenses/gitleaks/NATIVE-NOTICES.txt"
+                    | "--chmod=0444 source-index.json /usr/share/licenses/gitleaks/SOURCE-INDEX.json"
+                    | "--chmod=0444 sources/gcc-source-16.2.0-r4.apk sources/git-source-2.56.1-r1.apk sources/glibc-2.44-source-2.44-r19.apk sources/wolfi-baselayout-source-20230201-r31.apk /usr/share/licenses/gitleaks/corresponding-source/"
             )
         {
             return true;
@@ -587,7 +590,7 @@ mod tests {
     }
 
     fn notice_attributes(bytes: &[u8]) -> bool {
-        bytes == b"# Preserve original upstream legal bytes, including CRLF and whitespace.\n# The packaged bundles remain subject to exact byte/hash/mode validation.\nlicenses/scanners/syft-NOTICES.txt -text -whitespace\nlicenses/scanners/grype-NOTICES.txt -text -whitespace\nlicenses/scanners/STATIC-BASE-NOTICES.txt -text -whitespace\n"
+        bytes == b"# Preserve original upstream legal bytes, including CRLF and whitespace.\n# The packaged bundles remain subject to exact byte/hash/mode validation.\nlicenses/scanners/syft-NOTICES.txt -text -whitespace\nlicenses/scanners/grype-NOTICES.txt -text -whitespace\nlicenses/scanners/STATIC-BASE-NOTICES.txt -text -whitespace\nlicenses/gitleaks-go-notices/files/current-1.27.4-NOTICES.txt -text -whitespace\nlicenses/gitleaks-runtime-NOTICES.txt -text -whitespace\n"
     }
 
     fn rust_glue_file(folder: &Path, relative: &Path) -> bool {
@@ -724,7 +727,7 @@ mod tests {
             .iter()
             .map(|b| format!("{b:02x}"))
             .collect::<String>()
-            == "76bfd69521745e27085f3472aac140ebdc7862073efc025f54c90edfe7653f65"
+            == "cb02297c04344f39d27fb04f4b4321b6c0a143e27fd2406fc42ad94a61bd90ef"
             && instructions(bytes).is_some()
             && instructions(bytes) == instructions(reviewed)
     }
@@ -741,6 +744,12 @@ mod tests {
                 "COPY --chmod=0444 licenses/",
             ),
             ("USER 65532:65532", "USER 0"),
+            (
+                "COPY --chmod=0444 native-notices.txt",
+                "COPY --chmod=0444 arbitrary",
+            ),
+            ("sources/gcc-source-16.2.0-r4.apk", "sources/arbitrary.apk"),
+            ("sources/git-source-2.56.1-r1.apk", "sources/*.apk"),
             ("WORKDIR /tmp", "RUN [\"sh\",\"-c\",\"true\"]\nWORKDIR /tmp"),
         ] {
             assert!(!docker_policy(&text.replace(old, new), "gitleaks"));
@@ -990,12 +999,22 @@ mod tests {
         let index: serde_json::Value =
             serde_json::from_slice(&fs::read(folder.join("index.json")).unwrap()).unwrap();
         assert_eq!(index["redistribution_approved"], false);
-        assert_eq!(index["embedded_go_modules"], 62);
-        assert_eq!(index["modules_with_named_notice_files"], 62);
+        assert_eq!(index["native_modules"], 63);
+        let source_bytes = fs::read(folder.join("current-source-index.json")).unwrap();
+        let source_hash = sha2::Sha256::digest(&source_bytes)
+            .iter()
+            .map(|b| format!("{b:02x}"))
+            .collect::<String>();
+        assert_eq!(index["module_source_index_sha256"], source_hash);
+        let sources: serde_json::Value = serde_json::from_slice(&source_bytes).unwrap();
+        assert_eq!(sources["redistribution_approved"], false);
         assert_eq!(
-            index["modules_without_named_notice_files"],
-            serde_json::json!([])
+            sources["go_source_commit"],
+            "7b2881024c95a11ddb86663a616340aa3a88b67f"
         );
+        assert_eq!(sources["go_source_version"], "go1.27.4");
+        assert_eq!(sources["go_legal_files"], 38);
+        let material = fs::read(folder.join("files/current-1.27.4-NOTICES.txt")).unwrap();
         let mut names = BTreeSet::new();
         let mut modules = BTreeSet::new();
         let mut total = 0u64;
@@ -1019,9 +1038,54 @@ mod tests {
             assert_eq!(record["bytes"], bytes.len());
             total += bytes.len() as u64;
             assert!(names.insert(file.to_owned()));
-            if let Some(module) = record["module"].as_str() {
-                assert!(record["go_source_sum"].as_str().unwrap().starts_with("h1:"));
-                modules.insert(module.to_owned());
+            assert_eq!(record["sha256"], sources["bundle_sha256"]);
+        }
+        for record in sources["modules"].as_array().unwrap() {
+            let module = record["module"].as_str().unwrap();
+            assert!(modules.insert(module.to_owned()));
+            let main = module == "github.com/zricethezav/gitleaks/v8@v8.30.1";
+            if main {
+                assert_eq!(
+                    record["source_commit"],
+                    "83d9cd684c87d95d656c1458ef04895a7f1cbd8e"
+                );
+                assert_eq!(
+                    record["archive_sha256"],
+                    "6b2638a733b85619dc80bdf28e84e4fed7e526a761ab5c148fbf67695aea2115"
+                );
+            } else {
+                assert!(record["sum"].as_str().unwrap().starts_with("h1:"));
+            }
+            let legal = record["files"].as_array().unwrap();
+            assert!(!legal.is_empty());
+            for file in legal {
+                let path = file["path"].as_str().unwrap();
+                let header = if main {
+                    format!(
+                        "\n--- github.com/zricethezav/gitleaks/v8 / fixed source 83d9cd684c87d95d656c1458ef04895a7f1cbd8e / {path} ---\n"
+                    )
+                } else {
+                    format!("\n--- {module} / {path} ---\n")
+                };
+                let offsets: Vec<_> = material
+                    .windows(header.len())
+                    .enumerate()
+                    .filter_map(|(n, bytes)| (bytes == header.as_bytes()).then_some(n))
+                    .collect();
+                assert_eq!(
+                    offsets.len(),
+                    1,
+                    "unattributed/ambiguous original legal file"
+                );
+                let start = offsets[0] + header.len();
+                let size = usize::try_from(file["bytes"].as_u64().unwrap()).unwrap();
+                assert!(size > 0 && size <= 1024 * 1024);
+                let original = material.get(start..start + size).unwrap();
+                let digest = sha2::Sha256::digest(original)
+                    .iter()
+                    .map(|b| format!("{b:02x}"))
+                    .collect::<String>();
+                assert_eq!(file["sha256"], digest);
             }
         }
         let actual: BTreeSet<_> = fs::read_dir(folder.join("files"))
@@ -1029,10 +1093,30 @@ mod tests {
             .map(|entry| format!("files/{}", entry.unwrap().file_name().to_str().unwrap()))
             .collect();
         assert_eq!(names, actual);
-        assert_eq!(names.len(), 95);
-        assert_eq!(modules.len(), 62);
-        assert_eq!(total, 294214);
-        assert_eq!(index["total_bytes"], total);
+        assert_eq!(names.len(), 1);
+        assert_eq!(modules.len(), 63);
+        assert_eq!(total, 366906);
+        assert_eq!(sources["bundle_bytes"], total);
+        let expected: BTreeSet<_> = sources["native_modules"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|module| module.as_str().unwrap().to_owned())
+            .collect();
+        assert_eq!(modules, expected);
+        let profile: serde_json::Value = serde_json::from_slice(
+            &fs::read(root().join("inventory/gitleaks-production.json")).unwrap(),
+        )
+        .unwrap();
+        let native: BTreeSet<_> = profile["locations"]["/usr/local/bin/gitleaks"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .filter(|row| row[0] == "go-module" && row[1] != "stdlib")
+            .map(|row| format!("{}@{}", row[1].as_str().unwrap(), row[2].as_str().unwrap()))
+            .collect();
+        assert_eq!(modules, native);
+        assert_eq!(profile["compilers"]["/usr/local/bin/gitleaks"], "go1.27.4");
     }
     #[test]
     fn candidate_identity_evidence_cannot_claim_scan_or_release_acceptance() {
@@ -1053,7 +1137,7 @@ mod tests {
         }
     }
     #[test]
-    fn notice_attributes_only_preserve_three_exact_legal_bundles() {
+    fn notice_attributes_only_preserve_five_exact_legal_bundles() {
         let original = include_bytes!(".gitattributes");
         assert!(notice_attributes(original));
         for extra in [
@@ -1598,11 +1682,11 @@ jobs:";
           path: .work/catalog-evidence-${{ inputs.tool }}/
           retention-days: 14
           if-no-files-found: error
-      - name: Require full release qualification for delivered scanners and scheduled or manual runs
-        if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || inputs.tool == 'syft' || inputs.tool == 'grype' }}
+      - name: Require full release qualification for delivered scanners, Gitleaks and scheduled or manual runs
+        if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || inputs.tool == 'syft' || inputs.tool == 'grype' || inputs.tool == 'gitleaks' }}
         run: cargo run --locked --bin devsecops -- prepare-tool
       - name: Public count/status summary only
-        if: ${{ always() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || inputs.tool == 'syft' || inputs.tool == 'grype') }}
+        if: ${{ always() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || inputs.tool == 'syft' || inputs.tool == 'grype' || inputs.tool == 'gitleaks') }}
         uses: actions/upload-artifact@PIN
         with:
           name: security-status-${{ inputs.tool }}-${{ matrix.arch }}
@@ -1610,7 +1694,7 @@ jobs:";
           retention-days: 14
           if-no-files-found: error
       - name: Preserve policy-passing archives, inventories and explicit risk receipts
-        if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || inputs.tool == 'syft' || inputs.tool == 'grype' }}
+        if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || inputs.tool == 'syft' || inputs.tool == 'grype' || inputs.tool == 'gitleaks' }}
         uses: actions/upload-artifact@PIN
         with:
           name: release-${{ inputs.tool }}-${{ matrix.arch }}
@@ -1824,12 +1908,13 @@ jobs:";
             ("github.event_name == 'schedule' || ", ""),
             ("inputs.tool == 'syft' || ", ""),
             (" || inputs.tool == 'grype'", ""),
+            (" || inputs.tool == 'gitleaks'", ""),
             (
-                "github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || inputs.tool == 'syft' || inputs.tool == 'grype'",
+                "github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || inputs.tool == 'syft' || inputs.tool == 'grype' || inputs.tool == 'gitleaks'",
                 "inputs.publish",
             ),
             (
-                "github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || inputs.tool == 'syft' || inputs.tool == 'grype'",
+                "github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || inputs.tool == 'syft' || inputs.tool == 'grype' || inputs.tool == 'gitleaks'",
                 "false",
             ),
             (

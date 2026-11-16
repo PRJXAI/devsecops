@@ -65,6 +65,9 @@ pub(super) fn check(driver: &mut Driver, tool: &str, image: &str) -> Result<()> 
     let cleanup = driver.docker(&["rm", "--force", &name], 15, true);
     super::container_output(result, cleanup)?;
     files(&path, tool)?;
+    if tool == "gitleaks" {
+        release::gitleaks_runtime::verify_archive(&path)?;
+    }
     if driver.cancelled.load(Ordering::Relaxed) {
         return Err("check cancelled");
     }
