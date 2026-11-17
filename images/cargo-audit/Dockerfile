@@ -5,7 +5,7 @@ ADD --checksum=sha256:ab28a1bdb54db4d5d8ad5981cf1f959410370b3d28250dbd35f6a44248
 FROM scratch AS archive-arm64
 ADD --checksum=sha256:c6603814ddaa45e51263dafd31c0ac98808f688d26f7395804f9670b0fd599dd https://github.com/rustsec/rustsec/releases/download/cargo-audit/v0.22.2/cargo-audit-aarch64-unknown-linux-gnu-v0.22.2.tgz /cargo-audit.tgz
 
-FROM --platform=$BUILDPLATFORM alpine:3.24.3@sha256:be2656061b536c1883c4034790e21d0a09c5aaaf51968b89368a3c0371ea2c9a AS extract
+FROM --platform=$BUILDPLATFORM alpine:3.24.4@sha256:f59abe656b692d901e184be3445e084786602108599d2a51d229c0f5a48c71bf AS extract
 RUN --network=none ["mkdir", "/out"]
 FROM extract AS binary-amd64
 COPY --from=archive-amd64 /cargo-audit.tgz /tmp/cargo-audit.tgz
